@@ -1,0 +1,125 @@
+<services>
+    <service id="DOMDocument" class="\DOMDocument"></service>
+    <service id="XSLTProcessor" class="\XSLTProcessor"></service>
+
+    <service id="Config" class="\tachyon\Config" singleton="true"></service>
+    <service id="Cookie" class="\tachyon\components\Cookie" singleton="true">
+        <property name="duration">
+            <value>30</value>
+        </property>
+    </service>
+    <service id="Encrypt" class="\tachyon\components\Encrypt" singleton="true">
+        <property name="algorithm">
+            <value>md5</value>
+        </property>
+        <property name="salt">
+            <value>sdnv5ln0vlz8nbl4emr</value>
+        </property>
+    </service>
+    <service id="Csrf" class="\tachyon\components\Csrf" singleton="true"></service>
+    <service id="OutputCache" class="\tachyon\components\cache\Output" singleton="true"></service>
+    <service id="DbCache" class="\tachyon\components\cache\Db" singleton="true"></service>
+
+    <service id="Message" class="\tachyon\components\Message" singleton="true">
+        <property name="lang">
+            <ref id="Lang"/>
+        </property>
+    </service>
+    <service id="Lang" class="\tachyon\components\Lang" singleton="true">
+        <property name="cookie">
+            <ref id="Cookie"/>
+        </property>
+    </service>
+    <service id="Validator" class="\tachyon\components\Validator">
+        <property name="msg">
+            <ref id="Message"/>
+        </property>
+        <property name="csrf">
+            <ref id="Csrf"/>
+        </property>
+    </service>
+
+    <service id="DateTime" class="\tachyon\behaviours\DateTime"></service>
+    <service id="List" class="\tachyon\behaviours\ListBehaviour"></service>
+    <service id="Active" class="\tachyon\behaviours\Active"></service>
+
+    <service id="Html" class="\tachyon\components\html\Html" singleton="true"></service>
+    <service id="FormBuilder" class="\tachyon\components\html\FormBuilder">
+        <property name="csrf">
+            <ref id="Csrf"/>
+        </property>
+        <property name="html">
+            <ref id="Html"/>
+        </property>
+        <property name="view">
+            <ref id="View"/>
+        </property>
+    </service>
+
+    <service id="Grid" class="\tachyon\components\widgets\grid\Grid">
+        <property name="msg">
+            <ref id="Message"/>
+        </property>
+    </service>
+    <service id="Datepicker" class="\tachyon\components\widgets\Datepicker"></service>
+    <service id="Menu" class="\app\components\widgets\menu\Menu"></service>
+
+    <service id="XsltView" class="\tachyon\XsltView">
+        <property name="xsltProcessor">
+            <ref id="XsltProcessor"/>
+        </property>
+    </service>
+    <service id="View" class="\tachyon\View">
+        <property name="msg">
+            <ref id="Message"/>
+        </property>
+        <property name="html">
+            <ref id="Html"/>
+        </property>
+    </service>
+    <service id="Controller" class="\tachyon\Controller">
+        <property name="msg">
+            <ref id="Message"/>
+        </property>
+        <property name="lang">
+            <ref id="Lang"/>
+        </property>
+        <property name="db">
+            <ref id="Db"/>
+        </property>
+        <property name="view">
+            <ref id="View"/>
+        </property>
+    </service>
+
+    <service id="Db" class="\tachyon\db\Db" singleton="true"></service>
+    <service id="Join" class="\tachyon\db\Join"></service>
+    <service id="Alias" class="\tachyon\db\Alias"></service>
+    <service id="Relation" class="\tachyon\db\relations\Relation"></service>
+    <service id="JoinRelation" class="\tachyon\db\relations\JoinRelation"></service>
+    <service id="HasoneRelation" class="\tachyon\db\relations\HasoneRelation"></service>
+    <service id="HasmanyRelation" class="\tachyon\db\relations\HasmanyRelation"></service>
+    <service id="ManytomanyRelation" class="\tachyon\db\relations\ManytomanyRelation"></service>
+
+    <service id="ArModel" class="\tachyon\db\models\ArModel">
+        <property name="cache">
+            <ref id="DbCache"/>
+        </property>
+    </service>
+    <service id="TableModel" class="\tachyon\db\models\TableModel">
+        <property name="alias">
+            <ref id="Alias"/>
+        </property>
+        <property name="db">
+            <ref id="Db"/>
+        </property>
+        <property name="join">
+            <ref id="Join"/>
+        </property>
+    </service>
+    <service id="Component" class="\tachyon\Component">
+        <property name="config">
+            <ref id="Config"/>
+        </property>
+    </service>
+</services>
