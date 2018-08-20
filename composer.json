@@ -1,0 +1,14 @@
+{
+    "name": "tachyon",
+    "license": "MIT",
+    "type": "project",
+    "version": "2.0.0",
+    "source": {
+        "type": "git",
+        "url": "git@github.com:imnd/tachyon.git",
+        "reference": "tachyon"
+    },
+    "require": {
+        "php": ">=5.5.9"
+    }
+}
