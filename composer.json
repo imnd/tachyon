@@ -3,11 +3,11 @@
     "license": "MIT",
     "type": "project",
     "version": "2.0.0",
-    "source": {
-        "type": "git",
-        "url": "git@github.com:imnd/tachyon.git",
-        "reference": "tachyon"
-    },
+    "autoload": {
+        "psr-0": {
+            "app\\": ""
+        }
+    }
     "require": {
         "php": ">=5.5.9"
     }
