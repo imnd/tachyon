@@ -58,6 +58,8 @@ class Join extends \tachyon\Component
             $onCond = " $on ";
         
         $owner->getDb()->setJoin($expr, $onCond, $mode);
+
+        return $this;
     }
 
     /**

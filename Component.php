@@ -11,7 +11,6 @@ namespace tachyon;
 abstract class Component
 {
     /**
-     * магическое присвоение значений переменным которых нет
      * @var $properties array
      */
     protected $properties = array();
@@ -25,6 +24,17 @@ abstract class Component
     {
         if (isset($this->properties[$var]))
             return $this->properties[$var];
+    }
+
+    /**
+     * Извлекает сервис из контейнера по его id
+     * 
+     * @param string $service
+     * @return mixed
+     */
+    public function get($service)
+    {
+        return \tachyon\dic\Container::getInstanceOf($service);
     }
 
     /**

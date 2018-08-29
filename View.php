@@ -16,7 +16,15 @@ class View extends Component
     use \tachyon\dic\Html;
 
     protected $controller;
+    /**
+     * путь к отображениям
+     * @var string $rootViewsPath
+     */
     protected $rootViewsPath;
+    /**
+     * путь к отображениям
+     * @var string $rootViewsPath
+     */
     protected $viewsPath;
     protected $layout;
     protected $pageTitle;
@@ -38,6 +46,7 @@ class View extends Component
      * @param $view string файл представления
      * @param $vars array переменные представления
      * @param $return boolean показывать или возвращать 
+     * @return void
      */
     public function display($viewName, array $vars=array(), $return=false)
 	{
@@ -55,12 +64,12 @@ class View extends Component
      * 
      * @param $view string
      * @param $vars array 
-     * @return
+     * @return void
      */
     public function layout($viewPath, array $vars=array())
 	{
         $view = $this->display($viewPath, $vars, true);
-        $layoutPath = $this->getLayoutPath();
+        $layoutPath = "{$this->rootViewsPath}/layouts/{$this->layout}";
         $head = $this->_view("$layoutPath/head.php", $vars);
         $foot = $this->_view("$layoutPath/foot.php", $vars);
 
@@ -113,7 +122,7 @@ class View extends Component
         $class = $params['class'];
         unset($params['class']);
         $controller = is_null($this->controller) ? $params['controller'] : $this->controller;
-        $widget = \tachyon\dic\Container::getInstanceOf($class);
+        $widget = $this->get($class);
         $widget->setVariables($params);
         $widget->setController($controller);
         return $widget->run();
@@ -133,21 +142,13 @@ class View extends Component
     # Геттеры и сеттеры
 
     /**
-     * Путь к лэйауту
-     * @return string
-     */
-    private function getLayoutPath()
-    {
-        return "{$this->rootViewsPath}/layouts/{$this->layout}";
-    }
-
-    /**
      * @param string $path
      * @return void
      */
     public function setViewsPath($path)
     {
         $this->viewsPath = $path;
+        return $this;
     }
 
     /**
@@ -173,6 +174,7 @@ class View extends Component
     public function setLayout($layout)
     {
         $this->layout = $layout;
+        return $this;
     }
 
     /**
@@ -190,6 +192,7 @@ class View extends Component
     public function setPageTitle($pageTitle)
     {
         $this->pageTitle = $pageTitle;
+        return $this;
     }
 
     /**
@@ -199,6 +202,7 @@ class View extends Component
     public function setController(Controller $controller)
     {
         $this->controller = $controller;
+        return $this;
     }
 
     /**

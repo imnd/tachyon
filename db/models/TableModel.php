@@ -271,7 +271,7 @@ abstract class TableModel extends Model
      */
     public static function clear()
     {
-        \tachyon\dic\Container::getInstanceOf('db')->truncate(static::$tableName);
+        $this->get('db')->truncate(static::$tableName);
     }
 
     /**
@@ -322,6 +322,8 @@ abstract class TableModel extends Model
         foreach ($attributes as $name => $value)
             if (in_array($name, static::$fields))
                 $this->attributes[$name] = $value;
+
+        return $this;
     }
 
     ############################################
@@ -463,6 +465,7 @@ abstract class TableModel extends Model
     public function setSortBy(array $sortBy)
     {
         $this->getDb()->setOrderBy($sortBy);
+        return $this;
     }
 
     public function getSortBy()
@@ -574,6 +577,8 @@ abstract class TableModel extends Model
         // если он пуст 
         if (empty($this->getSelect()))
             $this->select(static::getTableFields());
+
+        return $this;
     }
 
     /**
@@ -740,6 +745,7 @@ abstract class TableModel extends Model
     public function setIsNew($isNew)
     {
         $this->isNew = $isNew;
+        return $this;
     }
 
     public function getSelectFields()
@@ -750,5 +756,6 @@ abstract class TableModel extends Model
     public function setSelectFields($selectFields)
     {
         $this->selectFields = $selectFields;
+        return $this;
     }
 }

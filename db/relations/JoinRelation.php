@@ -12,7 +12,7 @@ class JoinRelation extends Relation
 {
     public function joinWith($owner)
     {
-        $model = \tachyon\dic\Container::getInstanceOf($this->modelName);
+        $model = $this->get($this->modelName);
         $this->getJoin()->leftJoin(array(
             $this->tableAlias => $model::getSource()
         ), array($owner->getPrimKey(), $this->linkKey), $this->getTableAlias(), $owner);

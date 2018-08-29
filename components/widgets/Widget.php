@@ -33,18 +33,13 @@ abstract class Widget extends \tachyon\Component
      * @var $return boolean
      */
     protected $return = false;
-    /**
-     * Компонент отображения
-     * @var $viewService \tachyon\View
-     */
-    protected $viewService;
 
-    /*public static function widget(array $params=array())
+    public static function widget(array $params=array())
     {
         $controller = is_null($this->controller) ? $params['controller'] : $this->controller;
         $self = new self;
         $self->run();
-    }*/
+    }
 
     public function __construct()
     {
@@ -53,8 +48,6 @@ abstract class Widget extends \tachyon\Component
 
         if (is_null($this->id))
             $this->id = strtolower($this->getClassName()) . '_' . uniqid();
-
-        $this->viewService = \tachyon\dic\Container::getInstanceOf('View');
     }
 
     /**
@@ -79,8 +72,10 @@ abstract class Widget extends \tachyon\Component
             $return = $this->return;
 
         $vars['widget'] = $this;
-        $this->viewService->setViewsPath($this->getViewPath());
-        return $this->viewService->display($view, $vars, $return);
+
+        $this->get('View')
+            ->setViewsPath($this->getViewPath())
+            ->display($view, $vars, $return);
     }
     
     /**
@@ -108,6 +103,7 @@ abstract class Widget extends \tachyon\Component
     public function setController($controller)
     {
         $this->controller = $controller;
+        return $this;
     }
 
     public function getController()

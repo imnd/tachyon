@@ -74,7 +74,7 @@ class Grid extends \tachyon\components\widgets\Widget
             $this->csrfJson = '"' . $this->csrf->getTokenId() . '":"' . $this->csrf->getTokenVal() . '",';
         }
         if (is_null($this->model)) {
-            $this->model = \tachyon\dic\Container::getInstanceOf($this->modelName);
+            $this->model = $this->get($this->modelName);
         } else {
             $this->modelName = $this->model->getClassName();
         }

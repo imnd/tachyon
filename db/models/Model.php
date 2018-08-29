@@ -67,6 +67,7 @@ abstract class Model extends \tachyon\Component
     public function setAttribute($name, $value)
     {
         $this->attributes[$name] = $value;
+        return $this;
     }
 
     /**
@@ -79,6 +80,8 @@ abstract class Model extends \tachyon\Component
         foreach ($attributes as $name => $value)
             if (array_key_exists($name, $this->attributes))
                 $this->attributes[$name] = $value;
+
+        return $this;
     }
 
     /**
@@ -181,7 +184,7 @@ abstract class Model extends \tachyon\Component
      */
     public function validate(array $attrs=null)
     {
-        \tachyon\dic\Container::getInstanceOf('Validator')->validate($this, $attrs);
+        $this->get('Validator')->validate($this, $attrs);
         return empty($this->validationErrors);
     }
 
@@ -227,6 +230,7 @@ abstract class Model extends \tachyon\Component
     public function setValidationErrors(array $errors)
     {
         $this->validationErrors = $errors;
+        return $this;
     }    
 
     /**
@@ -299,5 +303,6 @@ abstract class Model extends \tachyon\Component
     public function setScenario($scenario)
     {
         $this->scenario = $scenario;
+        return $this;
     }
 }

@@ -29,7 +29,7 @@ abstract class Relation extends \tachyon\Component
     public function __construct(array $params = array())
     {
         $this->modelName = $modelName = $params['modelName'];
-        $model = \tachyon\dic\Container::getInstanceOf($params['modelName']);
+        $model = $this->get($params['modelName']);
         $this->tableName = $model::$tableName;
         $this->primKey = $model::$primKey;
         $this->linkKey = $params['linkKey'];
@@ -67,8 +67,9 @@ abstract class Relation extends \tachyon\Component
 
     public function setModelAttrs()
     {
-        $this->model = \tachyon\dic\Container::getInstanceOf($this->modelName);
+        $this->model = $this->get($this->modelName);
         $this->model->setAttributes($this->values);
+        return $this;
     }
 
     public function getTableName()
@@ -79,6 +80,7 @@ abstract class Relation extends \tachyon\Component
     public function setTableName($tableName)
     {
         $this->tableName = $tableName;
+        return $this;
     }
 
     public function getFields()
@@ -89,6 +91,7 @@ abstract class Relation extends \tachyon\Component
     public function setFields($fields)
     {
         $this->fields = $fields;
+        return $this;
     }
 
     public function getTableAlias()
@@ -103,6 +106,7 @@ abstract class Relation extends \tachyon\Component
     public function setValues($itemArray)
     {
         $this->values = array_intersect_key($itemArray, $this->relationKeys);
+        return $this;
     }
 
     public function getValues()

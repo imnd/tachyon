@@ -55,6 +55,8 @@ class ManytomanyRelation extends Relation
             $relationKeys = array_merge($relationKeys, $addRelationKeys);
         }
         $this->values = array_intersect_key($itemArray, $relationKeys);
+
+        return $this;
     }
 
     public function attachWithObject($retItem, $with)

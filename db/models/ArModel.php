@@ -68,7 +68,7 @@ abstract class ArModel extends TableModel
         // добавляем внешние ключи по объявленным связям
         // TODO: перенести в findAll()
         foreach ($this->relations as $with => &$relationParams) {
-            $relationModel = \tachyon\dic\Container::getInstanceOf($relationParams[0]);
+            $relationModel = $this->get($relationParams[0]);
             // приделываем поля связанной таблицы (если не заданы в связи)
             if (!isset($relationParams[3]))
                 $relationParams[3] = $relationModel->getTableFields();
@@ -103,7 +103,7 @@ abstract class ArModel extends TableModel
         // TODO: перенести в Relations
         if (isset($this->relations[$var])) {
             $relationArr = $this->relations[$var];
-            $relModel = \tachyon\dic\Container::getInstanceOf($relationArr[0]);
+            $relModel = $this->get($relationArr[0]);
             $type = $relationArr[1];
             // первичный ключ внешней таблицы
             $relPk = $relModel->getPrimKey();
@@ -128,7 +128,7 @@ abstract class ArModel extends TableModel
 
                 case 'many_to_many':
                     $pk = static::$primKey;
-                    $lnkModel = \tachyon\dic\Container::getInstanceOf($relationArr[2][0]);
+                    $lnkModel = $this->get($relationArr[2][0]);
                     $linkTableName = $lnkModel->getTableName();
                     $relFk1 = $relationArr[2][1];
                     $relFk2 = $relationArr[2][2];
@@ -234,7 +234,7 @@ abstract class ArModel extends TableModel
 
         $retItems = array();
 
-        $modelName = \tachyon\helpers\StringHelper::getShortClassName(get_called_class());
+        $modelName = $this->getClassName();
         $modelFieldsKeys = array_flip($this->getAlias()->getAliases($modelFields));
         foreach ($items as $item) {
             /*
@@ -245,7 +245,7 @@ abstract class ArModel extends TableModel
             // чтобы не перезаписывать данные основной записи в случае JOIN
             if (!array_key_exists($itemPk, $retItems)) {
                 // берём только поля данной модели (без присоединенных ч/з JOIN)
-                $model = \tachyon\dic\Container::getInstanceOf($modelName);
+                $model = $this->get($modelName);
                 $model->with($this->with);
                 $model->setAttributes(array_intersect_key($item, $modelFieldsKeys));
                 $model->setAttribute(static::$primKey, $itemPk);
@@ -367,7 +367,7 @@ abstract class ArModel extends TableModel
         }
         $relType = $relationParams[1];
         $relationClassName = ucfirst(str_replace('_', '', $relType)) . 'Relation';
-        if (!$relation = \tachyon\dic\Container::getInstanceOf($relationClassName, array(
+        if (!$relation = $this->get($relationClassName, array(
             'modelName' => $relationParams[0],
             'type' => $relationParams[1],
             'linkKey' => $relationParams[2],
@@ -378,6 +378,8 @@ abstract class ArModel extends TableModel
         $this->relationClasses[$with] = $relation;
 
         $this->with[] = $with;
+
+        return $this;
     }
 
     public function getWith()
@@ -411,7 +413,7 @@ abstract class ArModel extends TableModel
         $relationName = $this->join->getRelationName($join);
         $relation = $this->relations[$relationName];
         if (in_array($relation[1], array('has_many', 'has_one'))) {
-            $joinModel = \tachyon\dic\Container::getInstanceOf($relation[0]);
+            $joinModel = $this->get($relation[0]);
             return array($joinModel::$tableName => $join[$relationName]);
         }
         throw new \Exception("Определите условие присоединения таблицы $join");
@@ -425,7 +427,7 @@ abstract class ArModel extends TableModel
     {
         $relationName = $this->join->getRelationName($join);
         $relation = $this->relations[$relationName];
-        $joinModel = \tachyon\dic\Container::getInstanceOf($relation[0]);
+        $joinModel = $this->get($relation[0]);
         $tableName = static::$tableName;
         // алиасим имя таблицы
         if (!is_null($this->tableAlias))

@@ -66,7 +66,7 @@ class Db extends \tachyon\Component
             return;
 
         try {
-            $dbOptions = $this->getConfig()->getOption('db');
+            $dbOptions = $this->get('Config')->getOption('db');
             self::$_conn = new \PDO(
                 'mysql:host=' . $dbOptions['host'] .
                 ';dbname=' . $dbOptions['name'],
@@ -75,7 +75,7 @@ class Db extends \tachyon\Component
             );
             self::$_conn->exec('set names ' . $dbOptions['char_set']);
         } catch (\PDOException $e) {
-            throw new \Exception($this->msg->i18n('conn_err'));
+            throw new \Exception($this->get('Msg')->i18n('conn_err'));
         }
     }
 
@@ -265,7 +265,7 @@ class Db extends \tachyon\Component
     /**
      * добавляет в массив _orderBy новый эт-т
      */
-    public function orderBy($fieldName, $order='ASC')
+    public function orderBy($fieldName, $order = 'ASC')
     {
         $this->_orderBy[$fieldName] = $order;
     }
@@ -291,15 +291,14 @@ class Db extends \tachyon\Component
         if (count($this->_orderBy)===0)
             return '';
         
-        $orderBy = ' ORDER BY ';
-        $orderByArr = array();
-        foreach ($this->_orderBy as $fieldName=> $order)
-            $orderByArr[] = "$fieldName $order";
+        $orderBy = array();
+        foreach ($this->_orderBy as $fieldName => $order)
+            $orderBy[] = "$fieldName $order";
 
-        return $orderBy . implode(',', $orderByArr);
+        return ' ORDER BY ' . implode(',', $orderBy);
     }
 
-    public function setLimit($limit, $offset=null)
+    public function setLimit($limit, $offset = null)
     {
         $this->_limit = $limit;
         

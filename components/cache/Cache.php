@@ -2,7 +2,6 @@
 namespace tachyon\components\cache;
 
 /**
- * class Cache
  * кеширование
  * 
  * @author Андрей Сердюк

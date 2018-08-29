@@ -31,6 +31,11 @@ class Cookie extends \tachyon\Component
         setcookie($key, $val, time() + 86400 * $this->duration, $this->config->getOption('base_path'), $this->config->getOption('domain'), $secure, $httpOnly);
     }
 
+    public function deleteCookie($key)
+    {
+        setcookie($key, null, -1, '/', $this->config->getOption('domain'));
+    }
+
     /**
      * @param integer $val
      * @return void
