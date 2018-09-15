@@ -26,29 +26,6 @@ class Container
     {
         // Загружаем компоненты и параметры компонентов
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-        // TODO: сделать норм объединение
-        /*$coreConf = new \DOMDocument;
-        $coreConf->load("$basePath/$coreConfPath");
-        $coreConfNode = $coreConf->getElementsByTagName('service')->item(0);
-
-        $appConf = new \DOMDocument();
-        $appConf->load("$basePath/$appConfPath");
-        $appServices = $appConf->getElementsByTagName('service');
-        for ($i = 0; $i < $appServices->length; $i++) {
-            $appService = $appServices->item($i);
-            $coreConfNode->appendChild($coreConf->importNode($appService, true));
-        }*/
-        /*$services = new \SimpleXMLElement('<services></services>');
-        $coreConfText = file_get_contents("$basePath/$coreConfPath");
-        $coreServices = new \SimpleXMLElement($coreConfText);
-        foreach ($coreServices as $service) {
-            $services->addChild('service', $service);
-        }
-        $appConfText = file_get_contents("$basePath/$appConfPath");
-        $appServices = new \SimpleXMLElement($appConfText);
-        foreach ($appServices as $service) {
-            $services->addChild('service', $service);
-        }*/
         $coreConfText = file_get_contents("$basePath/config/services.xml");
         $coreConfText = str_replace('</services>', '', $coreConfText);
         $appConfText = file_get_contents("$basePath/../../app/config/services.xml");
@@ -99,18 +76,14 @@ class Container
      * @param mixed $domain
      * @return mixed
      */
-    public static function getInstanceOf($name, $domain = null)
+    public static function getInstanceOf($name)
     {
         if (!self::$_initialised) {
             self::_loadConfig();
             self::$_initialised = true;
         }
 
-        /*if (
-               is_null($domain)
-            or !$config = self::_getConfigByClassName(get_class($domain), $name)
-        )*/
-            $config = self::$_config[$name];
+        $config = self::$_config[$name];
 
         if (!empty($config['singleton'])) {
             if (!isset(self::$_services[$name])) {
@@ -119,19 +92,6 @@ class Container
             return self::$_services[$name];
         }
         return self::_createService($config);
-    }
-
-    /**
-     * @param string $className
-     * @return array
-     */
-    private static function _getConfigByClassName($className)
-    {
-        foreach (self::$_config as $key => $config) {
-            if ($config['class']=="\\$className") {
-                return $config;
-            }
-        }
     }
 
     private static function _createService($config)

@@ -7,11 +7,12 @@ namespace tachyon;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-final class FrontController
+final class FrontController extends Component
 {
     # сеттеры сервисов, которые внедряются в компонент
     use \tachyon\dic\OutputCache;
     use \tachyon\dic\Message;
+    use \tachyon\dic\Config;
 
 	/**
 	 * Обработка входящего запроса
@@ -62,10 +63,12 @@ final class FrontController
      */
     public function startController($controllerName, $actionName, $requestVars)
     {
-        $controllerServiceName = ucfirst($controllerName) . 'Controller';
-        $controller = \tachyon\dic\Container::getInstanceOf($controllerServiceName);
+        $controller = $this->get(ucfirst($controllerName) . 'Controller');
         if (!method_exists($controller, $actionName)) {
-            $this->error(404, $this->getMsg()->i18n('Wrong address.'));
+            // Вывод сообщения об ошибке
+            header("HTTP/1.0 404 Not Found");
+            echo "<div class='error'>$error</div>";
+            die;
         }
         // инициализация
         $controller->start($actionName, $requestVars);
@@ -74,18 +77,6 @@ final class FrontController
         $inlineVars = isset($requestVars['inline']) ? $requestVars['inline'] : null;
         $controller->$actionName($inlineVars);
         $controller->afterAction();
-    }
-
-    /**
-     * Обработчик неправильного запроса
-     * Вывод сообщения об ошибке
-     */
-    public function error($code, $error)
-    {
-        $codeCaptions = array(404 => 'Not Found');
-        header("HTTP/1.0 $code {$codeCaptions[$code]}");
-        echo "<div class='error'>$error</div>";
-        die;
     }
 
     /**

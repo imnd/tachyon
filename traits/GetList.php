@@ -2,8 +2,6 @@
 namespace tachyon\traits;
 
 /**
- * Трэйт сеттера конфига
- * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
