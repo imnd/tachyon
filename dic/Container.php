@@ -94,26 +94,50 @@ class Container
         self::$_config[$id] = $service;
     }
 
-    public static function getInstanceOf($name, array $params = array())
+    /**
+     * @param string $name
+     * @param mixed $domain
+     * @return mixed
+     */
+    public static function getInstanceOf($name, $domain = null)
     {
         if (!self::$_initialised) {
             self::_loadConfig();
             self::$_initialised = true;
         }
-        $config = self::$_config[$name];
+
+        /*if (
+               is_null($domain)
+            or !$config = self::_getConfigByClassName(get_class($domain), $name)
+        )*/
+            $config = self::$_config[$name];
+
         if (!empty($config['singleton'])) {
             if (!isset(self::$_services[$name])) {
-                self::$_services[$name] = self::_createService($config, $params);
+                self::$_services[$name] = self::_createService($config);
             }
             return self::$_services[$name];
         }
-        return self::_createService($config, $params);
+        return self::_createService($config);
     }
 
-    private static function _createService($config, array $params = array())
+    /**
+     * @param string $className
+     * @return array
+     */
+    private static function _getConfigByClassName($className)
+    {
+        foreach (self::$_config as $key => $config) {
+            if ($config['class']=="\\$className") {
+                return $config;
+            }
+        }
+    }
+
+    private static function _createService($config)
     {
         $className = self::_getParam($config, 'class');
-        $service = new $className($params);
+        $service = new $className();
         self::_setProperties($service, $config);
 
         $parents = class_parents($service);

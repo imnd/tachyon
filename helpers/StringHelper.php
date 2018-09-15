@@ -40,7 +40,7 @@ class StringHelper
      */
     public static function specChars($text)
     {
-        return htmlspecialchars($text, ENT_QUOTES, \tachyon\dic\Container::getInstanceOf('config')->getOption('encoding'));
+        return htmlspecialchars($text, ENT_QUOTES, \tachyon\dic\Container::getInstanceOf('Config')->getOption('encoding'));
     }
 
     /**

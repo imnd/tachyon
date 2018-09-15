@@ -121,9 +121,9 @@ class View extends Component
     {
         $class = $params['class'];
         unset($params['class']);
-        $controller = is_null($this->controller) ? $params['controller'] : $this->controller;
         $widget = $this->get($class);
         $widget->setVariables($params);
+        $controller = is_null($this->controller) ? $params['controller'] : $this->controller;
         $widget->setController($controller);
         return $widget->run();
     }

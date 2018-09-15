@@ -2,6 +2,14 @@
     <service id="DOMDocument" class="\DOMDocument"></service>
     <service id="XSLTProcessor" class="\XSLTProcessor"></service>
 
+    <service id="FrontController" class="\tachyon\FrontController">
+        <property name="cache">
+            <ref id="OutputCache"/>
+        </property>
+        <property name="msg">
+            <ref id="Message"/>
+        </property>
+    </service>
     <service id="Config" class="\tachyon\Config" singleton="true"></service>
     <service id="Cookie" class="\tachyon\components\Cookie" singleton="true">
         <property name="duration">

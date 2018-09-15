@@ -67,7 +67,6 @@ final class FrontController
         if (!method_exists($controller, $actionName)) {
             $this->error(404, $this->getMsg()->i18n('Wrong address.'));
         }
-
         // инициализация
         $controller->start($actionName, $requestVars);
         // запускаем

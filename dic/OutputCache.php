@@ -29,7 +29,7 @@ trait OutputCache
     public function getCache()
     {
         if (is_null($this->cache)) {
-            $this->cache = \tachyon\dic\Container::getInstanceOf('OutputCache');
+            $this->cache = \tachyon\dic\Container::getInstanceOf('OutputCache', $this);
         }
         return $this->cache;
     }

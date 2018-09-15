@@ -22,8 +22,9 @@ abstract class Component
 
     public function getProperty($var)
     {
-        if (isset($this->properties[$var]))
+        if (isset($this->properties[$var])) {
             return $this->properties[$var];
+        }
     }
 
     /**
@@ -34,7 +35,7 @@ abstract class Component
      */
     public function get($service)
     {
-        return \tachyon\dic\Container::getInstanceOf($service);
+        return \tachyon\dic\Container::getInstanceOf($service, $this);
     }
 
     /**

@@ -34,13 +34,6 @@ abstract class Widget extends \tachyon\Component
      */
     protected $return = false;
 
-    public static function widget(array $params=array())
-    {
-        $controller = is_null($this->controller) ? $params['controller'] : $this->controller;
-        $self = new self;
-        $self->run();
-    }
-
     public function __construct()
     {
         if (is_null($this->view))
