@@ -20,15 +20,4 @@ trait Join
     {
         $this->join = $service;
     }
-
-    /**
-     * @return \tachyon\db\Join
-     */
-    public function getJoin()
-    {
-        if (is_null($this->join)) {
-            $this->join = \tachyon\dic\Container::getInstanceOf('Join');
-        }
-        return $this->join;
-    }
 }

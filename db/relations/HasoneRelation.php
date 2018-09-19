@@ -19,7 +19,7 @@ class HasoneRelation extends Relation
             $thisTableLinkKey = $this->primKey;
             $joinTableLinkKey = $this->linkKey;
         }
-        $this->getJoin()->leftJoin("{$this->tableName} AS {$this->tableAlias}", "{$this->tableAlias}.$thisTableLinkKey={$owner->getTableName()}.$joinTableLinkKey", $this->getTableAlias(), $owner);
+        $this->get('join')->leftJoin("{$this->tableName} AS {$this->tableAlias}", "{$this->tableAlias}.$thisTableLinkKey={$owner->getTableName()}.$joinTableLinkKey", $this->getTableAlias(), $owner);
     }
 
     public function attachWithObject($retItem, $with)

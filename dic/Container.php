@@ -73,10 +73,10 @@ class Container
 
     /**
      * @param string $name
-     * @param mixed $domain
+     * @param array $params динамически назначаемые параметры
      * @return mixed
      */
-    public static function getInstanceOf($name)
+    public static function getInstanceOf($name, array $params = array())
     {
         if (!self::$_initialised) {
             self::_loadConfig();
@@ -87,17 +87,17 @@ class Container
 
         if (!empty($config['singleton'])) {
             if (!isset(self::$_services[$name])) {
-                self::$_services[$name] = self::_createService($config);
+                self::$_services[$name] = self::_createService($config, $params);
             }
             return self::$_services[$name];
         }
-        return self::_createService($config);
+        return self::_createService($config, $params);
     }
 
-    private static function _createService($config)
+    private static function _createService($config, array $params = array())
     {
         $className = self::_getParam($config, 'class');
-        $service = new $className();
+        $service = new $className($params);
         self::_setProperties($service, $config);
 
         $parents = class_parents($service);

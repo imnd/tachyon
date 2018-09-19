@@ -12,7 +12,7 @@ class HasmanyRelation extends Relation
 {
     public function joinWith($owner)
     {
-        $this->getJoin()->leftJoin("{$this->tableName} AS {$this->tableAlias}", "{$this->tableAlias}.{$this->linkKey}={$owner->getTableName()}.{$owner->getPrimKey()}", $this->getTableAlias(), $owner);
+        $this->get('join')->leftJoin("{$this->tableName} AS {$this->tableAlias}", "{$this->tableAlias}.{$this->linkKey}={$owner->getTableName()}.{$owner->getPrimKey()}", $this->getTableAlias(), $owner);
     }
 
     public function attachWithObject($retItem, $with)

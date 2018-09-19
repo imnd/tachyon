@@ -176,7 +176,7 @@ class Upload extends \tachyon\Component
             return false;
         
         $fileExt = $this->_getExt($fileName);
-        $fileName = $this->getEncrypt()->randString() . ".$fileExt";
+        $fileName = $this->get('encrypt')->randString() . ".$fileExt";
         $filePath = $this->uploadPath . $fileName;
         // перемещаем файл
         if (!@copy($fileTemp, $filePath)) {

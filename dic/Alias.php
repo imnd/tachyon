@@ -22,15 +22,4 @@ trait Alias
     {
         $this->alias = $service;
     }
-
-    /**
-     * @return \tachyon\db\Alias
-     */
-    public function getAlias()
-    {
-        if (is_null($this->alias)) {
-            $this->alias = \tachyon\dic\Container::getInstanceOf('Alias');
-        }
-        return $this->alias;
-    }
 }

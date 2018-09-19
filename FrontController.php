@@ -23,8 +23,7 @@ final class FrontController extends Component
         $requestUri = $_SERVER['REQUEST_URI'];
 
         // кеширование
-        $cache = $this->getCache();
-        $cache->start($requestUri);
+        $this->cache->start($requestUri);
 
         // разбираем запрос
 		$requestArr = explode('/', $requestUri);
@@ -55,7 +54,7 @@ final class FrontController extends Component
 		$this->startController($controllerName, $actionName, $requestVars);
 
         // кеширование
-        $cache->end();
+        $this->cache->end();
 	}
 
     /**

@@ -39,7 +39,7 @@ class DateTime
         $dateArr = explode('-', $date);
         $dateArr = array_reverse($dateArr);
         if ($mode==='long')
-            $dateArr[1] = $this->_months[$this->getLang()->getLanguage()]['long']['gen'][(int)$dateArr[1]-1];
+            $dateArr[1] = $this->_months[$this->lang->getLanguage()]['long']['gen'][(int)$dateArr[1]-1];
 
         return implode($glue, $dateArr) . ' г.';
     }

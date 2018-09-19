@@ -20,15 +20,4 @@ trait Db
     {
         $this->db = $service;
     }
-
-    /**
-     * @return \tachyon\db\Db
-     */
-    public function getDb()
-    {
-        if (is_null($this->db)) {
-            $this->db = \tachyon\dic\Container::getInstanceOf('Db');
-        }
-        return $this->db;
-    }
 }

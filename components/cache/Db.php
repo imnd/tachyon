@@ -18,25 +18,12 @@ class Db extends Cache
         if (!$this->turnedOn)
             return;
 
-        if ($cacheContents = $this->get($cacheKey))
+        if ($cacheContents = $this->getContents($cacheKey, true))
             return $cacheContents;
 
         // запускаем кеширование
         $this->setKey($cacheKey);
         ob_start();
-    }
-    
-    /**
-     * @inheritdoc
-     */
-    protected function getContents()
-    {
-        ob_start();
-        require($this->cacheFile);
-        $contents = ob_get_contents();
-        $contents = unserialize($contents);
-        ob_end_clean();
-        return $contents;
     }
     
     /**

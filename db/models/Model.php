@@ -106,7 +106,7 @@ abstract class Model extends \tachyon\Component
         if (array_key_exists($key, $attributeNames)) {
             $attributeName = $attributeNames[$key];
             if (is_array($attributeName))
-                return $attributeName[$this->getLang()->getLanguage()];
+                return $attributeName[$this->lang->getLanguage()];
 
             return $attributeName;
         } 
@@ -184,7 +184,7 @@ abstract class Model extends \tachyon\Component
      */
     public function validate(array $attrs=null)
     {
-        $this->get('Validator')->validate($this, $attrs);
+        $this->get('validator')->validate($this, $attrs);
         return empty($this->validationErrors);
     }
 

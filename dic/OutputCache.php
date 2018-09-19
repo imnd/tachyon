@@ -22,15 +22,4 @@ trait OutputCache
     {
         $this->cache = $service;
     }
-
-    /**
-     * @return \tachyon\components\cache\Output
-     */
-    public function getCache()
-    {
-        if (is_null($this->cache)) {
-            $this->cache = \tachyon\dic\Container::getInstanceOf('OutputCache');
-        }
-        return $this->cache;
-    }
 }

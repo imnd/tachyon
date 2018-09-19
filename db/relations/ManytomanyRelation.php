@@ -24,11 +24,10 @@ class ManytomanyRelation extends Relation
         $tableAliases[$linkTableName] = $linkTableAlias;
         $linkRelativeKey = $linkParams[1];
         $linkThisKey = $linkParams[2];
-        $join = $this->getJoin();
-        $join->leftJoin("$linkTableName AS $linkTableAlias", " $linkTableAlias.$linkRelativeKey={$owner->getTableName()}.{$owner->getPrimKey()}", $this->getTableAlias(), $owner);
-        $join->leftJoin("{$this->tableName} AS {$this->tableAlias}", " $linkTableAlias.$linkThisKey={$this->tableAlias}.{$this->primKey}", $this->getTableAlias(), $owner);
+        $this->join->leftJoin("$linkTableName AS $linkTableAlias", " $linkTableAlias.$linkRelativeKey={$owner->getTableName()}.{$owner->getPrimKey()}", $this->getTableAlias(), $owner);
+        $this->join->leftJoin("{$this->tableName} AS {$this->tableAlias}", " $linkTableAlias.$linkThisKey={$this->tableAlias}.{$this->primKey}", $this->getTableAlias(), $owner);
         if (isset($linkParams[3])) {
-            $owner->setSelectFields(array_merge($owner->getSelectFields(), $this->getAlias()->aliasFields($linkParams[3], $linkTableName, self::LINK_TBL_SUFF)));
+            $owner->setSelectFields(array_merge($owner->getSelectFields(), $this->get('alias')->aliasFields($linkParams[3], $linkTableName, self::LINK_TBL_SUFF)));
         }
     }
 
@@ -39,7 +38,7 @@ class ManytomanyRelation extends Relation
     {
         parent::trimSuffixes($with);
         
-        $this->values = $this->getAlias()->trimSuffixes($this->values, self::LINK_TBL_SUFF, $with);
+        $this->values = $this->get('alias')->trimSuffixes($this->values, self::LINK_TBL_SUFF, $with);
     }
     
     /**
@@ -48,10 +47,10 @@ class ManytomanyRelation extends Relation
     public function setValues($itemArray)
     {
         $relationKeys = array_flip($this->params[3]);
-        $relationKeys = $this->getAlias()->appendSuffixToKeys($relationKeys, $this->aliasSuffix);
+        $relationKeys = $this->get('alias')->appendSuffixToKeys($relationKeys, $this->aliasSuffix);
         $linkParams = $this->params[2];
         if (isset($linkParams[3])) {
-            $addRelationKeys = $this->getAlias()->appendSuffixToKeys(array_flip($linkParams[3]), self::LINK_TBL_SUFF);
+            $addRelationKeys = $this->get('alias')->appendSuffixToKeys(array_flip($linkParams[3]), self::LINK_TBL_SUFF);
             $relationKeys = array_merge($relationKeys, $addRelationKeys);
         }
         $this->values = array_intersect_key($itemArray, $relationKeys);

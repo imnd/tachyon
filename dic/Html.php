@@ -21,15 +21,4 @@ trait Html
     {
         $this->html = $service;
     }
-
-    /**
-     * @return \tachyon\components\html\Html
-     */
-    public function getHtml()
-    {
-        if (is_null($this->html)) {
-            $this->html = \tachyon\dic\Container::getInstanceOf('Html');
-        }
-        return $this->html;
-    }
 }

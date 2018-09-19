@@ -22,15 +22,4 @@ trait DbCache
     {
         $this->cache = $service;
     }
-
-    /**
-     * @return \tachyon\components\cache\Db
-     */
-    public function getCache()
-    {
-        if (is_null($this->cache)) {
-            $this->cache = \tachyon\dic\Container::getInstanceOf('DbCache');
-        }
-        return $this->cache;
-    }
 }

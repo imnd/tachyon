@@ -45,7 +45,7 @@ class Db extends \tachyon\Component
         // подключаем ДБ
         $this->_connect();
             
-        if ($this->getConfig()->getOption('mode')!=='debug')
+        if ($this->get('config')->getOption('mode')!=='debug')
             return;
 
         // путь к файлу explain для запросов
@@ -66,7 +66,7 @@ class Db extends \tachyon\Component
             return;
 
         try {
-            $dbOptions = $this->get('Config')->getOption('db');
+            $dbOptions = $this->get('config')->getOption('db');
             self::$_conn = new \PDO(
                 'mysql:host=' . $dbOptions['host'] .
                 ';dbname=' . $dbOptions['name'],
@@ -75,7 +75,7 @@ class Db extends \tachyon\Component
             );
             self::$_conn->exec('set names ' . $dbOptions['char_set']);
         } catch (\PDOException $e) {
-            throw new \Exception($this->get('Msg')->i18n('conn_err'));
+            throw new \Exception($this->get('msg')->i18n('conn_err'));
         }
     }
 
@@ -117,7 +117,7 @@ class Db extends \tachyon\Component
         $this->_clearGroupBy();
         $this->_clearLimit();
 
-        if ($this->getConfig()->getOption('mode')==='debug')
+        if ($this->get('config')->getOption('mode')==='debug')
             $this->_explain($query, $conditions);
 
 		$stmt = self::$_conn->prepare($query);

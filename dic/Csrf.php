@@ -22,15 +22,4 @@ trait Csrf
     {
         $this->csrf = $service;
     }
-
-    /**
-     * @return \tachyon\components\Csrf
-     */
-    public function getCsrf()
-    {
-        if (is_null($this->csrf)) {
-            $this->csrf = \tachyon\dic\Container::getInstanceOf('Csrf');
-        }
-        return $this->csrf;
-    }
 }

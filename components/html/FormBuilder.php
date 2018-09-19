@@ -76,12 +76,12 @@ class FormBuilder extends \tachyon\Component
      */
     public function __construct($options=array())
     {
-        if (true===$this->_csrfCheck = $this->getConfig()->getOption('csrf_check')) {
+        if (true===$this->_csrfCheck = $this->get('config')->getOption('csrf_check')) {
             $this->_tokenId = $this->csrf->getTokenId();
             $this->_tokenVal = $this->csrf->getTokenVal();
         }
         // текстовые
-        $this->_options['text'] = $this->_options['text'][$this->getConfig()->getOption('lang')];
+        $this->_options['text'] = $this->_options['text'][$this->get('config')->getOption('lang')];
 	}
 
 	/**

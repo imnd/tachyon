@@ -24,22 +24,16 @@ abstract class Cache extends \tachyon\Component
     public function __construct()
     {
         $type = strtolower($this->getClassName());
-        $cache = $this->getConfig()->getOption('cache');
-        if ($this->getConfig()->getOption('mode')!=='production' || !isset($cache[$type]))
+        $cache = $this->get('config')->getOption('cache');
+        if ($this->get('config')->getOption('mode')!=='production' || !isset($cache[$type]))
             return;
-            
+
         $this->turnedOn = false;
         $options = $cache[$type];
         foreach ($options as $key => $value)
             if (property_exists($type, $key))
                 $this->$key = $value;
     }
-
-    /**
-     * возвращает содержимое файла кэша
-     * @return string
-     */
-    abstract protected function getContents();
 
     /**
      * возвращает содержимое файла кэша или включает буфферинг вывода
@@ -59,7 +53,7 @@ abstract class Cache extends \tachyon\Component
      */
     abstract public function end($contents = null);
 
-    public function get($key)
+    protected function getContents($key, $unserialize = false)
     {
         $this->setKey($key);
         $this->getCacheFilePath();
@@ -70,11 +64,18 @@ abstract class Cache extends \tachyon\Component
             if ($this->duration < $age)
                 return;
             
-            return $this->getContents();
+            ob_start();
+            require($this->cacheFile);
+            $contents = ob_get_contents();
+            if ($unserialize)
+                $contents = unserialize($contents);
+
+            ob_end_clean();
+            return $contents;
         }
         return;
     }
-    
+
     protected function setKey($key)
     {
         $this->key = md5($key);

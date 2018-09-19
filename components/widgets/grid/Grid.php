@@ -106,7 +106,7 @@ class Grid extends \tachyon\components\widgets\Widget
             if (isset($btnOptions['title']))
                 $btnOptions['htmlOptions']['title'] = $btnOptions['title'];
             else
-                $btnOptions['htmlOptions']['title'] = $this->getMsg()->i18n($action);
+                $btnOptions['htmlOptions']['title'] = $this->msg->i18n($action);
 
             if (isset($btnOptions['vars']))
                 $action .= '/' . implode('/', array_map(

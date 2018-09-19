@@ -19,15 +19,4 @@ trait Cookie
     {
         $this->cookie = $service;
     }
-
-    /**
-     * @return \tachyon\components\Cookie
-     */
-    public function getCookie()
-    {
-        if (is_null($this->cookie)) {
-            $this->cookie = \tachyon\dic\Container::getInstanceOf('Cookie');
-        }
-        return $this->cookie;
-    }
 }

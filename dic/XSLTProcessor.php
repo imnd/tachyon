@@ -20,15 +20,4 @@ trait XSLTProcessor
     {
         $this->xsltProcessor = $service;
     }
-
-    /**
-     * @return \XSLTProcessor
-     */
-    public function getXsltProcessor()
-    {
-        if (is_null($this->xsltProcessor)) {
-            $this->xsltProcessor = \tachyon\dic\Container::getInstanceOf('XSLTProcessor');
-        }
-        return $this->xsltProcessor;
-    }
 }

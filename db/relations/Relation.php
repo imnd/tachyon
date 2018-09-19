@@ -28,15 +28,15 @@ abstract class Relation extends \tachyon\Component
     
     public function __construct(array $params = array())
     {
-        $this->modelName = $modelName = $params['modelName'];
-        $model = $this->get($params['modelName']);
+        $this->modelName = $params['modelName'];
+        $model = $this->get($this->modelName);
         $this->tableName = $model::$tableName;
         $this->primKey = $model::$primKey;
         $this->linkKey = $params['linkKey'];
         $this->aliasSuffix = "_{$params['type']}";
         $this->tableAlias = $this->tableName . $this->aliasSuffix;
-        $this->relationKeys = $this->getAlias()->appendSuffixToKeys(array_flip($params['relationKeys']), $this->aliasSuffix);
-        $this->fields = $this->getAlias()->aliasFields($params['relationKeys'], $this->tableName, $this->aliasSuffix);
+        $this->relationKeys = $this->get('alias')->appendSuffixToKeys(array_flip($params['relationKeys']), $this->aliasSuffix);
+        $this->fields = $this->get('alias')->aliasFields($params['relationKeys'], $this->tableName, $this->aliasSuffix);
     }
     
     /**
@@ -46,7 +46,7 @@ abstract class Relation extends \tachyon\Component
      */
     public function trimSuffixes($with='')
     {
-        $this->values = $this->getAlias()->trimSuffixes($this->values, $this->aliasSuffix, $with);
+        $this->values = $this->get('alias')->trimSuffixes($this->values, $this->aliasSuffix, $with);
     }
     
     /**

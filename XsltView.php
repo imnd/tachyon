@@ -67,11 +67,11 @@ class XsltView extends View
      */
     private function _xsltTransform($xml, $tpl)
     {
-        $xsl = $this->getDom();
+        $xsl = $this->get('Dom');
         $xsl->load("{$this->viewsPath}/$tpl.xsl");
         $proc = $this->xsltProcessor;
         $proc->importStylesheet($xsl);
-        $doc = $this->getDom();
+        $doc = $this->get('Dom');
         $doc->loadXML($xml);
         return $proc->transformToXML($doc);
     }

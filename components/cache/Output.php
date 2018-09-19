@@ -18,25 +18,13 @@ class Output extends Cache
         if (!$this->turnedOn)
             return;
             
-        if ($cacheContents = $this->get($cacheKey)) {
+        if ($cacheContents = $this->getContents($cacheKey)) {
             echo $cacheContents;
             die;
         }
         // запускаем кеширование
         $this->setKey($cacheKey);
         ob_start();
-    }
-    
-    /**
-     * @inheritdoc
-     */
-    protected function getContents()
-    {
-        ob_start();
-        require($this->cacheFile);
-        $contents = ob_get_contents();
-        ob_end_clean();
-        return $contents;
     }
     
     /**

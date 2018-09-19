@@ -77,7 +77,7 @@ class Controller extends Component
         // путь к отображениям
         $this->view->setViewsPath("{$this->view->getViewsPath()}/{$this->id}");
         // текущий язык сайта
-        $this->language = $this->getLang()->getLanguage();
+        $this->language = $this->lang->getLanguage();
 
         // всё в порядке, отдаём страницу
         header('HTTP/1.1 200 OK');

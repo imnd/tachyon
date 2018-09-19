@@ -56,16 +56,6 @@ abstract class TableModel extends Model
     protected $defSortBy = array();
 
     /**
-     * конструктор
-     */
-    public function __construct()
-    {
-        // проверяем наличие таблицы в БД
-        if (!$this->getDb()->isTableExists(static::$tableName))
-            throw new \Exception('Table "' . static::$tableName . '" does not exist');
-    }
-
-    /**
      * @return string
      */
     public function getTableAlias()
@@ -94,17 +84,17 @@ abstract class TableModel extends Model
         $modelFields = $this->getSelect();
         $tableName = static::$tableName;
         // алиасим поля и присобачиваем к массиву полей для выборки
-        $this->selectFields = array_merge($this->selectFields, $this->getAlias()->aliasFields($modelFields, $tableName));
+        $this->selectFields = array_merge($this->selectFields, $this->get('alias')->aliasFields($modelFields, $tableName));
         // устанавливаем поля для выборки
         $this->select($this->selectFields);
 
-        $this->getAlias()->prependTableNameOnWhere($tableName, $this->getWhere(), $this);
+        $this->get('alias')->prependTableNameOnWhere($tableName, $this->getWhere(), $this);
         // алиасим имя таблицы
         if (!is_null($this->tableAlias))
             $tableName .= " AS {$this->tableAlias}";
 
         // выбираем записи
-        $items = $this->getDb()->select($tableName);
+        $items = $this->db->select($tableName);
         $this->clearSelect();
         $this->clearAlias();
         return $items;
@@ -130,7 +120,7 @@ abstract class TableModel extends Model
      */
     public function getOne()
     {
-        $this->getDb()->setLimit(1);
+        $this->db->setLimit(1);
         if ($items = $this->getAll())
             return $items[0];
     }
@@ -213,7 +203,7 @@ abstract class TableModel extends Model
      */
     public function insert()
     {
-        if (!$lastInsertId = $this->getDb()->insert(static::$tableName, $this->fieldAttributes()))
+        if (!$lastInsertId = $this->db->insert(static::$tableName, $this->fieldAttributes()))
             return false;
         
         $pk = static::$primKey;
@@ -236,7 +226,7 @@ abstract class TableModel extends Model
         else
             $condition[$pk] = $this->$pk;
 
-        return $this->getDb()->update(static::$tableName, $this->fieldAttributes(), $condition);
+        return $this->db->update(static::$tableName, $this->fieldAttributes(), $condition);
     }
     
     /**
@@ -246,7 +236,7 @@ abstract class TableModel extends Model
     {
         $pk = static::$primKey;
         if ($this->$pk)
-            if ($this->getDb()->delete(static::$tableName, array($pk => $this->$pk))) {
+            if ($this->db->delete(static::$tableName, array($pk => $this->$pk))) {
                 unset($this);
                 return true;
             }
@@ -263,7 +253,7 @@ abstract class TableModel extends Model
      */
     public function deleteAllByAttrs(array $attrs)
     {
-        return $this->getDb()->delete(static::$tableName, $attrs);
+        return $this->db->delete(static::$tableName, $attrs);
     }
 
     /**
@@ -271,7 +261,7 @@ abstract class TableModel extends Model
      */
     public static function clear()
     {
-        $this->get('db')->truncate(static::$tableName);
+        $this->db->truncate(static::$tableName);
     }
 
     /**
@@ -349,19 +339,19 @@ abstract class TableModel extends Model
 
     public function where($where)
     {
-        $this->getDb()->setWhere($this->_prepareWhere($where));
+        $this->db->setWhere($this->_prepareWhere($where));
         return $this;
     }
 
     public function addWhere($where)
     {
-        $this->getDb()->addWhere($this->_prepareWhere($where));
+        $this->db->addWhere($this->_prepareWhere($where));
         return $this;
     }
 
     public function getWhere()
     {
-        return $this->getDb()->getWhere();
+        return $this->db->getWhere();
     }
 
     /**
@@ -377,7 +367,7 @@ abstract class TableModel extends Model
     {
         $where = $this->_prepareWhere($where);
         if (isset($where[$field]))
-            $this->getDb()->addWhere(array("$field LIKE" => $where[$field]));
+            $this->db->addWhere(array("$field LIKE" => $where[$field]));
 
         return $this;
     }
@@ -396,7 +386,7 @@ abstract class TableModel extends Model
     public function gt(&$where, $field, $arrKey, $precise=false)
     {
         if (isset($where[$arrKey])) {
-            $this->getDb()->addWhere(array_filter(array("$field>" . ($precise ? '' : '=') => $where[$arrKey])));
+            $this->db->addWhere(array_filter(array("$field>" . ($precise ? '' : '=') => $where[$arrKey])));
             unset($where[$arrKey]);
         }
         return $this;
@@ -416,7 +406,7 @@ abstract class TableModel extends Model
     public function lt(&$where, $field, $arrKey, $precise=false)
     {
         if (isset($where[$arrKey])) {
-            $this->getDb()->addWhere(array_filter(array("$field<" . ($precise ? '' : '=') => $where[$arrKey])));
+            $this->db->addWhere(array_filter(array("$field<" . ($precise ? '' : '=') => $where[$arrKey])));
             unset($where[$arrKey]);
         }
         return $this;
@@ -455,7 +445,7 @@ abstract class TableModel extends Model
     public function sortBy($colName, $order='ASC')
     {
         $colName = $this->_orderByCast($colName);
-        $this->getDb()->orderBy($colName, $order);
+        $this->db->orderBy($colName, $order);
         return $this; 
     }
     
@@ -464,13 +454,13 @@ abstract class TableModel extends Model
      */
     public function setSortBy(array $sortBy)
     {
-        $this->getDb()->setOrderBy($sortBy);
+        $this->db->setOrderBy($sortBy);
         return $this;
     }
 
     public function getSortBy()
     {
-        return $this->getDb()->getOrderBy();
+        return $this->db->getOrderBy();
     }
 
     /**
@@ -487,9 +477,9 @@ abstract class TableModel extends Model
                     $order = $val;
                     $colName = $key;
                 }
-                $colName = $this->getAlias()->aliasField($colName, static::$tableName);
+                $colName = $this->get('alias')->aliasField($colName, static::$tableName);
                 $colName = $this->_orderByCast($colName);
-                $this->getDb()->orderBy($colName, $order);
+                $this->db->orderBy($colName, $order);
             }
     }
 
@@ -515,13 +505,13 @@ abstract class TableModel extends Model
      */
     public function limit($limit, $offset=null)
     {
-        $this->getDb()->setLimit($limit, $offset);
+        $this->db->setLimit($limit, $offset);
         return $this; 
     }
     
     public function getLimit()
     {
-        return $this->getDb()->getLimit();
+        return $this->db->getLimit();
     }
 
     # GROUP BY
@@ -531,13 +521,13 @@ abstract class TableModel extends Model
      */
     public function groupBy($fieldName)
     {
-        $this->getDb()->setGroupBy($fieldName);
+        $this->db->setGroupBy($fieldName);
         return $this;
     }
 
     public function getGroupBy()
     {
-        return $this->getDb()->getGroupBy();
+        return $this->db->getGroupBy();
     }
 
     /**
@@ -565,7 +555,7 @@ abstract class TableModel extends Model
                 $fieldNames[] = $field;
             }
         }
-        $this->getDb()->setFields($fieldNames);
+        $this->db->setFields($fieldNames);
         return $this;
     }
 
@@ -586,7 +576,7 @@ abstract class TableModel extends Model
      */
     public function getSelect()
     {
-        return $this->getDb()->getFields();
+        return $this->db->getFields();
     }
 
     /**
@@ -686,7 +676,7 @@ abstract class TableModel extends Model
      */
     protected function getFieldsList()
     {
-        $fields = $this->getAlias()->aliasFields(static::$fields, static::$tableName);
+        $fields = $this->get('alias')->aliasFields(static::$fields, static::$tableName);
         return implode(',', $fields);
     }
 

@@ -22,10 +22,10 @@ class Lang extends \tachyon\Component
      */
     public function __construct()
     {
-        $cookieService = $this->getCookie();
+        $cookieService = $this->get('cookie');
         // установка и текущего языка из cookie
         if (!$lang = $cookieService->getCookie('lang')) {
-            $lang = $this->getConfig()->getOption('lang');
+            $lang = $this->get('config')->getOption('lang');
             $cookieService->setCookie('lang', $lang);
         }
         $this->_lang = $lang;

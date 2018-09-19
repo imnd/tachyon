@@ -45,12 +45,12 @@ class ListBehaviour
                 'contents' => $this->emptyVal
             );
 
-        foreach ($items as $item)
+        foreach ($items as $item) {
             $retArr[] = array(
                 'value' => $item[$this->pkField],
                 'contents' => $this->_getItemValue($item)
             );
-
+        }
         return $retArr;
     }
     
@@ -126,8 +126,9 @@ class ListBehaviour
                 $retArr[] = $item[$fieldName];
 
             return implode($this->valsGlue, $retArr);
-        } else
+        } else {
             return $item[$this->valueField];
+        }
     }
 
     # SETTERS

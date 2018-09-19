@@ -22,15 +22,4 @@ trait ListBehaviour
     {
         $this->listBehaviour = $service;
     }
-
-    /**
-     * @return \tachyon\behaviours\ListBehaviour
-     */
-    public function getListBehaviour()
-    {
-        if (is_null($this->listBehaviour)) {
-            $this->listBehaviour = \tachyon\dic\Container::getInstanceOf('List');
-        }
-        return $this->listBehaviour;
-    }
 }

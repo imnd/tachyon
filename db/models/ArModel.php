@@ -63,10 +63,7 @@ abstract class ArModel extends TableModel
      */
     public function __construct()
     {
-        parent::__construct();
-
         // добавляем внешние ключи по объявленным связям
-        // TODO: перенести в findAll()
         foreach ($this->relations as $with => &$relationParams) {
             $relationModel = $this->get($relationParams[0]);
             // приделываем поля связанной таблицы (если не заданы в связи)
@@ -77,7 +74,7 @@ abstract class ArModel extends TableModel
             $relationParams[3] = array_merge($relationParams[3], $relationModel->getPrimKeyArr());
             if (get_parent_class($relationModel)==='\tachyon\TableModel') {
                 // приделываем алиасы первичных ключей связанной таблицы
-                $relationParams[3] = array_merge($relationParams[3], $relationModel->getAlias()->getPrimKeyAliasArr($with));
+                $relationParams[3] = array_merge($relationParams[3], $relationModel->get('alias')->getPrimKeyAliasArr($with));
             }
         }
     }
@@ -158,10 +155,9 @@ abstract class ArModel extends TableModel
                     $relTableName = $relModel->getTableName();
                     $pk = static::$primKey;
                     $thisTableName = $this->getTableName();
-                    $db = $this->getDb();
-                    $db->setJoin("{$relModel->getSource()} AS $relTableName", "$relTableName.$linkKey=$thisTableName.$pk");
-                    $db->setFields($relationArr[3]);
-                    return $db->selectOne($thisTableName, array("$thisTableName.$pk" => $this->$pk));
+                    $this->db->setJoin("{$relModel->getSource()} AS $relTableName", "$relTableName.$linkKey=$thisTableName.$pk");
+                    $this->db->setFields($relationArr[3]);
+                    return $this->db->selectOne($thisTableName, array("$thisTableName.$pk" => $this->$pk));
                 break;
                 
                 default: break;
@@ -183,8 +179,6 @@ abstract class ArModel extends TableModel
      */
     public function findAll()
     {
-        // подключаем компонент кеширования
-        $cache = $this->getCache();
         // кеширование
         $cacheKey = json_encode($this->getTableName())
                   . json_encode($this->getSelect())
@@ -194,7 +188,7 @@ abstract class ArModel extends TableModel
                   . $this->getGroupBy()
                   . json_encode($this->with);
 
-        if ($items = $cache->start($cacheKey))
+        if ($items = $this->cache->start($cacheKey))
             return $items;
 
         $this->setDefaultSortBy();
@@ -210,7 +204,7 @@ abstract class ArModel extends TableModel
         }
         // поля данной модели (без присоединенных ч/з JOIN)
         // алиасим имена таблиц в массиве полей для выборки, заданный $this->select() 
-        $this->getAlias()->aliasSelectTableNames($tableAliases, $this);
+        $this->get('alias')->aliasSelectTableNames($tableAliases, $this);
         // устанавливаем массив полей для выборки
         $this->setSelect();
         // добавляем внешний(е) ключ(и) если его(их) нет в массиве полей для выборки
@@ -218,24 +212,24 @@ abstract class ArModel extends TableModel
         // алиасим поля и присобачиваем к массиву полей для выборки
         $tableName = static::$tableName;
         $modelFields = $this->getSelect();
-        $this->selectFields = array_merge($this->selectFields, $this->getAlias()->aliasFields($modelFields, $tableName));
+        $this->selectFields = array_merge($this->selectFields, $this->get('alias')->aliasFields($modelFields, $tableName));
         // устанавливаем поля для выборки
         $this->select($this->selectFields);
         // алиасим имена таблиц в groupBy
-        $this->getAlias()->aliasGroupByTableName($tableAliases, $this);
+        $this->get('alias')->aliasGroupByTableName($tableAliases, $this);
         // алиасим имена таблиц в sortBy
-        $this->getAlias()->aliasSortByTableName($tableAliases, $this);
+        $this->get('alias')->aliasSortByTableName($tableAliases, $this);
         // алиасим имена таблиц в условиях
-        $this->getAlias()->aliasWhereTableNames($tableAliases, $this);
+        $this->get('alias')->aliasWhereTableNames($tableAliases, $this);
 
         // ВЫБИРАЕМ ЗАПИСИ
-        $items = $this->getDb()->select($tableName);
+        $items = $this->db->select($tableName);
         $this->clearSelect();
 
         $retItems = array();
 
         $modelName = $this->getClassName();
-        $modelFieldsKeys = array_flip($this->getAlias()->getAliases($modelFields));
+        $modelFieldsKeys = array_flip($this->get('alias')->getAliases($modelFields));
         foreach ($items as $item) {
             /*
             // преобразование полей (в т.ч. timestamp) // TODO: убрать отсюда!!!
@@ -279,7 +273,7 @@ abstract class ArModel extends TableModel
         $this->clearWith();
         $items = array_values($retItems);
 
-        $cache->end($items);
+        $this->cache->end($items);
 
         return $items;
     }
@@ -312,7 +306,7 @@ abstract class ArModel extends TableModel
         if (is_array($primKey)) {
             $condition = array_combine($primKey, $pk);
         } elseif (is_string($primKey)) {
-            $primKeyArr = $this->getAlias()->aliasFields(array($primKey), static::$tableName);
+            $primKeyArr = $this->get('alias')->aliasFields(array($primKey), static::$tableName);
             $primKey = $primKeyArr[0];
             $condition = array($primKey => $pk);
         }

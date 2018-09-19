@@ -15,6 +15,6 @@ trait GetList
     {
         $modelName = \tachyon\helpers\StringHelper::getShortClassName(get_called_class());
         $model = \tachyon\dic\Container::getInstanceOf($modelName);
-        return $model->getListBehaviour()->getSelectList($model->getAll());
+        return $model->get('listBehaviour')->getSelectList($model->getAll());
     }
 }

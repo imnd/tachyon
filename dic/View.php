@@ -20,15 +20,4 @@ trait View
     {
         $this->view = $service;
     }
-
-    /**
-     * @return \tachyon\View
-     */
-    public function getView()
-    {
-        if (is_null($this->view)) {
-            $this->view = \tachyon\dic\Container::getInstanceOf('View');
-        }
-        return $this->view;
-    }
 }

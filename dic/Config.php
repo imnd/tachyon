@@ -22,15 +22,4 @@ trait Config
     {
         $this->config = $service;
     }
-
-    /**
-     * @return \tachyon\Config
-     */
-    public function getConfig()
-    {
-        if (is_null($this->config)) {
-            $this->config = \tachyon\dic\Container::getInstanceOf('Config');
-        }
-        return $this->config;
-    }
 }

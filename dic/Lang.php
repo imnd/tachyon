@@ -22,15 +22,4 @@ trait Lang
     {
         $this->lang = $service;
     }
-
-    /**
-     * @return \tachyon\components\Lang
-     */
-    public function getLang()
-    {
-        if (is_null($this->lang)) {
-            $this->lang = \tachyon\dic\Container::getInstanceOf('Lang');
-        }
-        return $this->lang;
-    }
 }

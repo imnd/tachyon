@@ -20,15 +20,4 @@ trait Validator
     {
         $this->validator = $service;
     }
-
-    /**
-     * @return \tachyon\components\Validator
-     */
-    public function getValidator()
-    {
-        if (is_null($this->validator)) {
-            $this->validator = \tachyon\dic\Container::getInstanceOf('Validator');
-        }
-        return $this->validator;
-    }
 }

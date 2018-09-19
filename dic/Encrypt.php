@@ -22,15 +22,4 @@ trait Encrypt
     {
         $this->encrypt = $service;
     }
-
-    /**
-     * @return \tachyon\components\Encrypt
-     */
-    public function getEncrypt()
-    {
-        if (is_null($this->encrypt)) {
-            $this->encrypt = \tachyon\dic\Container::getInstanceOf('Encrypt');
-        }
-        return $this->encrypt;
-    }
 }

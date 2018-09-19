@@ -22,15 +22,4 @@ trait Message
     {
         $this->msg = $service;
     }
-
-    /**
-     * @return \tachyon\components\Message
-     */
-    public function getMsg()
-    {
-        if (is_null($this->msg)) {
-            $this->msg = \tachyon\dic\Container::getInstanceOf('Message');
-        }
-        return $this->msg;
-    }
 }

@@ -23,7 +23,7 @@ class Message extends \tachyon\Component
     public function __construct()
     {
         // текстовые опции
-        $this->_messages = require("{$this->getConfig()->getOption('base_path')}/../app/config/lang/{$this->getLang()->getLanguage()}.php");
+        $this->_messages = require("{$this->get('config')->getOption('base_path')}/../app/config/lang/{$this->get('lang')->getLanguage()}.php");
     }
 
     /**

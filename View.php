@@ -36,7 +36,7 @@ class View extends Component
     public function __construct()
     {
         // путь к отображениям
-        $this->rootViewsPath = $this->viewsPath = $this->getConfig()->getOption('base_path') . '/../app/views';
+        $this->rootViewsPath = $this->viewsPath = $this->get('config')->getOption('base_path') . '/../app/views';
     }
 
 	/**

@@ -22,15 +22,4 @@ trait Active
     {
         $this->activeBehaviour = $service;
     }
-
-    /**
-     * @return \tachyon\behaviours\Active
-     */
-    public function getActiveBehaviour()
-    {
-        if (is_null($this->activeBehaviour)) {
-            $this->activeBehaviour = \tachyon\dic\Container::getInstanceOf('Active');
-        }
-        return $this->activeBehaviour;
-    }
 }
