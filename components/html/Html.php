@@ -276,10 +276,9 @@ class Html extends \tachyon\Component
         
         if (!empty($options['template'])) {
             // инициализируем путь для отображения
-            $view = $this->get('view');
-            $view->setViewsPath($this->get('config')->getOption('base_path') . '/tachyon/components/html/tpl');
+            $this->view->setViewsPath($this->get('config')->getOption('base_path') . '/tachyon/components/html/tpl');
             $model = $options['model'];
-            return $view->display($options['template'], compact('output', 'attrs', 'model'), true);
+            return $this->view->display($options['template'], compact('output', 'attrs', 'model'), true);
         }
         return $output;
     }

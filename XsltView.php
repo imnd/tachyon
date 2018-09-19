@@ -9,6 +9,7 @@ namespace tachyon;
  */
 class XsltView extends View
 {
+    use \tachyon\dic\DomDocument;
     use \tachyon\dic\XSLTProcessor;
 
 	/**
@@ -67,10 +68,9 @@ class XsltView extends View
      */
     private function _xsltTransform($xml, $tpl)
     {
-        $xsl = $this->get('Dom');
-        $xsl->load("{$this->viewsPath}/$tpl.xsl");
+        $this->domDocument->load("{$this->viewsPath}/$tpl.xsl");
         $proc = $this->xsltProcessor;
-        $proc->importStylesheet($xsl);
+        $proc->importStylesheet($this->domDocument);
         $doc = $this->get('Dom');
         $doc->loadXML($xml);
         return $proc->transformToXML($doc);

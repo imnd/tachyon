@@ -84,11 +84,11 @@ abstract class TableModel extends Model
         $modelFields = $this->getSelect();
         $tableName = static::$tableName;
         // алиасим поля и присобачиваем к массиву полей для выборки
-        $this->selectFields = array_merge($this->selectFields, $this->get('alias')->aliasFields($modelFields, $tableName));
+        $this->selectFields = array_merge($this->selectFields, $this->alias->aliasFields($modelFields, $tableName));
         // устанавливаем поля для выборки
         $this->select($this->selectFields);
 
-        $this->get('alias')->prependTableNameOnWhere($tableName, $this->getWhere(), $this);
+        $this->alias->prependTableNameOnWhere($tableName, $this->getWhere(), $this);
         // алиасим имя таблицы
         if (!is_null($this->tableAlias))
             $tableName .= " AS {$this->tableAlias}";
@@ -477,7 +477,7 @@ abstract class TableModel extends Model
                     $order = $val;
                     $colName = $key;
                 }
-                $colName = $this->get('alias')->aliasField($colName, static::$tableName);
+                $colName = $this->alias->aliasField($colName, static::$tableName);
                 $colName = $this->_orderByCast($colName);
                 $this->db->orderBy($colName, $order);
             }
@@ -676,7 +676,7 @@ abstract class TableModel extends Model
      */
     protected function getFieldsList()
     {
-        $fields = $this->get('alias')->aliasFields(static::$fields, static::$tableName);
+        $fields = $this->alias->aliasFields(static::$fields, static::$tableName);
         return implode(',', $fields);
     }
 
@@ -747,5 +747,15 @@ abstract class TableModel extends Model
     {
         $this->selectFields = $selectFields;
         return $this;
+    }
+
+    public function getDb()
+    {
+        return $this->db;
+    }
+
+    public function getJoin()
+    {
+        return $this->join;
     }
 }

@@ -10,6 +10,7 @@ namespace tachyon\db\models;
 abstract class Model extends \tachyon\Component
 {
     # геттеры/сеттеры DIC
+    use \tachyon\dic\Validator;
     use \tachyon\dic\Config;
     use \tachyon\dic\Lang;
 
@@ -77,10 +78,11 @@ abstract class Model extends \tachyon\Component
      */
     public function setAttributes(array $attributes)
     {
-        foreach ($attributes as $name => $value)
-            if (array_key_exists($name, $this->attributes))
+        foreach ($attributes as $name => $value) {
+            if (array_key_exists($name, $this->attributes)) {
                 $this->attributes[$name] = $value;
-
+            }
+        }
         return $this;
     }
 
@@ -184,7 +186,7 @@ abstract class Model extends \tachyon\Component
      */
     public function validate(array $attrs=null)
     {
-        $this->get('validator')->validate($this, $attrs);
+        $this->validator->validate($this, $attrs);
         return empty($this->validationErrors);
     }
 

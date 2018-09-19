@@ -277,6 +277,16 @@ class FormBuilder extends \tachyon\Component
         <?php
     }
 
+    public function setCsrfCheck($csrfCheck)
+    {
+        $this->_csrfCheck = (bool)$csrfCheck;
+    }
+
+    public function getCsrfCheck()
+    {
+        return $this->_csrfCheck;
+    }
+
     /**
      * Путь до ресурсов
      * 
@@ -287,13 +297,8 @@ class FormBuilder extends \tachyon\Component
         return '/assets/' . lcfirst($this->getClassName()) . '/';
     }
 
-    public function getCsrfCheck()
+    public function getHtml()
     {
-        return $this->_csrfCheck;
-    }
-
-    public function setCsrfCheck($csrfCheck)
-    {
-        $this->_csrfCheck = (bool)$csrfCheck;
+        return $this->html;
     }
 }

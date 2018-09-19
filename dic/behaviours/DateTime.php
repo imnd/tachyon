@@ -18,8 +18,19 @@ trait DateTime
      * @param \tachyon\behaviours\DateTime $service
      * @return void
      */
-    public function setDateTimeBehaviour(\tachyon\behaviours\DateTime $service)
+    public function setDateTime(\tachyon\behaviours\DateTime $service)
     {
         $this->dateTime = $service;
+    }
+
+    /**
+     * @return \tachyon\behaviours\DateTime
+     */
+    public function getDateTime()
+    {
+        if (is_null($this->dateTimeBehaviour)) {
+            $this->dateTimeBehaviour = \tachyon\dic\Container::getInstanceOf('DateTime');
+        }
+        return $this->dateTimeBehaviour;
     }
 }

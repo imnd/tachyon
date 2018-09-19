@@ -1,6 +1,6 @@
 <?php 
 /** @var tachyon\components\html\FormBuilder $form */
-$html = $form->get('html');
+$html = $form->getHtml();
 ?>
 <?=$html->div($elements['errors'])?>
 <form class="<?=$attrs["class"]?>" method="<?=$attrs["method"]?>" id="<?=$attrs["id"]?>" <?php if (isset($attrs["action"])) {?>action="<?=$attrs["action"]?>"<?php }?>>

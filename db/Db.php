@@ -117,7 +117,7 @@ class Db extends \tachyon\Component
         $this->_clearGroupBy();
         $this->_clearLimit();
 
-        if ($this->get('config')->getOption('mode')==='debug')
+        if ($this->config->getOption('mode')==='debug')
             $this->_explain($query, $conditions);
 
 		$stmt = self::$_conn->prepare($query);
