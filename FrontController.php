@@ -12,7 +12,6 @@ final class FrontController extends Component
     # сеттеры сервисов, которые внедряются в компонент
     use \tachyon\dic\OutputCache;
     use \tachyon\dic\Message;
-    use \tachyon\dic\Config;
 
 	/**
 	 * Обработка входящего запроса
@@ -51,7 +50,7 @@ final class FrontController extends Component
             $requestVars['files'] = $_FILES;
 
 		// запускаем соотв. контроллер
-		$this->startController($controllerName, $actionName, $requestVars);
+		$this->_startController($controllerName, $actionName, $requestVars);
 
         // кеширование
         $this->cache->end();
@@ -60,14 +59,16 @@ final class FrontController extends Component
     /**
      * запускаем контроллер
      */
-    public function startController($controllerName, $actionName, $requestVars)
+    private function _startController($controllerName, $actionName, $requestVars)
     {
-        $controller = $this->get(ucfirst($controllerName) . 'Controller');
+        $controllerName = ucfirst($controllerName) . 'Controller';
+        $error = 'Путь не найден';
+        if (!file_exists($this->config->getOption('base_path') . "/../app/controllers/$controllerName.php")) {
+            $this->_error(404, $error);
+        }
+        $controller = $this->get($controllerName);
         if (!method_exists($controller, $actionName)) {
-            // Вывод сообщения об ошибке
-            header("HTTP/1.0 404 Not Found");
-            echo "<div class='error'>$error</div>";
-            die;
+            $this->_error(404, $error);
         }
         // инициализация
         $controller->start($actionName, $requestVars);
@@ -76,6 +77,17 @@ final class FrontController extends Component
         $inlineVars = isset($requestVars['inline']) ? $requestVars['inline'] : null;
         $controller->$actionName($inlineVars);
         $controller->afterAction();
+    }
+    
+    /**
+     * обработчик неправильного запроса
+     */
+    private function _error($code, $error)
+    {
+        $codes = array(404 => 'Not Found');
+        header("HTTP/1.0 $code {$codes[$code]}");
+        echo $error;
+        die;
     }
 
     /**

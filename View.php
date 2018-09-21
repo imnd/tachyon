@@ -10,8 +10,7 @@ namespace tachyon;
  */
 class View extends Component
 {
-    # геттеры/сеттеры DIC
-    use \tachyon\dic\Config;
+    # сеттеры DIC
     use \tachyon\dic\Message;
     use \tachyon\dic\Html;
 

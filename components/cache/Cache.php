@@ -9,8 +9,6 @@ namespace tachyon\components\cache;
  */
 abstract class Cache extends \tachyon\Component
 {
-    use \tachyon\dic\Config;
-
     protected $duration = 60;
     protected $cacheFolder = '../runtime/cache/';
     protected $cacheFile = '';

@@ -93,6 +93,9 @@
         <property name="msg">
             <ref id="Message"/>
         </property>
+        <property name="cookie">
+            <ref id="Cookie"/>
+        </property>
         <property name="lang">
             <ref id="Lang"/>
         </property>

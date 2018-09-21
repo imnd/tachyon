@@ -9,9 +9,6 @@ namespace tachyon\db;
  */
 class Alias extends \tachyon\Component
 {
-    # геттеры/сеттеры DIC
-    use \tachyon\dic\Config;
-
     const PK_GLUE = '____';
     /**
      * обозначение первичного ключа

@@ -9,8 +9,10 @@ namespace tachyon;
  */
 class Controller extends Component
 {
-    # геттеры/сеттеры DIC
-    use \tachyon\dic\Config;
+    use \tachyon\traits\Authentication;
+
+    # сеттеры DIC
+    use \tachyon\dic\Cookie;
     use \tachyon\dic\Message;
     use \tachyon\dic\Lang;
     use \tachyon\dic\Db;
@@ -36,6 +38,16 @@ class Controller extends Component
      * @var $action string
      */
     protected $action;
+    /**
+     * Главное меню
+     * @var $mainMenu array
+     */
+    protected $mainMenu = array();
+    /**
+     * Меню страницы
+     * @var $subMenu array
+     */
+    protected $subMenu = array();
 
     # Переменные запроса
 
@@ -53,6 +65,12 @@ class Controller extends Component
     protected $files;
 
     protected $postActions = array();
+
+    /**
+     * Экшны только для аутентифицированных юзеров
+     * @var array $protectedActions
+     */
+    protected $protectedActions = array();
 
     /**
      * Инициализация
@@ -93,6 +111,9 @@ class Controller extends Component
      */
     public function beforeAction()
     {
+        if ($this->protectedActions==='*' || in_array($this->action, $this->protectedActions)) {
+            $this->checkAccess();
+        }
         return true;
     }
 
@@ -191,18 +212,53 @@ class Controller extends Component
         return htmlspecialchars($_SERVER['REQUEST_URI']);
     }
 
+    # сеттеры
+
+    /**
+     * @return array
+     */
+    public function setSubMenu(array $subMenu)
+    {
+        $this->subMenu = $subMenu;
+    }
+
     # геттеры
 
+    /**
+     * @return array
+     */
+    public function getMainMenu()
+    {
+        return $this->mainMenu;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSubMenu()
+    {
+        return $this->subMenu;
+    }
+
+    /**
+     * @return string
+     */
     public function getId()
     {
         return $this->id;
     }
 
+    /**
+     * @return string
+     */
     public function getLayout()
     {
         return $this->layout;
     }
 
+    /**
+     * @return string
+     */
     public function getLanguage()
     {
         return $this->language;

@@ -10,8 +10,7 @@ namespace tachyon\components;
  */
 class Message extends \tachyon\Component
 {
-    # геттеры/сеттеры DIC
-    use \tachyon\dic\Config;
+    # сеттеры DIC
     use \tachyon\dic\Lang;
 
     private $_messages;

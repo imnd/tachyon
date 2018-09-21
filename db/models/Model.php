@@ -9,9 +9,8 @@ namespace tachyon\db\models;
  */
 abstract class Model extends \tachyon\Component
 {
-    # геттеры/сеттеры DIC
+    # сеттеры DIC
     use \tachyon\dic\Validator;
-    use \tachyon\dic\Config;
     use \tachyon\dic\Lang;
 
     /**
@@ -40,7 +39,7 @@ abstract class Model extends \tachyon\Component
     /**
      * ошибки валидации
      */
-    protected $validationErrors = array();
+    protected $errors = array();
 
     public function __get($var)
     {
@@ -104,7 +103,9 @@ abstract class Model extends \tachyon\Component
      */
     public function getAttributeName($key)
     {
-        $attributeNames = static::$attributeNames;
+        if (!$attributeNames = static::$attributeNames) {
+            $attributeNames = array_combine(static::$fields, static::$fields);
+        }
         if (array_key_exists($key, $attributeNames)) {
             $attributeName = $attributeNames[$key];
             if (is_array($attributeName))
@@ -187,7 +188,7 @@ abstract class Model extends \tachyon\Component
     public function validate(array $attrs=null)
     {
         $this->validator->validate($this, $attrs);
-        return empty($this->validationErrors);
+        return empty($this->errors);
     }
 
     public function getRules($fieldName)
@@ -214,14 +215,31 @@ abstract class Model extends \tachyon\Component
     }
 
     /**
+     * Извлекает ошибку
+     * 
+     * @param $attr string
+     * @return string
+     */
+    public function getError($attr)
+    {
+        if (!empty($this->errors) && !empty($this->errors[$attr])) {
+            return implode(' ', $this->errors[$attr]);
+        }
+    }
+
+    /**
      * добавляет ошибку к списку ошибок
      * 
-     * @param $fieldName string
-     * @param $error string
+     * @param string $attr
+     * @param string $err
+     * @return void
      */
-    public function addValidationError($fieldName, $error)
+    public function addError($attr, $err)
     {
-        $this->validationErrors[$fieldName] = $error;
+        if (!isset($this->errors[$attr])) {
+            $this->errors[$attr] = [];
+        }
+        $this->errors[$attr][] = $err;
     }
     
     /**
@@ -229,33 +247,30 @@ abstract class Model extends \tachyon\Component
      * 
      * @param $errors array
      */
-    public function setValidationErrors(array $errors)
+    public function setErrors(array $errors)
     {
-        $this->validationErrors = $errors;
+        $this->errors = $errors;
         return $this;
     }    
 
     /**
-     * Извлекает ошибку
-     * 
-     * @param $fieldName string
-     * @return string
+     * @return boolean
      */
-    public function getValidationError($fieldName)
+    public function hasErrors()
     {
-        if (!empty($this->validationErrors) && !empty($this->validationErrors[$fieldName]))
-            return implode(' ', $this->validationErrors[$fieldName]);
+        return !empty($this->errors);
     }
 
     /**
      * Вывод всех сообщений об ошибках
+     * @return string
      */
-    public function getValidatErrsSummary()
+    public function getErrorsSummary()
     {
         $retArr = array();
-        foreach ($this->validationErrors as $key => $value)
-            $retArr[] = $this->getAttributeName($key) . ': ' . implode(' ', $value);
-
+        foreach ($this->errors as $key => $val) {
+            $retArr[] = $this->getAttributeName($key) . ': ' . implode(' ', $val);
+        }
         return implode('; ', $retArr);
     }
 

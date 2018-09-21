@@ -10,7 +10,6 @@ namespace tachyon\db\relations;
  */
 abstract class Relation extends \tachyon\Component
 {
-    use \tachyon\dic\Config;
     use \tachyon\dic\Join;
     use \tachyon\dic\Alias;
 

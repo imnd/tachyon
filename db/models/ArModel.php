@@ -63,6 +63,9 @@ abstract class ArModel extends TableModel
      */
     public function __construct()
     {
+        if (is_null(static::$tableName)) {
+            throw new \ErrorException('Не задано свойство $tableName');
+        }
         // добавляем внешние ключи по объявленным связям
         foreach ($this->relations as $with => &$relationParams) {
             $relationModel = $this->get($relationParams[0]);
@@ -77,16 +80,6 @@ abstract class ArModel extends TableModel
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->alias->getPrimKeyAliasArr($with));
             }
         }
-    }
-
-    /**
-     * @param string $singOrPlur число как грамматическая категория
-     * @return string
-     */
-    public function getEntityName($singOrPlur)
-    {
-        if (isset($this->entityNames[$singOrPlur]))
-            return $this->entityNames[$singOrPlur];
     }
 
     /**
@@ -223,7 +216,9 @@ abstract class ArModel extends TableModel
         $this->alias->aliasWhereTableNames($tableAliases, $this);
 
         // ВЫБИРАЕМ ЗАПИСИ
-        $items = $this->db->select($tableName);
+        if (!$items = $this->db->select($tableName))
+            return array();
+
         $this->clearSelect();
 
         $retItems = array();
@@ -444,5 +439,16 @@ abstract class ArModel extends TableModel
     public function getRelations()
     {
         return $this->relations;
+    }
+
+    /**
+     * @param string $singOrPlur число как грамматическая категория
+     * @return string
+     */
+    public function getEntityName($singOrPlur)
+    {
+        if (isset($this->entityNames[$singOrPlur])) {
+            return $this->entityNames[$singOrPlur];
+        }
     }
 }

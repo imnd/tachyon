@@ -9,7 +9,6 @@ namespace tachyon\components\html;
  */
 class FormBuilder extends \tachyon\Component
 {
-    use \tachyon\dic\Config;
     use \tachyon\dic\Html;
     use \tachyon\dic\Csrf;
     use \tachyon\dic\View;

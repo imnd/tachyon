@@ -7,9 +7,6 @@ namespace tachyon\db;
  */
 class Join extends \tachyon\Component
 {
-    # геттеры/сеттеры DIC
-    use \tachyon\dic\Config;
-
     public function innerJoin($join, $on, $alias, &$owner)
     {
         $this->setJoin($join, $on, 'INNER', $alias, $owner);

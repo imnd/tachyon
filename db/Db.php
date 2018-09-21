@@ -9,8 +9,7 @@ namespace tachyon\db;
  */
 class Db extends \tachyon\Component
 {
-    # DIC
-    use \tachyon\dic\Config;
+    # сеттеры DIC
     use \tachyon\dic\Message;
 
     /**

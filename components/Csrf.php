@@ -9,7 +9,7 @@ namespace tachyon\components;
  */
 class Csrf extends \tachyon\Component
 {
-    use \tachyon\dic\Config;
+    # сеттеры DIC
     use \tachyon\dic\Encrypt;
 
     public function __construct()

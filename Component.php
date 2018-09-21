@@ -10,6 +10,8 @@ namespace tachyon;
  */
 abstract class Component
 {
+    use \tachyon\dic\Config;
+
     /**
      * @var $properties array
      */

@@ -11,10 +11,8 @@ namespace tachyon\components;
  */
 class Cookie extends \tachyon\Component
 {
-    use \tachyon\dic\Config;
-
     /**
-     * Время жизни куки
+     * Время жизни куки дней
      * @var integer $duration
      */
     protected $duration;
@@ -26,14 +24,14 @@ class Cookie extends \tachyon\Component
         }
     }
     
-    public function setCookie($key, $val, $secure=false, $httpOnly = false)
+    public function setCookie($key, $val, $path = '/')
     {
-        setcookie($key, $val, time() + 86400 * $this->duration, $this->config->getOption('base_path'), $this->config->getOption('domain'), $secure, $httpOnly);
+        setcookie($key, $val, time() + 30 * 24 * 60 * $this->duration, $path);
     }
 
-    public function deleteCookie($key)
+    public function deleteCookie($key, $path = '/')
     {
-        setcookie($key, null, -1, '/', $this->config->getOption('domain'));
+        setcookie($key, null, -1, $path, $this->config->getOption('domain'));
     }
 
     /**

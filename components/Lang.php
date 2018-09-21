@@ -10,8 +10,7 @@ namespace tachyon\components;
  */
 class Lang extends \tachyon\Component
 {
-    # геттеры/сеттеры DIC
-    use \tachyon\dic\Config;
+    # сеттеры DIC
     use \tachyon\dic\Cookie;
 
     private $_lang;

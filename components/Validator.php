@@ -10,8 +10,7 @@ namespace tachyon\components;
  */
 class Validator extends \tachyon\Component
 {
-    # DIC
-    use \tachyon\dic\Config;
+    # сеттеры DIC
     use \tachyon\dic\Message;
     use \tachyon\dic\Csrf;
 
@@ -184,6 +183,6 @@ class Validator extends \tachyon\Component
                 }
             }
         }
-        $model->setValidationErrors($this->_errors);
+        $model->setErrors($this->_errors);
     }
 }

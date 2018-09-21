@@ -9,8 +9,7 @@ namespace tachyon\components\html;
  */
 class Html extends \tachyon\Component
 {
-    # геттеры/сеттеры DIC
-    use \tachyon\dic\Config;
+    # сеттеры DIC
     use \tachyon\dic\View;
 
     public function div($options=array(), $type='dual')
@@ -95,7 +94,7 @@ class Html extends \tachyon\Component
     {
         return $this->tag('span', array(
             'attrs' => array('class' => 'error'),
-            'contents' => $model->getValidationError($name)
+            'contents' => $model->getError($name)
         ), 'dual');
     }
 
@@ -103,7 +102,7 @@ class Html extends \tachyon\Component
     {
         return $this->tag('span', array(
             'attrs' => array('class' => 'error'),
-            'contents' => $model->getValidatErrsSummary()
+            'contents' => $model->getErrorsSummary()
         ), 'dual');
     }
 
