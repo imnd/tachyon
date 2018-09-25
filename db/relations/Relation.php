@@ -37,7 +37,7 @@ abstract class Relation extends \tachyon\Component
         $this->relationKeys = $this->get('alias')->appendSuffixToKeys(array_flip($params['relationKeys']), $this->aliasSuffix);
         $this->fields = $this->get('alias')->aliasFields($params['relationKeys'], $this->tableName, $this->aliasSuffix);
     }
-    
+
     /**
      * trimSuffixes
      * Убираем суффиксы у ключей
@@ -111,5 +111,10 @@ abstract class Relation extends \tachyon\Component
     public function getValues()
     {
         return $this->values;
+    }
+
+    public function getDb()
+    {
+        return $this->domain->getDb();
     }
 }

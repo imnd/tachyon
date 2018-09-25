@@ -16,6 +16,20 @@ abstract class Component
      * @var $properties array
      */
     protected $properties = array();
+    /**
+     * Объект, вызывающий сервис
+     * @var mixed $domain
+     */
+    protected $domain;
+
+    /**
+     * @param mixed $domain
+     * @return void
+     */
+    public function setDomain($domain = null)
+    {
+        $this->domain = $domain;
+    }
 
     public function setProperty($var, $val)
     {
@@ -38,19 +52,21 @@ abstract class Component
      */
     public function getService($serviceName, array $params = array())
     {
+        $params['domain'] = $this;
         $serviceName = ucfirst($serviceName);
         $varName = lcfirst($serviceName);
         if (property_exists($this, $varName)) {
             if (!is_null($this->$varName)) {
                 // если уже есть одноименная скалярная переменная
-                if (gettype($this->$varName)!='object')
-                    return \tachyon\dic\Container::getInstanceOf($serviceName, $params);
+                if (gettype($this->$varName)!='object') {
+                    return \tachyon\dic\Container::getInstanceOf($serviceName, $this, $params);
+                }
             } else {
-                $this->$varName = \tachyon\dic\Container::getInstanceOf($serviceName, $params);
+                $this->$varName = \tachyon\dic\Container::getInstanceOf($serviceName, $this, $params);
             }
             return $this->$varName;
         }
-        return \tachyon\dic\Container::getInstanceOf($serviceName, $params);
+        return \tachyon\dic\Container::getInstanceOf($serviceName, $this, $params);
     }
 
     /**

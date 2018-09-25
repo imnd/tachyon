@@ -83,7 +83,7 @@ class Validator extends \tachyon\Component
         if (empty($fieldVal))
             return;
 
-        if ($rows = $model->getAllByConditions(array($fieldName => $fieldVal)))
+        if ($rows = $model->getAll(array($fieldName => $fieldVal)))
             $this->_addError($fieldName, $this->msg->i18n('unique'));
     }    
 
@@ -142,8 +142,9 @@ class Validator extends \tachyon\Component
             if ($fieldRules = $model->getRules($fieldName)) {
                 if (isset($fieldRules['on'])) {
                     // если правило не применимо к сценарию
-                    if ($fieldRules['on']!==$model->scenario)
+                    if ($fieldRules['on']!==$model->scenario) {
                         continue;
+                    }
                     // убираем, чтобы не мешалось дальше
                     unset($fieldRules['on']);
                 }
@@ -151,8 +152,9 @@ class Validator extends \tachyon\Component
                     if (is_array($rule)) {
                         if (isset($rule['on'])) {
                             // если правило не применимо к сценарию
-                            if ($rule['on']!==$model->scenario)
+                            if ($rule['on']!==$model->scenario) {
                                 continue;
+                            }
                             // убираем, чтобы не мешалось дальше
                             unset($rule['on']);
                         }
