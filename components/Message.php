@@ -30,7 +30,6 @@ class Message extends \tachyon\Component
      */
     public function i18n($message)
     {
-        if (isset($this->_messages[$message]))
-            return $this->_messages[$message];
+        return $this->_messages[$message] ?? null;
     }
 }

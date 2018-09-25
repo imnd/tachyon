@@ -9,7 +9,7 @@ namespace tachyon\components\widgets;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Datepicker extends \tachyon\components\widgets\Widget
+class Datepicker extends Widget
 {
     protected $fieldNames;
     protected $format = 'YYYY-MM-DD';

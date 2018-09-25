@@ -25,22 +25,20 @@ class DateTime
     ));
 
     /**
-     * getDateReadable
-     * 
      * @param $glue string
      * @param $mode string (long | short)
      * @return string
      */
-    public function convDateToReadable($date, $glue=' ', $mode='long')
+    public function convDateToReadable($date, $glue=' ', $mode='long'): string
     {
         if (empty($date))
             return '';
 
         $dateArr = explode('-', $date);
         $dateArr = array_reverse($dateArr);
-        if ($mode==='long')
+        if ($mode==='long') {
             $dateArr[1] = $this->_months[$this->lang->getLanguage()]['long']['gen'][(int)$dateArr[1]-1];
-
+        }
         return implode($glue, $dateArr) . ' г.';
     }
 }

@@ -21,9 +21,7 @@ class Html extends \tachyon\Component
 
     public function formOpen($options=array())
     {
-        if (isset($options['method']))
-            $options['attrs']['method'] = $options['method'];
-
+        $options['attrs']['method'] = $options['method'] ?? null;
         return $this->tag('form', $options, 'open');
     }
     
@@ -235,8 +233,7 @@ class Html extends \tachyon\Component
             $options['attrs'] = array();
 
         foreach ($attrs as $attr)
-            if (isset($options[$attr]))
-                $options['attrs'][$attr] = $options[$attr];
+            $options['attrs'][$attr] = $options['attrs'][$attr] ?? null;
 
         return $options;
     }

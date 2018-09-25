@@ -19,9 +19,7 @@ class Cookie extends \tachyon\Component
 
     public function getCookie($key)
     {
-        if (isset($_COOKIE[$key])) {
-            return $_COOKIE[$key];
-        }
+        return $_COOKIE[$key] ?? null;
     }
     
     public function setCookie($key, $val, $path = '/')

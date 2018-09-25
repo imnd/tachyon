@@ -7,7 +7,7 @@ namespace tachyon\behaviours;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Active
+class Active extends \tachyon\Component
 {
     protected $activeField = 'active';
     protected $activeState = 1;
