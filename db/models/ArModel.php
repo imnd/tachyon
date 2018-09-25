@@ -80,6 +80,7 @@ abstract class ArModel extends TableModel
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->alias->getPrimKeyAliasArr($with));
             }
         }
+        return;
     }
 
     /**
