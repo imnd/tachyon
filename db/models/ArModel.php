@@ -295,7 +295,7 @@ abstract class ArModel extends TableModel
      * shortcut
      * @return \tachyon\db\models\ArModel
      */
-    public function findByPk($pk, $fields=null)
+    public function findByPk($pk)
     {
         $primKey = static::$primKey;
         if (is_array($primKey)) {
@@ -306,11 +306,10 @@ abstract class ArModel extends TableModel
             $condition = array($primKey => $pk);
         }
         $this->where($condition);
-        return $this->findOne($fields);
+        return $this->findOne();
     }
 
     /**
-     * findOneByAttrs
      * shortcut
      * @return \tachyon\db\models\ArModel
      */
@@ -321,7 +320,6 @@ abstract class ArModel extends TableModel
     }
 
     /**
-     * findOne
      * shortcut
      * @return \tachyon\db\models\ArModel
      */
@@ -330,7 +328,7 @@ abstract class ArModel extends TableModel
         if (!is_null($fields))
             $this->select($fields);
 
-        if (!$items = $this->findAll())
+        if (!$items = $this->limit(1)->findAll())
             return null;
 
         $item = array_shift($items);
@@ -447,8 +445,6 @@ abstract class ArModel extends TableModel
      */
     public function getEntityName($singOrPlur)
     {
-        if (isset($this->entityNames[$singOrPlur])) {
-            return $this->entityNames[$singOrPlur];
-        }
+        return $this->entityNames[$singOrPlur] ?? null;
     }
 }

@@ -20,6 +20,17 @@ trait DateTime
      */
     public function setDateTime(\tachyon\behaviours\DateTime $service)
     {
-        $this->dateTime = $service;
+          $this->dateTime = $service;
+    }
+
+    /**
+     * @return \tachyon\behaviours\DateTime
+     */
+    public function getDateTime()
+    {
+        if (is_null($this->dateTimeBehaviour)) {
+            $this->dateTimeBehaviour = \tachyon\dic\Container::getInstanceOf('DateTime');
+        }
+        return $this->dateTimeBehaviour;
     }
 }

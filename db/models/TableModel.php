@@ -71,10 +71,14 @@ abstract class TableModel extends Model
 
     /**
      * Все записи в виде массивов
+     * @param array $conditions условия поиска массив поле => значение
      * @return array
      */
-    public function getAll()
+    public function getAll(array $conditions = array()): array
     {
+        if (!empty($conditions))
+            $this->addWhere($conditions);
+
         $this->setDefaultSortBy();
         // устанавливаем массив полей для выборки
         $this->setSelect();
@@ -88,7 +92,7 @@ abstract class TableModel extends Model
         // устанавливаем поля для выборки
         $this->select($this->selectFields);
 
-        $this->alias->prependTableNameOnWhere($tableName, $this->getWhere(), $this);
+        $this->alias->prependTableNameOnWhere($tableName, $this->getWhere());
         // алиасим имя таблицы
         if (!is_null($this->tableAlias))
             $tableName .= " AS {$this->tableAlias}";
@@ -101,52 +105,14 @@ abstract class TableModel extends Model
     }
 
     /**
-     * getAllByAttrs
-     * 
      * @param $attrs array массив поле=>значение
      * @return array
      */
-    public function getAllByAttrs(array $attrs)
-    {
-        return $this
-            ->where($attrs)
-            ->getAll();
-    }
-
-    /**
-     * getOne
-     * 
-     * @return array
-     */
-    public function getOne()
+    public function getOne(array $conditions = array())
     {
         $this->db->setLimit(1);
-        if ($items = $this->getAll())
+        if ($items = $this->getAll($conditions))
             return $items[0];
-    }
-
-    /**
-     * @param $attrs array массив поле=>значение
-     * @return array
-     */
-    public function getOneByAttrs(array $attrs)
-    {
-        return $this
-            ->where($attrs)
-            ->getOne();
-    }
-
-    /**
-     * @param $conditions array
-     * @return array
-     */
-    public function getAllByConditions($conditions=array())
-    {
-        $items = $this
-            ->addWhere($conditions)
-            ->getAll();
-
-        return $items;
     }
 
     /**
@@ -190,7 +156,7 @@ abstract class TableModel extends Model
      * Хук на событие сохранения модели
      * @return boolean
      */
-    protected function afterSave()
+    protected function afterSave(): bool
     {
         return true;
     }
@@ -207,8 +173,7 @@ abstract class TableModel extends Model
             return false;
         
         $pk = static::$primKey;
-        $this->$pk = $lastInsertId;
-        return $lastInsertId;
+        return $this->$pk = $lastInsertId;
     }
 
     /**
@@ -232,7 +197,7 @@ abstract class TableModel extends Model
     /**
      * удаляет модель из БД
      */
-    public function delete()
+    public function delete(): bool
     {
         $pk = static::$primKey;
         if ($this->$pk)
@@ -591,7 +556,7 @@ abstract class TableModel extends Model
 
     public function join($join, $on=array(), $tblName=null)
     {
-        return $this->leftJoin($join, $on, $tblName, $this); 
+        return $this->leftJoin($join, $on, $tblName);
     }
 
     public function innerJoin($join, $on=array(), $tblName=null)
@@ -599,7 +564,7 @@ abstract class TableModel extends Model
         if (is_null($tblName))
             $tblName = $this->getTableAlias();
 
-        $this->join->innerJoin($join, $on, $tblName, $this);
+        $this->join->innerJoin($join, $on, $tblName);
         return $this; 
     }
 
@@ -608,7 +573,7 @@ abstract class TableModel extends Model
         if (is_null($tblName))
             $tblName = $this->getTableAlias();
 
-        $this->join->leftJoin($join, $on, $tblName, $this);
+        $this->join->leftJoin($join, $on, $tblName);
         return $this; 
     }
 
@@ -617,7 +582,7 @@ abstract class TableModel extends Model
         if (is_null($tblName))
             $tblName = $this->getTableAlias();
 
-        $this->join->rightJoin($join, $on, $tblName, $this);
+        $this->join->rightJoin($join, $on, $tblName);
         return $this; 
     }
 
@@ -626,7 +591,7 @@ abstract class TableModel extends Model
         if (is_null($tblName))
             $tblName = $this->getTableAlias();
 
-        $this->join->outerJoin($join, $on, $tblName, $this);
+        $this->join->outerJoin($join, $on, $tblName);
         return $this; 
     }
 
