@@ -10,7 +10,6 @@ namespace tachyon\components\widgets;
  */
 abstract class Widget extends \tachyon\Component
 {
-    # сеттеры DIC
     use \tachyon\traits\Configurable;
 
     /**

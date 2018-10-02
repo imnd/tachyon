@@ -27,10 +27,14 @@ class Container
         // Загружаем компоненты и параметры компонентов
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         $coreConfText = file_get_contents("$basePath/config/services.xml");
-        $coreConfText = str_replace('</services>', '', $coreConfText);
-        $appConfText = file_get_contents("$basePath/../../app/config/services.xml");
-        $appConfText = str_replace('<services>', '', $appConfText);
-        $elements = new \SimpleXMLElement($coreConfText . $appConfText);
+        $appConfPath = "$basePath/../../app/config/services.xml";
+        if (file_exists($appConfPath)) {
+            $appConfText = file_get_contents($appConfPath);
+            $appConfText = str_replace('<services>', '', $appConfText);
+            $coreConfText = str_replace('</services>', '', $coreConfText);
+            $coreConfText .= $appConfText;
+        }
+        $elements = new \SimpleXMLElement($coreConfText);
         foreach ($elements as $element) {
             self::_setConfig($element);
         }
@@ -76,7 +80,7 @@ class Container
      * @param array $params динамически назначаемые параметры
      * @return mixed
      */
-    public static function getInstanceOf($name, array $params = array())
+    public static function getInstanceOf($name, $domain = null, array $params = array())
     {
         if (!self::$_initialised) {
             self::_loadConfig();
@@ -85,6 +89,7 @@ class Container
 
         $config = self::$_config[$name];
 
+        $config['variables']['domain'] = $domain;
         if (!empty($config['singleton'])) {
             if (!isset(self::$_services[$name])) {
                 self::$_services[$name] = self::_createService($config, $params);
@@ -96,8 +101,9 @@ class Container
 
     private static function _createService($config, array $params = array())
     {
-        $className = self::_getParam($config, 'class');
+        $className = self::_getConfigParam($config, 'class');
         $service = new $className($params);
+
         self::_setProperties($service, $config);
 
         $parents = class_parents($service);
@@ -106,8 +112,11 @@ class Container
             if (!isset(self::$_config[$id]))
                 continue;
 
-            $config = self::$_config[$id];
-            self::_setProperties($service, $config);
+            $parentConfig = self::$_config[$id];
+            if (isset($config['domain'])) {
+                $parentConfig['variables']['domain'] = $config['domain'];
+            }
+            self::_setProperties($service, $parentConfig);
         }
         return $service;
     }
@@ -120,16 +129,17 @@ class Container
      */
     private static function _setProperties($service, $config)
     {
-        if ($variables = self::_getParam($config, 'variables')) {
+        if ($variables = self::_getConfigParam($config, 'variables')) {
             foreach ($variables as $name => $val) {
                 self::_setProperty($service, $name, $val);
             }
         }
-        if ($subServices = self::_getParam($config, 'services')) {
+        if ($subServices = self::_getConfigParam($config, 'services')) {
             foreach ($subServices as $name => $subServiceConf) {
-                $subServiceConfig = self::$_config[$subServiceConf['id']];
-                $subServiceConfig['variables'] = array_merge($subServiceConfig['variables'], $subServiceConf['variables']);
-                $subService = self::_createService($subServiceConfig);
+                $subServConfig = self::$_config[$subServiceConf['id']];
+                $subServConfig['variables'] = array_merge($subServConfig['variables'], $subServiceConf['variables']);
+                $subServConfig['variables']['domain'] = $service;
+                $subService = self::_createService($subServConfig);
                 self::_setProperty($service, $name, $subService);
             }
         }
@@ -155,11 +165,17 @@ class Container
             $service->$setterMethod($val);
             return;
         }
-        throw new \ErrorException("Невозможно установить свойство $name в сервис " . get_class($service));
+        //throw new \ErrorException("Невозможно установить свойство $name в сервис " . get_class($service));
     }
 
-    private static function _getParam($config, $param)
+    private static function _getConfigParam($config, $param)
     {
-        if (isset($config[$param])) return $config[$param];
+        if (isset($config[$param]))
+            return $config[$param];
+    }
+
+    private static function _setConfigParam(&$config, $param, $val)
+    {
+        $config[$param] = $val;
     }
 }

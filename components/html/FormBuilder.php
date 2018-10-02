@@ -96,22 +96,11 @@ class FormBuilder extends \tachyon\Component
         $attrs = $this->_options['attrs'];
         $this->_options = array_merge($this->_options, $options);
 
-        if (isset($this->_options['class']))
-            $this->_options['attrs']['class'] = $this->_options['class'];
-
-        if (isset($this->_options['action']))
-            $this->_options['attrs']['action'] = $this->_options['action'];
-        else
-            $this->_options['attrs']['action'] = '';
-
-        if (isset($this->_options['method']))
-            $this->_options['attrs']['method'] = $this->_options['method'];
-
-        if (isset($this->_options['submitCaption']))
-            $this->_options['text']['submitCaption'] = $this->_options['submitCaption'];
-
-        if (!isset($this->_options['final']))
-            $this->_options['final'] = true;
+        $this->_options['attrs']['class'] = $this->_options['class'] ?? null;
+        $this->_options['attrs']['action'] = $this->_options['action'] ?? '';
+        $this->_options['attrs']['method'] = $this->_options['method'] ?? null;
+        $this->_options['text']['submitCaption'] = $this->_options['submitCaption'] ?? null;
+        $this->_options['final'] = $this->_options['final'] ?? true;
 
         // генерируем для каждой формы уникальный id и уникальный name если он не задан в $options
         $this->_options['attrs']['id'] = $this->_options['attrs']['name'] = $this->_options['defId'] . '_frm_' . $this->_formCnt++;

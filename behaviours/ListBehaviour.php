@@ -7,7 +7,7 @@ namespace tachyon\behaviours;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class ListBehaviour
+class ListBehaviour extends \tachyon\Component
 {
     /**
      * Поле модели, которое попадает в подпись элемента селекта

@@ -7,24 +7,24 @@ namespace tachyon\db;
  */
 class Join extends \tachyon\Component
 {
-    public function innerJoin($join, $on, $alias, &$owner)
+    public function innerJoin($join, $on, $alias)
     {
-        $this->setJoin($join, $on, 'INNER', $alias, $owner);
+        $this->setJoin($join, $on, 'INNER', $alias);
     }
     
-    public function leftJoin($join, $on, $alias, &$owner)
+    public function leftJoin($join, $on, $alias)
     {
-        $this->setJoin($join, $on, 'LEFT', $alias, $owner);
+        $this->setJoin($join, $on, 'LEFT', $alias);
     }
     
-    public function rightJoin($join, $on, $alias, &$owner)
+    public function rightJoin($join, $on, $alias)
     {
-        $this->setJoin($join, $on, 'RIGHT', $alias, $owner);
+        $this->setJoin($join, $on, 'RIGHT', $alias);
     }
     
-    public function outerJoin($join, $on, $alias, &$owner)
+    public function outerJoin($join, $on, $alias)
     {
-        $this->setJoin($join, $on, 'FULL OUTER', $alias, $owner);
+        $this->setJoin($join, $on, 'FULL OUTER', $alias);
     }
     
     /**
@@ -39,7 +39,7 @@ class Join extends \tachyon\Component
      * @param $alias string алиас главной таблицы запроса
      * @return 
      */
-    public function setJoin($join, $on, $mode, $alias, &$owner)
+    public function setJoin($join, $on, $mode, $alias)
     {
         if (is_array($join)) {
             $joinKeys = array_keys($join);
@@ -53,8 +53,8 @@ class Join extends \tachyon\Component
             $onCond = " $alias.{$on[0]}=$tblName.{$on[1]} ";
         else
             $onCond = " $on ";
-        
-        $owner->getDb()->setJoin($expr, $onCond, $mode);
+
+        $this->domain->getDb()->setJoin($expr, $onCond, $mode);
 
         return $this;
     }

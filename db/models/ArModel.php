@@ -80,6 +80,7 @@ abstract class ArModel extends TableModel
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->alias->getPrimKeyAliasArr($with));
             }
         }
+        return;
     }
 
     /**
@@ -170,8 +171,11 @@ abstract class ArModel extends TableModel
      * 
      * @return array
      */
-    public function findAll()
+    public function findAll($conditions = array())
     {
+        if (!empty($conditions))
+            $this->addWhere($conditions);
+
         // кеширование
         $cacheKey = json_encode($this->getTableName())
                   . json_encode($this->getSelect())
@@ -295,47 +299,32 @@ abstract class ArModel extends TableModel
      * shortcut
      * @return \tachyon\db\models\ArModel
      */
-    public function findByPk($pk, $fields=null)
+    public function findByPk($pk)
     {
         $primKey = static::$primKey;
         if (is_array($primKey)) {
-            $condition = array_combine($primKey, $pk);
+            $conditions = array_combine($primKey, $pk);
         } elseif (is_string($primKey)) {
             $primKeyArr = $this->alias->aliasFields(array($primKey), static::$tableName);
             $primKey = $primKeyArr[0];
-            $condition = array($primKey => $pk);
+            $conditions = array($primKey => $pk);
         }
-        $this->where($condition);
-        return $this->findOne($fields);
+        return $this->findOne($conditions);
     }
 
     /**
-     * findOneByAttrs
-     * shortcut
      * @return \tachyon\db\models\ArModel
      */
-    public function findOneByAttrs(array $attrs=array(), $fields=null)
+    public function findOne($conditions = array())
     {
-        $this->addWhere($attrs);
-        return $this->findOne($fields);
-    }
-
-    /**
-     * findOne
-     * shortcut
-     * @return \tachyon\db\models\ArModel
-     */
-    public function findOne($fields=null)
-    {
-        if (!is_null($fields))
-            $this->select($fields);
-
-        if (!$items = $this->findAll())
-            return null;
-
-        $item = array_shift($items);
-        $item->isNew = false;
-        return $item;
+        if ($items = $this
+            ->limit(1)
+            ->findAll($conditions)
+        ) {
+            $item = $items[0];
+            $item->isNew = false;
+            return $item;
+        }
     }
 
     public function with($with)
@@ -447,8 +436,6 @@ abstract class ArModel extends TableModel
      */
     public function getEntityName($singOrPlur)
     {
-        if (isset($this->entityNames[$singOrPlur])) {
-            return $this->entityNames[$singOrPlur];
-        }
+        return $this->entityNames[$singOrPlur] ?? null;
     }
 }

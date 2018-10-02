@@ -173,7 +173,7 @@ class Controller extends Component
 
         if (empty($view))
             $view = lcfirst($this->action);
-        
+
         $this->view->layout($view, $vars);
 	}
 

@@ -20,10 +20,8 @@ final class FrontController extends Component
 	public function dispatch()
 	{
         $requestUri = $_SERVER['REQUEST_URI'];
-
         // кеширование
         $this->cache->start($requestUri);
-
         // разбираем запрос
 		$requestArr = explode('/', $requestUri);
         array_shift($requestArr);
@@ -44,14 +42,10 @@ final class FrontController extends Component
             $requestVars = array_merge_recursive($requestVars, $this->_parseRequest($requestArr));
         }
         // прибавляем переменные $_POST и $_FILES
-        if (isset($_POST))
-            $requestVars['post'] = $_POST;
-        if (isset($_FILES))
-            $requestVars['files'] = $_FILES;
-
+        $requestVars['post'] = $_POST ?? null;
+        $requestVars['files'] = $_FILES ?? null;
 		// запускаем соотв. контроллер
 		$this->_startController($controllerName, $actionName, $requestVars);
-
         // кеширование
         $this->cache->end();
 	}

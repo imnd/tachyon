@@ -44,8 +44,7 @@ abstract class Model extends \tachyon\Component
     public function __get($var)
     {
         // в случае, если есть такое поле и его значение задано
-        if (isset($this->attributes[$var]))
-            return $this->attributes[$var];
+        return $this->attributes[$var] ?? null;
     }
 
     public function __set($var, $val)
@@ -174,7 +173,7 @@ abstract class Model extends \tachyon\Component
      * 
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return array();
     }

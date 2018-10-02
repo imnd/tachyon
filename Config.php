@@ -7,7 +7,7 @@ namespace tachyon;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Config
+class Config /*extends \tachyon\Component*/
 {
     private $_options = array();
 	private $_fileName = '../app/config/main.php';
@@ -26,9 +26,6 @@ class Config
      */
     public function getOption($optionName)
     {
-        if (isset($this->_options[$optionName]))
-            return $this->_options[$optionName];
-        if (isset($this->_options['site_vars'][$optionName]))
-            return $this->_options['site_vars'][$optionName];
+        return $this->_options[$optionName] ?? $this->_options['site_vars'][$optionName] ?? null;
     }
 }

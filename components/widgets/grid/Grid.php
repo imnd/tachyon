@@ -89,10 +89,7 @@ class Grid extends \tachyon\components\widgets\Widget
                 $action = $button;
                 $btnOptions = array();
             } else {
-                if (isset($button['action']))
-                    $action = $button['action'];
-                else
-                    $action = $key;
+                $action = $button['action'] ?? $key;
                 $btnOptions = $button;
             }
             if (!isset($btnOptions['captioned']))
@@ -103,10 +100,7 @@ class Grid extends \tachyon\components\widgets\Widget
 
             $btnOptions['htmlOptions']['class'] = "button-$action";
 
-            if (isset($btnOptions['title']))
-                $btnOptions['htmlOptions']['title'] = $btnOptions['title'];
-            else
-                $btnOptions['htmlOptions']['title'] = $this->msg->i18n($action);
+            $btnOptions['htmlOptions']['title'] = $btnOptions['title'] ?? $this->msg->i18n($action);
 
             if (isset($btnOptions['vars']))
                 $action .= '/' . implode('/', array_map(
