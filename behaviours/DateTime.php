@@ -9,7 +9,7 @@ use tachyon\helpers\DateTimeHelper;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class DateTime
+class DateTime extends \tachyon\Component
 {
     use \tachyon\dic\Lang;
 
@@ -39,7 +39,7 @@ class DateTime
         $dateArr = explode('-', $date);
         $dateArr = array_reverse($dateArr);
         if ($mode==='long')
-            $dateArr[1] = $this->_months[$this->lang->getLanguage()]['long']['gen'][(int)$dateArr[1]-1];
+            $dateArr[1] = $this->_months[$this->get('lang')->getLanguage()]['long']['gen'][(int)$dateArr[1] - 1];
 
         return implode($glue, $dateArr) . ' г.';
     }
