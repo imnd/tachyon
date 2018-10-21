@@ -82,6 +82,7 @@ if (empty($items)) {?>
 
 <?php $this->display('_btnHandler', compact('buttons', 'items', 'csrfJson', 'widget'))?>
 
+<script type="text/javascript" src="/assets/js/ajax.js"></script>
 <script type="text/javascript" src="<?=$widget->getAssetsPath()?>sort.js"></script>
 <script>
     // включаем обработчики

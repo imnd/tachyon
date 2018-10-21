@@ -243,7 +243,7 @@ class FormBuilder extends \tachyon\Component
             echo $this->jsCode("
             dom.findById('submit_$formId').onclick = function() {
                 validation.msgContainerId = 'errors_list';
-                if (validation.Run(" . $model->getValidationFieldsJs($params['fields']) . ")) {
+                if (validation.run(" . $model->getValidationFieldsJs($params['fields']) . ")) {
                     $formHandler;
                 }
                 return false;
@@ -261,6 +261,7 @@ class FormBuilder extends \tachyon\Component
         ?>
         <link rel="stylesheet" href="<?=$assetsPath?>style.css">
         <!-- Скрипт валидации -->
+        <script type="text/javascript" src="/assets/js/obj.js"></script>
         <script type="text/javascript" src="<?=$assetsPath?>validation.js"></script>
         <?php
     }
