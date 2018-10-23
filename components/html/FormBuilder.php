@@ -261,7 +261,7 @@ class FormBuilder extends \tachyon\Component
         ?>
         <link rel="stylesheet" href="<?=$assetsPath?>style.css">
         <!-- Скрипт валидации -->
-        <script type="text/javascript" src="/assets/js/obj.js"></script>
+        <?=\tachyon\helpers\AssetHelper::getCore("obj.js")?>
         <script type="text/javascript" src="<?=$assetsPath?>validation.js"></script>
         <?php
     }

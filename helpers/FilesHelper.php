@@ -131,7 +131,6 @@ class FilesHelper
 
     public static function base64ToData($string)
     {
-        $string = substr($string, strpos($string, 'base64') + 7);
-        return base64_decode($string);
+        return base64_decode(substr($string, strpos($string, 'base64') + 7));
     }
 }

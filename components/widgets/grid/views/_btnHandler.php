@@ -1,4 +1,4 @@
-<script type="text/javascript" src="/assets/js/ajax.js"></script>
+<?=\tachyon\helpers\AssetHelper::getCore("ajax.js")?>
 <?php
 foreach ($buttons as $key => $button) {
     $action = $button['action'];
