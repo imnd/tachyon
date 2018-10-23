@@ -18,45 +18,39 @@ class FilesHelper
     public static function spliceChunks($files, $fileName)
     {
         $spliceFileName = self::UPLOAD_DIR . $fileName;
-        self::deleteFile($spliceFileName);
-        if (!$handle = fopen($spliceFileName, 'a')) {
-            return false;
-        }
-        flock($handle, LOCK_EX);
-        $success = true;
+        $success = self::writeFile($spliceFileName, '');
         foreach ($files as $file) {
             $chunkFileName = self::CHUNKS_DIR . $file;
             if ($fileContents = self::readFile($chunkFileName, true)) {
-                $success = $success && fwrite($handle, self::base64ToData($fileContents));
+                $success = $success && self::writeFile($spliceFileName, $fileContents, true);
             }
             self::deleteFile($chunkFileName);
         }
-        fclose($handle);
         return $success;
-        
-        /*$success = self::writeFile($spliceFileName, '');
-        foreach ($files as $file) {
-            $chunkFileName = self::CHUNKS_DIR . $file;
-            if ($fileContents = self::readFile($chunkFileName, true)) {
-                $success = $success && self::writeFile($spliceFileName, self::base64ToData($fileContents), true);
-            }
-            self::deleteFile($chunkFileName);
-        }
-        return $success;*/
     }
 
     /**
      * Загрузка части файла на сервер
      * 
-     * @param string $name
+     * @param string $tmpName
      * @return boolean
      */
-    public static function saveChunk($name)
+    public static function saveChunk($tmpName)
     {
-        if ($fileContents = self::readFile($name)) {
-            return self::writeFile(self::CHUNKS_DIR . 'chunk_' . str_pad($_GET['fileNum'], 4, 0, STR_PAD_LEFT), $fileContents);
+        if ($fileContents = self::readFile($tmpName)) {
+            return self::writeFile(self::CHUNKS_DIR . 'chunk_' . str_pad($_GET['fileNum'], 4, 0, STR_PAD_LEFT), self::base64ToData($fileContents));
         }
         return false;
+    }
+
+    /**
+     * Количество сохраненных кусков. Считаем с нуля
+     * 
+     * @return array
+     */
+    public static function getChunkNames()
+    {
+        return self::getDirFileNames(self::CHUNKS_DIR);
     }
 
     /**
@@ -84,9 +78,11 @@ class FilesHelper
         if (!is_file($fileName)) {
             return false;
         }
-        $handle = fopen($fileName, 'r');
         // если в файл пишется контент ждем
-        while (!flock($handle, LOCK_EX|LOCK_NB, $wouldblock)) {
+        while (
+               !$handle = fopen($fileName, 'r')
+            or !flock($handle, LOCK_EX|LOCK_NB, $wouldBlock)
+        ) {
             sleep(1);
         }
         $fileContents = fread($handle, filesize($fileName));
@@ -103,10 +99,12 @@ class FilesHelper
      */
     public static function writeFile($fileName, $fileContents, $append = false)
     {
-        if (!$handle = fopen($fileName, $append ? 'a' : 'w')) {
-            return false;
+        while (
+               !$handle = fopen($fileName, $append ? 'a' : 'w')
+            or !flock($handle, LOCK_EX, $wouldBlock)
+        ) {
+            sleep(1);
         }
-        flock($handle, LOCK_EX);
         fwrite($handle, $fileContents);
         fclose($handle);
         return true;
@@ -116,24 +114,24 @@ class FilesHelper
      * Количество файлов. Считаем с нуля
      * 
      * @param string $dirPath
-     * @return integer
+     * @return array
      */
-    public static function getFiles($dirPath)
+    public static function getDirFileNames($dirPath)
     {
-        $files = [];
+        $fileNames = [];
         $dir = dir($dirPath);
         while ($str = $dir->read()){
             if ($str{0} != '.') {
-                $files[] = $str;
+                $fileNames[] = $str;
             };
         } 
         $dir->close();
-        return $files;
+        return $fileNames;
     }
 
     public static function base64ToData($string)
     {
-        $data = explode(',', $string);
-        return base64_decode($data[1]);
+        $string = substr($string, strpos($string, 'base64') + 7);
+        return base64_decode($string);
     }
 }
