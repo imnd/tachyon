@@ -21,26 +21,31 @@ class AssetManager
      */
     public static $files = array();
 
-    public function css($name, $source, $target = array('assets', 'css'))
+    public function css($name, $target = array('assets', 'css'), $source = null)
     {
-        return $this->_publish("$name.css", $source, $target, 'link');
+        return $this->_publish("$name.css", $target, $source, 'link');
     }
 
-    public function js($name, $source, $target = array('assets', 'js'))
+    public function js($name, $target = array('assets', 'js'), $source = null)
     {
-        return $this->_publish("$name.js", $source, $target, 'script');
+        return $this->_publish("$name.js", $target, $source, 'script');
     }
 
     public function coreJs($name)
     {
-        return $this->_publish("$name.js", self::SOURCE_JS_PATH, array('assets', 'js', 'core'), 'script');
+        return $this->_publish("$name.js", array('assets', 'js', 'core'), self::SOURCE_JS_PATH, 'script');
     }
 
-    private function _publish($name, $source, $target, $tag)
+    private function _publish($name, $target, $source=null, $tag)
     {
+        if (!is_array($target))
+            $target = explode('/', $target);
+
         $targetPath = implode('/', $target) . "/$name";
         if (!isset(self::$files[$targetPath])) {
-            $this->_copyFile($name, $source, $target);
+            if (!is_null($source))
+                $this->_copyFile($name, $source, $target);
+
             return self::$files[$targetPath] = $this->$tag($targetPath);
         }
         return '';
