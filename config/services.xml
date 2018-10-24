@@ -32,6 +32,7 @@
     <service id="OutputCache" class="\tachyon\components\cache\Output" singleton="true"></service>
     <service id="DbCache" class="\tachyon\components\cache\Db" singleton="true"></service>
 
+    <service id="AssetManager" class="\tachyon\components\AssetManager" singleton="true"></service>
     <service id="Message" class="\tachyon\components\Message" singleton="true">
         <property name="lang">
             <ref id="Lang"/>
@@ -82,6 +83,9 @@
         </property>
     </service>
     <service id="View" class="\tachyon\View">
+        <property name="assetManager">
+            <ref id="AssetManager"/>
+        </property>
         <property name="msg">
             <ref id="Message"/>
         </property>

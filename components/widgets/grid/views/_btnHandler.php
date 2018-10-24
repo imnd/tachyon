@@ -1,4 +1,4 @@
-<?=\tachyon\helpers\AssetHelper::getCore("ajax.js")?>
+<?=$this->assetManager->publishJs("ajax")?>
 <?php
 foreach ($buttons as $key => $button) {
     $action = $button['action'];

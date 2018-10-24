@@ -1,19 +1,19 @@
 <?php
-namespace tachyon\helpers;
+namespace tachyon\components;
 
 /**
- * class AssetHelper
+ * class AssetManager
  * Работа с JS скриптами
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class AssetHelper
+class AssetManager
 {
     /** @const Путь к опубликованным скриптам */
     const ASSETS_PATH = __DIR__ . '/../../../public/assets';
     /** @const Путь к исходникам скриптов */
-    const SOURCE_PATH = __DIR__ . '/../js';
+    const SOURCE_JS_PATH = __DIR__ . '/../js';
 
     /**
      * Опубликованные скрипты
@@ -21,15 +21,17 @@ class AssetHelper
      */
     public static $scripts;
     
-    public static function getCore($name)
+    public static function publishJs($name)
     {
+        $name .= '.js';
         if (!isset(self::$scripts[$name])) {
-            return self::$scripts[$name] = self::publish($name);
+            self::copyFile($name, self::SOURCE_JS_PATH);
+            return self::$scripts[$name] = "<script type=\"text/javascript\" src=\"/assets/js/core/$name\"></script>";
         }
         return '';
     }
 
-    public static function publish($name)
+    public static function copyFile($name, $sourcePath)
     {
         $jsPath = self::ASSETS_PATH;
         if (!is_dir($jsPath)) {
@@ -45,8 +47,6 @@ class AssetHelper
         }
         $jsPath .= "/$name";
         if (!is_file($jsPath))
-            copy(self::SOURCE_PATH . "/$name", $jsPath);
-
-        return "<script type=\"text/javascript\" src=\"/assets/js/core/$name\"></script>";
+            copy("$sourcePath/$name", $jsPath);
     }
 }

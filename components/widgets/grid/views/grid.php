@@ -82,7 +82,7 @@ if (empty($items)) {?>
 
 <?php $this->display('_btnHandler', compact('buttons', 'items', 'csrfJson', 'widget'))?>
 
-<?=\tachyon\helpers\AssetHelper::getCore("ajax.js")?>
+<?=$this->assetManager->publishJs("ajax")?>
 <script type="text/javascript" src="<?=$widget->getAssetsPath()?>sort.js"></script>
 <script>
     // включаем обработчики
