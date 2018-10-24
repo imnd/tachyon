@@ -1,4 +1,4 @@
-<?=$this->assetManager->publishJs("ajax")?>
+<?=$this->assetManager->js("ajax")?>
 <?php
 foreach ($buttons as $key => $button) {
     $action = $button['action'];

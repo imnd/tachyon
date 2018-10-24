@@ -21,17 +21,17 @@ class AssetManager
      */
     public static $scripts;
     
-    public static function publishJs($name)
+    public function js($name)
     {
         $name .= '.js';
         if (!isset(self::$scripts[$name])) {
-            self::copyFile($name, self::SOURCE_JS_PATH);
+            $this->copyFile($name, self::SOURCE_JS_PATH);
             return self::$scripts[$name] = "<script type=\"text/javascript\" src=\"/assets/js/core/$name\"></script>";
         }
         return '';
     }
 
-    public static function copyFile($name, $sourcePath)
+    public function copyFile($name, $sourcePath)
     {
         $jsPath = self::ASSETS_PATH;
         if (!is_dir($jsPath)) {
