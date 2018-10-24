@@ -10,8 +10,8 @@ namespace tachyon\components;
  */
 class AssetManager
 {
-    /** @const Путь к опубликованным скриптам */
-    const ASSETS_PATH = __DIR__ . '/../../../public/assets';
+    /** @const Папка www */
+    const PUBLIC_PATH = __DIR__ . '/../../../public';
     /** @const Путь к исходникам скриптов */
     const SOURCE_JS_PATH = __DIR__ . '/../js';
 
@@ -19,37 +19,63 @@ class AssetManager
      * Опубликованные скрипты
      * @var string $scripts
      */
-    public static $files;
-    
-    public function js($name)
+    public static $files = array();
+
+    public function css($name, $source, $target = array('assets', 'css'))
     {
-        $name .= '.js';
-        if (!isset(self::$files[$name])) {
-            $this->copyFile($name, self::SOURCE_JS_PATH);
-            return self::$files[$name] = "<script type=\"text/javascript\" src=\"/assets/js/core/$name\"></script>";
+        return $this->_publish("$name.css", $source, $target, 'link');
+    }
+
+    public function js($name, $source, $target = array('assets', 'js'))
+    {
+        return $this->_publish("$name.js", $source, $target, 'script');
+    }
+
+    public function coreJs($name)
+    {
+        return $this->_publish("$name.js", self::SOURCE_JS_PATH, array('assets', 'js', 'core'), 'script');
+    }
+
+    private function _publish($name, $source, $target, $tag)
+    {
+        $targetPath = implode('/', $target) . "/$name";
+        if (!isset(self::$files[$targetPath])) {
+            $this->_copyFile($name, $source, $target);
+            return self::$files[$targetPath] = $this->$tag($targetPath);
         }
         return '';
     }
 
-    public function copyFile($name, $sourcePath)
+    /**
+     * @param string $path путь
+     * @return string
+     */
+    private function script($path)
     {
-        $path = self::ASSETS_PATH;
-        if (is_file("$path/js/core/$name"))
+        return "<script type=\"text/javascript\" src=\"/$path\"></script>";
+    }
+
+    /**
+     * @param string $path путь
+     * @return string
+     */
+    private function link($path)
+    {
+        return "<link rel=\"stylesheet\" href=\"/$path\">";
+    }
+
+    private function _copyFile($name, $source, $pathArr)
+    {
+        if (is_file(implode('/', $pathArr) . "/$name"))
             return;
 
-        if (!is_dir($path)) {
-            mkdir($path);
+        $path = self::PUBLIC_PATH;
+        foreach ($pathArr as $subPath) {
+            $path .= "/$subPath";
+            if (!is_dir($path))
+                mkdir($path);
         }
-        $path .= '/js';
-        if (!is_dir($path)) {
-            mkdir($path);
-        }
-        $path .= '/core';
-        if (!is_dir($path)) {
-            mkdir($path);
-        }
-        $path .= "/$name";
-        if (!is_file($path))
-            copy("$sourcePath/$name", $path);
+
+        copy("$source/$name", "$path/$name");
     }
 }

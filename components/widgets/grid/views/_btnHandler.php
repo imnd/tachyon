@@ -1,4 +1,4 @@
-<?=$this->assetManager->js("ajax")?>
+<?=$this->assetManager->coreJs("ajax")?>
 <?php
 foreach ($buttons as $key => $button) {
     $action = $button['action'];

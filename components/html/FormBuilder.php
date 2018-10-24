@@ -248,13 +248,15 @@ class FormBuilder extends \tachyon\Component
      */
     private function _renderScripts()
     {
-        $assetsPath = '/assets/' . lcfirst($this->getClassName()) . '/';
-        ?>
-        <link rel="stylesheet" href="<?=$assetsPath?>style.css">
-        <!-- Скрипт валидации -->
-        <?=$this->view->get('assetManager')->js('obj')?>
-        <script type="text/javascript" src="<?=$assetsPath?>validation.js"></script>
-        <?php
+        $assetManager = $this->view->get('assetManager');
+        $assetsSrcPath = __DIR__ . '/assets';
+        $assetsTarget = array('assets', lcfirst($this->getClassName()));
+        echo
+            $assetManager->coreJs('obj'),
+            $assetManager->css('style', $assetsSrcPath, $assetsTarget),
+            // Скрипт валидации
+            $assetManager->js('validation', $assetsSrcPath, $assetsTarget)
+        ;
     }
 
     public function getCsrfCheck()

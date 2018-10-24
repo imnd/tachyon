@@ -10,6 +10,8 @@ namespace tachyon\components\widgets;
  */
 abstract class Widget extends \tachyon\Component
 {
+    use \tachyon\dic\AssetManager;
+
     use \tachyon\traits\Configurable;
 
     /**
@@ -69,7 +71,17 @@ abstract class Widget extends \tachyon\Component
             ->setViewsPath($this->getViewPath())
             ->display($view, $vars, $return);
     }
-    
+
+    /**
+     * Путь до ресурсов
+     * 
+     * @return string
+     */
+    public function getAssetsPath()
+    {
+        return DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'widgets' . DIRECTORY_SEPARATOR . strtolower($this->getClassName()) . DIRECTORY_SEPARATOR;
+    }
+
     /**
      * getViewPath
      * 
@@ -80,16 +92,6 @@ abstract class Widget extends \tachyon\Component
         $reflection = new \ReflectionClass($this);
         $directory = dirname($reflection->getFileName());
         return $directory . DIRECTORY_SEPARATOR . 'views';
-    }
-
-    /**
-     * Путь до ресурсов
-     * 
-     * @return string
-     */
-    public function getAssetsPath()
-    {
-        return DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'widgets' . DIRECTORY_SEPARATOR . strtolower($this->getClassName()) . DIRECTORY_SEPARATOR;
     }
     
     public function setController($controller)
