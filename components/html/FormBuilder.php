@@ -5,7 +5,7 @@ namespace tachyon\components\html;
  * Построитель форм
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2010 IMND
  */
 class FormBuilder extends \tachyon\Component
 {
@@ -52,11 +52,6 @@ class FormBuilder extends \tachyon\Component
         )
     );
     /**
-     * @var integer $_tokenId
-     */
-    private $_tokenId;
-    private $_tokenVal;
-    /**
      * Счетчик формы
      * @var integer $_formCnt
      */
@@ -75,10 +70,7 @@ class FormBuilder extends \tachyon\Component
      */
     public function __construct($options=array())
     {
-        if (true===$this->_csrfCheck = $this->get('config')->getOption('csrf_check')) {
-            $this->_tokenId = $this->csrf->getTokenId();
-            $this->_tokenVal = $this->csrf->getTokenVal();
-        }
+        $this->_csrfCheck = $this->get('config')->getOption('csrf_check');
         // текстовые
         $this->_options['text'] = $this->_options['text'][$this->get('config')->getOption('lang')];
 	}
@@ -187,7 +179,7 @@ class FormBuilder extends \tachyon\Component
                 'attrs' => array('class' => 'msg clear'),
                 'contents' => $this->_options['text']['required']
             );
-            
+
         $elements = array_merge($elements, compact('controls'));
         // кнопка submit
         $elements['submit'] = array(
@@ -211,13 +203,13 @@ class FormBuilder extends \tachyon\Component
                 'attrs' => array(
                     'type' => 'hidden',
                     'id' => 'csrf',
-                    'name' => $this->_tokenId,
-                    'value' => $this->_tokenVal,
+                    'name' => $this->csrf->getTokenId(),
+                    'value' => $this->csrf->getTokenVal(),
                 ),
             );
 
         if ($this->_options['final'])
-            $this->_outputScripts();
+            $this->_renderScripts();
 
         $this->view->display($this->_options['view'], array(
             'form' => $this,
@@ -252,12 +244,11 @@ class FormBuilder extends \tachyon\Component
 	}
 
     /**
-     * _outputScripts
      * Выводим скрипты и стили формы
      */
-    private function _outputScripts()
+    private function _renderScripts()
     {
-        $assetsPath = $this->getAssetsPath();
+        $assetsPath = '/assets/' . lcfirst($this->getClassName()) . '/';
         ?>
         <link rel="stylesheet" href="<?=$assetsPath?>style.css">
         <!-- Скрипт валидации -->
@@ -266,28 +257,8 @@ class FormBuilder extends \tachyon\Component
         <?php
     }
 
-    public function setCsrfCheck($csrfCheck)
-    {
-        $this->_csrfCheck = (bool)$csrfCheck;
-    }
-
     public function getCsrfCheck()
     {
         return $this->_csrfCheck;
-    }
-
-    /**
-     * Путь до ресурсов
-     * 
-     * @return string
-     */
-    public function getAssetsPath()
-    {
-        return '/assets/' . lcfirst($this->getClassName()) . '/';
-    }
-
-    public function getHtml()
-    {
-        return $this->html;
     }
 }

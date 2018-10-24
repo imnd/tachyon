@@ -19,34 +19,37 @@ class AssetManager
      * Опубликованные скрипты
      * @var string $scripts
      */
-    public static $scripts;
+    public static $files;
     
     public function js($name)
     {
         $name .= '.js';
-        if (!isset(self::$scripts[$name])) {
+        if (!isset(self::$files[$name])) {
             $this->copyFile($name, self::SOURCE_JS_PATH);
-            return self::$scripts[$name] = "<script type=\"text/javascript\" src=\"/assets/js/core/$name\"></script>";
+            return self::$files[$name] = "<script type=\"text/javascript\" src=\"/assets/js/core/$name\"></script>";
         }
         return '';
     }
 
     public function copyFile($name, $sourcePath)
     {
-        $jsPath = self::ASSETS_PATH;
-        if (!is_dir($jsPath)) {
-            mkdir($jsPath);
+        $path = self::ASSETS_PATH;
+        if (is_file("$path/js/core/$name"))
+            return;
+
+        if (!is_dir($path)) {
+            mkdir($path);
         }
-        $jsPath .= '/js';
-        if (!is_dir($jsPath)) {
-            mkdir($jsPath);
+        $path .= '/js';
+        if (!is_dir($path)) {
+            mkdir($path);
         }
-        $jsPath .= '/core';
-        if (!is_dir($jsPath)) {
-            mkdir($jsPath);
+        $path .= '/core';
+        if (!is_dir($path)) {
+            mkdir($path);
         }
-        $jsPath .= "/$name";
-        if (!is_file($jsPath))
-            copy("$sourcePath/$name", $jsPath);
+        $path .= "/$name";
+        if (!is_file($path))
+            copy("$sourcePath/$name", $path);
     }
 }

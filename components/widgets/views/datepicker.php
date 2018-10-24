@@ -2,7 +2,7 @@
 <script src="<?=$assetsPath?>moment.js"></script>
 <script src="<?=$assetsPath?>pikaday.js"></script>
 <script>
-    <?php foreach ($fieldNames as $fieldName) { ?>
+    <?php foreach ($fieldNames as $fieldName) {?>
         var <?=$id?> = new Pikaday({
             field: dom.findByName("<?=$fieldName?>"),
             format: "<?=$format?>",
@@ -11,5 +11,5 @@
             maxDate: new Date(2020, 12, 31),
             yearRange: [2000, 2020],
         });
-    <?php } ?>
+    <?php }?>
 </script>

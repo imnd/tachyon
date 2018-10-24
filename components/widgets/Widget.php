@@ -65,7 +65,7 @@ abstract class Widget extends \tachyon\Component
 
         $vars['widget'] = $this;
 
-        $this->getService('view')
+        return $this->getService('view')
             ->setViewsPath($this->getViewPath())
             ->display($view, $vars, $return);
     }
