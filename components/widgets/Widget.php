@@ -3,7 +3,7 @@ namespace tachyon\components\widgets;
 
 /**
  * class Widget
- * Папа для всех виджетов
+ * Предок всех виджетов
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
@@ -37,17 +37,18 @@ abstract class Widget extends \tachyon\Component
 
     public function __construct()
     {
-        if (is_null($this->view))
+        if (is_null($this->view)) {
             $this->view = lcfirst(get_called_class());
-
-        if (is_null($this->id))
+        }
+        if (is_null($this->id)) {
             $this->id = strtolower($this->getClassName()) . '_' . uniqid();
+        }
     }
 
     /**
      * Запуск
      */
-    public abstract function run();
+    abstract public function run();
 
     /**
      * Отображает файл представления $view
@@ -57,7 +58,7 @@ abstract class Widget extends \tachyon\Component
      * @param $vars array переменные представления
      * @param $return boolean показывать или возвращать 
      */
-    protected function display($view='', array $vars=array(), $return=null)
+    protected function display($view = '', array $vars = array(), $return = null)
     {
         if (empty($view))
             $view = strtolower($this->getClassName());
@@ -73,13 +74,47 @@ abstract class Widget extends \tachyon\Component
     }
 
     /**
+     * Выводит скрипт виджета
+     * 
+     * @param string $name
+     * @return string
+     */
+    public function js($name)
+    {
+        return $this->assetManager->js($name, $this->getAssetsPublicPath() . '/', $this->getAssetsSourcePath());
+    }
+
+    /**
+     * Выводит стиль виджета
+     * 
+     * @param string $name
+     * @return string
+     */
+    public function css($name)
+    {
+        return $this->assetManager->css($name, $this->getAssetsPublicPath() . '/', $this->getAssetsSourcePath());
+    }
+
+    # геттеры
+
+    /**
      * Путь до ресурсов
      * 
      * @return string
      */
-    public function getAssetsPath()
+    public function getAssetsPublicPath()
     {
-        return DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'widgets' . DIRECTORY_SEPARATOR . strtolower($this->getClassName()) . DIRECTORY_SEPARATOR;
+        return '/widgets/' . strtolower($this->getClassName());
+    }
+
+    /**
+     * Путь до ресурсов
+     * 
+     * @return string
+     */
+    public function getAssetsSourcePath()
+    {
+        return __DIR__ . '/assets';
     }
 
     /**

@@ -17,7 +17,6 @@ class Datepicker extends Widget
     public function run()
     {
         $text = $this->display('datepicker', array(
-            'assetsPath' => $this->getAssetsPath(),
             'id' => $this->id,
             'fieldNames' => $this->fieldNames,
             'format' => $this->format,

@@ -1,6 +1,9 @@
-<link rel="stylesheet" href="<?=$assetsPath?>css/pikaday.css">
-<script src="<?=$assetsPath?>moment.js"></script>
-<script src="<?=$assetsPath?>pikaday.js"></script>
+<?=
+$this->domain->css("pikaday"),
+$this->domain->js("moment"),
+$this->domain->js("pikaday")
+?>
+
 <script>
     <?php foreach ($fieldNames as $fieldName) {?>
         var <?=$id?> = new Pikaday({

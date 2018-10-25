@@ -1,6 +1,8 @@
-<?php /** @var \tachyon\components\widgets\Widget $widget */?>
-<link rel="stylesheet" href="<?=$widget->getAssetsPath()?>style.css" type="text/css" media="screen"/>
 <?php
+/**
+ * @var \tachyon\components\widgets\Widget $widget
+ */
+
 // search form
 $this->display('_search', compact('model', 'searchFields', 'widget'));
 
@@ -55,7 +57,7 @@ if (empty($items)) {?>
             
             $button['htmlOptions']['href'] = eval('return "' . $button['htmlOptions']['href'] . '";');
             ?>
-            <td><a <?php foreach ($button['htmlOptions'] as $key=> $value) {echo $key?>="<?=$value?>" <?php }?>>
+            <td><a <?php foreach ($button['htmlOptions'] as $key => $value) { echo $key?>="<?=$value?>" <?php }?>>
                 <?php if ($button['captioned']) {echo $button['htmlOptions']['title'];}?>
             </a></td>
         <?php
@@ -82,8 +84,12 @@ if (empty($items)) {?>
 
 <?php $this->display('_btnHandler', compact('buttons', 'items', 'csrfJson', 'widget'))?>
 
-<?=$this->assetManager->coreJs("ajax")?>
-<script type="text/javascript" src="<?=$widget->getAssetsPath()?>sort.js"></script>
+<?=
+$this->assetManager->coreJs("ajax"),
+$this->domain->js("sort"),
+$this->domain->css("style")
+?>
+
 <script>
     // включаем обработчики
     window.onload = function() {

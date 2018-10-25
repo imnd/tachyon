@@ -120,9 +120,9 @@ class FilesHelper
     {
         $fileNames = [];
         $dir = dir($dirPath);
-        while ($str = $dir->read()){
-            if ($str{0} != '.') {
-                $fileNames[] = $str;
+        while ($fileName = $dir->read()) {
+            if ($fileName{0} != '.') {
+                $fileNames[] = $fileName;
             };
         } 
         $dir->close();

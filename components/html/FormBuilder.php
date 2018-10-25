@@ -9,6 +9,8 @@ namespace tachyon\components\html;
  */
 class FormBuilder extends \tachyon\Component
 {
+    # сеттеры DIC
+    use \tachyon\dic\AssetManager;
     use \tachyon\dic\Html;
     use \tachyon\dic\Csrf;
     use \tachyon\dic\View;
@@ -248,14 +250,13 @@ class FormBuilder extends \tachyon\Component
      */
     private function _renderScripts()
     {
-        $assetManager = $this->view->get('assetManager');
-        $assetsSrcPath = __DIR__ . '/assets';
-        $assetsTarget = array('assets', lcfirst($this->getClassName()));
+        $assetsSourcePath = __DIR__ . '/assets';
+        $assetsPublicPath = lcfirst($this->getClassName());
         echo
-            $assetManager->coreJs('obj'),
-            $assetManager->css('style', $assetsSrcPath, $assetsTarget),
-            // Скрипт валидации
-            $assetManager->js('validation', $assetsSrcPath, $assetsTarget)
+            $this->assetManager->coreJs('obj'),
+            $this->assetManager->css('style', $assetsPublicPath, $assetsSourcePath),
+            // скрипт валидации
+            $this->assetManager->js('validation', $assetsPublicPath, $assetsSourcePath)
         ;
     }
 

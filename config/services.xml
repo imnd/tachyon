@@ -32,7 +32,7 @@
     <service id="OutputCache" class="\tachyon\components\cache\Output" singleton="true"></service>
     <service id="DbCache" class="\tachyon\components\cache\Db" singleton="true"></service>
 
-    <service id="AssetManager" class="\tachyon\components\AssetManager" singleton="true"></service>
+    <service id="AssetManager" class="\tachyon\components\AssetManager"></service>
     <service id="Message" class="\tachyon\components\Message" singleton="true">
         <property name="lang">
             <ref id="Lang"/>
@@ -58,6 +58,9 @@
 
     <service id="Html" class="\tachyon\components\html\Html" singleton="true"></service>
     <service id="FormBuilder" class="\tachyon\components\html\FormBuilder">
+        <property name="assetManager">
+            <ref id="AssetManager"/>
+        </property>
         <property name="csrf">
             <ref id="Csrf"/>
         </property>
@@ -66,6 +69,11 @@
         </property>
         <property name="view">
             <ref id="View"/>
+        </property>
+    </service>
+    <service id="Widget" class="\tachyon\components\widgets\Widget">
+        <property name="assetManager">
+            <ref id="AssetManager"/>
         </property>
     </service>
 

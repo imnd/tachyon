@@ -69,6 +69,8 @@ class Grid extends \tachyon\components\widgets\Widget
 
     public function run()
     {
+        $this->assetManager->publishFolder('images', 'assets' . $this->getAssetsPublicPath(), $this->getAssetsSourcePath());
+
         if (true===$this->config->getOption('csrf_check')) {
             // компонент защиты от csrf-атак
             $this->csrfJson = '"' . $this->csrf->getTokenId() . '":"' . $this->csrf->getTokenVal() . '",';
@@ -133,6 +135,16 @@ class Grid extends \tachyon\components\widgets\Widget
     }
 
     # геттеры
+
+    /**
+     * Путь до ресурсов
+     * 
+     * @return string
+     */
+    public function getAssetsSourcePath()
+    {
+        return __DIR__ . '/assets';
+    }
 
     public function getConfirmMsgs()
     {

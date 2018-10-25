@@ -13,7 +13,18 @@ class AssetManager
     /** @const Папка www */
     const PUBLIC_PATH = __DIR__ . '/../../../public';
     /** @const Путь к исходникам скриптов */
-    const SOURCE_JS_PATH = __DIR__ . '/../js';
+    const CORE_JS_SOURCE_PATH = __DIR__ . '/../js';
+
+    /**
+     * Путь к публичной папке со скриптами
+     * @var string $assetsPath
+     */
+    private $assetsPublicPath = 'assets';
+    /**
+     * Путь к папке со скриптами
+     * @var string $assetsSource
+     */
+    private $assetsSourcePath;
 
     /**
      * Опубликованные скрипты
@@ -21,32 +32,49 @@ class AssetManager
      */
     public static $files = array();
 
-    public function css($name, $target = array('assets', 'css'), $source = null)
+    public function css($name, $publicPath = 'css', $sourcePath = null)
     {
-        return $this->_publish("$name.css", $target, $source, 'link');
+        return $this->_publishFile('link', "$name.css", $publicPath, $sourcePath);
     }
 
-    public function js($name, $target = array('assets', 'js'), $source = null)
+    public function js($name, $publicPath = 'js', $sourcePath = null)
     {
-        return $this->_publish("$name.js", $target, $source, 'script');
+        return $this->_publishFile('script', "$name.js", $publicPath, $sourcePath);
     }
 
     public function coreJs($name)
     {
-        return $this->_publish("$name.js", array('assets', 'js', 'core'), self::SOURCE_JS_PATH, 'script');
+        return $this->_publishFile('script', "$name.js", 'js/core', self::CORE_JS_SOURCE_PATH);
     }
 
-    private function _publish($name, $target, $source=null, $tag)
+    public function publishFolder($dirName, $publicPath = null, $sourcePath = null)
     {
-        if (!is_array($target))
-            $target = explode('/', $target);
+        if (is_null($sourcePath))
+            $sourcePath = $this->assetsSourcePath;
 
-        $targetPath = implode('/', $target) . "/$name";
-        if (!isset(self::$files[$targetPath])) {
-            if (!is_null($source))
-                $this->_copyFile($name, $source, $target);
+        if (is_null($publicPath))
+            $publicPath = $this->assetsPublicPath;
 
-            return self::$files[$targetPath] = $this->$tag($targetPath);
+        $sourcePath .= "/$dirName";
+        $publicPath .= "/$dirName";
+        $dir = dir($sourcePath);
+        while ($fileName = $dir->read()) {
+            if ($fileName{0} != '.') {
+                $this->_copyFile($fileName, $sourcePath, $publicPath);
+            };
+        } 
+        $dir->close();
+    }
+
+    private function _publishFile($tag, $name, $publicPath, $sourcePath = null)
+    {
+        $publicPath = "{$this->assetsPublicPath}/$publicPath";
+        $filePath = "$publicPath/$name";
+        if (!isset(self::$files[$filePath])) {
+            if (!is_null($sourcePath) && !is_file($filePath)) {
+                $this->_copyFile($name, $sourcePath, $publicPath);
+            }
+            return self::$files[$filePath] = $this->$tag($filePath);
         }
         return '';
     }
@@ -66,21 +94,37 @@ class AssetManager
      */
     private function link($path)
     {
-        return "<link rel=\"stylesheet\" href=\"/$path\">";
+        return "<link rel=\"stylesheet\" href=\"/$path\" type=\"text/css\" media=\"screen\">";
     }
 
-    private function _copyFile($name, $source, $pathArr)
+    private function _copyFile($name, $sourcePath, $publicPath)
     {
-        if (is_file(implode('/', $pathArr) . "/$name"))
-            return;
-
+        $publicPathArr = explode('/', $publicPath);
         $path = self::PUBLIC_PATH;
-        foreach ($pathArr as $subPath) {
+        foreach ($publicPathArr as $subPath) {
             $path .= "/$subPath";
-            if (!is_dir($path))
+            if (!is_dir($path)) {
                 mkdir($path);
+            }
         }
+        copy("$sourcePath/$name", "$path/$name");
+    }
 
-        copy("$source/$name", "$path/$name");
+    /**
+     * @param string $path
+     * @return void
+     */
+    public function setAssetsPublicPath($path)
+    {
+        $this->assetsPublicPath = $path;
+    }
+
+    /**
+     * @param string $path
+     * @return void
+     */
+    public function setAssetsSourcePath($path)
+    {
+        $this->assetsSourcePath = $path;
     }
 }
