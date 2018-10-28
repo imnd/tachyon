@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\db\models;
 
+use tachyon\exceptions\ModelException;
+
 /**
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
@@ -10,6 +12,7 @@ namespace tachyon\db\models;
 abstract class ArModel extends TableModel
 {
     use \tachyon\dic\DbCache;
+    use \tachyon\dic\Message;
 
     protected $entityNames = array();
     /**
@@ -64,7 +67,7 @@ abstract class ArModel extends TableModel
     public function __construct()
     {
         if (is_null(static::$tableName)) {
-            throw new \ErrorException('Не задано свойство $tableName');
+            throw new ModelException($this->msg->i18n('Property "tableName" is not set'));
         }
         // добавляем внешние ключи по объявленным связям
         foreach ($this->relations as $with => &$relationParams) {
@@ -341,7 +344,7 @@ abstract class ArModel extends TableModel
     public function setWith($with)
     {
         if (!$relationParams = $this->relations[$with]) {
-            throw new \Exception("Связь $with не объявлена в классе: " . get_called_class());
+            throw new ModelException($this->msg->i18n('Relation "%relation" not declared in class: ' . get_called_class(), array('relation' => $with)));
         }
         $relType = $relationParams[1];
         $relationClassName = ucfirst(str_replace('_', '', $relType)) . 'Relation';
@@ -351,7 +354,7 @@ abstract class ArModel extends TableModel
             'linkKey' => $relationParams[2],
             'relationKeys' => $relationParams[3],
         ))) {
-            throw new \Exception("Связь $relType не объявлена в классе: " . get_called_class());
+            throw new ModelException($this->msg->i18n('Relation "%relation" not declared in class: ' . get_called_class(), array('relation' => $relType)));
         }
         $this->relationClasses[$with] = $relation;
 
@@ -394,7 +397,7 @@ abstract class ArModel extends TableModel
             $joinModel = $this->get($relation[0]);
             return array($joinModel::$tableName => $join[$relationName]);
         }
-        throw new \Exception("Определите условие присоединения таблицы $join");
+        throw new ModelException($this->msg->i18n('Determine the join condition of the table %table', array('table' => $join)));
     }
 
     /**
@@ -415,7 +418,7 @@ abstract class ArModel extends TableModel
             $on = $tableName . "." . static::$primKey . "=" . $join[$relationName] . "." . $relation[2];
             return $on;
         }
-        throw new \Exception("Определите условие присоединения таблицы $join");
+        throw new ModelException($this->msg->i18n('Determine the join condition of the table %table', array('table' => $join)));
     }
 
     public function joinRelation($join)

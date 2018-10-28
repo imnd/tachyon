@@ -1,6 +1,8 @@
 <?php
 namespace tachyon;
 
+use tachyon\exceptions\HttpException;
+
 /**
  * Базовый класс для всех контроллеров
  * 
@@ -74,7 +76,11 @@ class Controller extends Component
 
     /**
      * Инициализация
+     * 
+     * @param string $actionName
+     * @param array $requestVars
      * @return void
+     * @throws HttpException
      */
     public function start($actionName, array $requestVars = array())
     {
@@ -85,7 +91,7 @@ class Controller extends Component
 
         // проверка на isRequestPost по списку экшнов
         if (in_array($actionName, $this->postActions) && !$this->isRequestPost()) {
-            throw new \Exception("Action $actionName allowed only through post request");
+            throw new HttpException($this->msg->i18n('Action %action allowed only through post request.', array('action' => $actionName)), HttpException::BAD_REQUEST);
         }
         $this->action = $actionName;
 
@@ -129,11 +135,12 @@ class Controller extends Component
      */
     public function init()
     {
-        
     }
 
     /**
      * Устанавливает переменную запроса $name
+     * 
+     * @param array $requestVars
      * @param string $name
      */
     private function _setRequestVar($requestVars, $name)
@@ -149,23 +156,23 @@ class Controller extends Component
      * @param $view string файл представления
      * @param $vars array переменные представления
      * @param $return boolean показывать или возвращать 
+     * @return string
      */
     public function display($view=null, array $vars=array(), $return=false)
 	{
-		if (empty($view))
+		if (empty($view)) {
             $view = lcfirst($this->action);
-        
+        }
         return $this->view->display($view, $vars, $return);
 	}
 
 	/**
-     * Отображает файл представления 
-     * передавая ему параметря в виде массива
-     * в заданном лэйауте
+     * Отображает файл представления, передавая ему параметры
+     * в виде массива в заданном лэйауте
      * 
      * @param $view string
      * @param $vars array 
-     * @return
+     * @return string
      */
     public function layout($view=null, array $vars=array())
 	{
@@ -181,7 +188,7 @@ class Controller extends Component
      * Перенаправляет пользователя на адрес: $path
      * 
      * @param $path string
-     * @return
+     * @return void
      */
     public function redirect($path)
 	{
@@ -189,8 +196,6 @@ class Controller extends Component
 	}
 
     /**
-     * Find out is request post
-     * 
      * @return boolean
      */
     public function isRequestPost()
@@ -198,46 +203,27 @@ class Controller extends Component
         return $_SERVER['REQUEST_METHOD']==='POST';
     }
 
+    /**
+     * Шорткат
+     * 
+     * @param $queryType string
+     * @return string
+     * @throws HttpException
+     */
     public function getQuery($queryType)
     {
-        $queryTypes = array('get', 'post', 'files');
-        if (!in_array($queryType, $queryTypes))
-            throw new \Exception('Недопустимый тип запроса.');
-
+        if (!in_array($queryType, array('get', 'post', 'files'))) {
+            throw new HttpException($this->msg->i18n('Invalid request type.', array('action' => $actionName)), HttpException::BAD_REQUEST);
+        }
         return $this->$queryType;
     }
 
+    /**
+     * @return string
+     */
     public function getRoute()
     {
         return htmlspecialchars($_SERVER['REQUEST_URI']);
-    }
-
-    # сеттеры
-
-    /**
-     * @return array
-     */
-    public function setSubMenu(array $subMenu)
-    {
-        $this->subMenu = $subMenu;
-    }
-
-    # геттеры
-
-    /**
-     * @return array
-     */
-    public function getMainMenu()
-    {
-        return $this->mainMenu;
-    }
-
-    /**
-     * @return array
-     */
-    public function getSubMenu()
-    {
-        return $this->subMenu;
     }
 
     /**

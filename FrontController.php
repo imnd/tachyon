@@ -1,6 +1,8 @@
 <?php
 namespace tachyon;
 
+use tachyon\exceptions\HttpException;
+
 /**
  * Front Controller приложения
  * 
@@ -65,12 +67,16 @@ final class FrontController extends Component
             $this->_error(404, $error);
         }
         // инициализация
-        $controller->start($actionName, $requestVars);
-        // запускаем
-        $controller->beforeAction();
-        $inlineVars = isset($requestVars['inline']) ? $requestVars['inline'] : null;
-        $controller->$actionName($inlineVars);
-        $controller->afterAction();
+        try {
+            $controller->start($actionName, $requestVars);
+            // запускаем
+            $controller->beforeAction();
+            $inlineVars = isset($requestVars['inline']) ? $requestVars['inline'] : null;
+            $controller->$actionName($inlineVars);
+            $controller->afterAction();
+        } catch (HttpException $e) {
+            $this->_error($e->getCode(), $e->getMessage());
+        }
     }
     
     /**
@@ -78,8 +84,7 @@ final class FrontController extends Component
      */
     private function _error($code, $error)
     {
-        $codes = array(404 => 'Not Found');
-        header("HTTP/1.0 $code {$codes[$code]}");
+        http_response_code($code);
         echo $error;
         die;
     }

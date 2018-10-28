@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\db;
 
+use tachyon\exceptions\DataBaseException;
+
 /**
  * ДБАЛ (на PDO)
  * 
@@ -44,14 +46,15 @@ class Db extends \tachyon\Component
         // подключаем ДБ
         $this->_connect();
             
-        if ($this->get('config')->getOption('mode')!=='debug')
+        if ($this->get('config')->getOption('mode')!=='debug') {
             return;
-
+        }
         // путь к файлу explain для запросов
         self::$explainPath = '../runtime/explain.xls';
         // удаляем файл
-        if (file_exists(self::$explainPath))
+        if (file_exists(self::$explainPath)) {
             unlink(self::$explainPath);
+        }
     }
 
     /**
@@ -61,9 +64,9 @@ class Db extends \tachyon\Component
      */
     private function _connect()
     {
-        if (!is_null(self::$_conn))
+        if (!is_null(self::$_conn)) {
             return;
-
+        }
         try {
             $dbOptions = $this->get('config')->getOption('db');
             self::$_conn = new \PDO(
@@ -74,7 +77,7 @@ class Db extends \tachyon\Component
             );
             self::$_conn->exec('set names ' . $dbOptions['char_set']);
         } catch (\PDOException $e) {
-            throw new \Exception($this->get('msg')->i18n('conn_err'));
+            throw new DataBaseException($this->get('msg')->i18n('conn_err'));
         }
     }
 
@@ -93,10 +96,7 @@ class Db extends \tachyon\Component
         $stmt = self::$_conn->prepare("SHOW TABLES LIKE ?");
         $this->_execute($stmt, array(str_replace('`', '', $tableName)));
         // если такая таблица существует
-        if (count($stmt->fetchAll())>0)
-            return true;
-
-        return false;
+        return (count($stmt->fetchAll()) > 0);
     }
     
 	public function select($tblName, $where=array(), $fields=array())
@@ -473,10 +473,10 @@ class Db extends \tachyon\Component
     private function _execute($stmt, $fields=null)
     {
         if (!$stmt->execute($fields)) {
-            if ('00000' == self::$_conn->errorCode())
-                return false;
+            //if ('00000' == self::$_conn->errorCode())
+                //return false;
 
-            throw new \Exception($this->msg->i18n('db_err') . ': ' . serialize(self::$_conn->errorInfo()));
+            throw new DataBaseException($this->msg->i18n('db_err') . ': ' . serialize(self::$_conn->errorInfo()));
         }
         return true;
     }

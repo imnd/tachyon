@@ -13,23 +13,48 @@ class Message extends \tachyon\Component
     # сеттеры DIC
     use \tachyon\dic\Lang;
 
-    private $_messages;
+    private $_messages = array();
 
     /**
      * Инициализация
+     * 
      * @return void
      */
     public function __construct()
     {
-        // текстовые опции
-        $this->_messages = require("{$this->get('config')->getOption('base_path')}/../app/config/lang/{$this->get('lang')->getLanguage()}.php");
+        $this->loadMessages("{$this->get('config')->getOption('base_path')}/tachyon/config/lang/{$this->get('lang')->getLanguage()}.php");
+        $this->loadMessages("{$this->get('config')->getOption('base_path')}/../app/config/lang/{$this->get('lang')->getLanguage()}.php");
     }
 
     /**
-     * извлечение текстовых сообщений
+     * @param string $path
+     * @return void
      */
-    public function i18n($message)
+    private function loadMessages($path)
     {
-        return $this->_messages[$message] ?? null;
+        if (is_file($path)) {
+            $this->_messages = array_merge($this->_messages, require($path));
+        }
+    }
+
+    /**
+     * Перевод текстового сообщения
+     * 
+     * @param string $msg
+     * @param array $vars
+     * @return string
+     */
+    public function i18n($msg, $vars = array())
+    {
+        if (!isset($this->_messages[$msg])) {
+            return $msg;
+        }
+        $message = $this->_messages[$msg];
+        if (!empty($vars)) {
+            foreach ($vars as $key => $val) {
+                $message = str_replace("%$key", $val, $message);
+            }
+        }
+        return $message;
     }
 }

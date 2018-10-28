@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\components;
 
+use tachyon\exceptions\ValidationException;
+
 /**
  * class Validator
  * Класс содержащий правила валидации
@@ -125,6 +127,7 @@ class Validator extends \tachyon\Component
      * @param \tachyon\db\models\Model $model
      * @param $attrs array массив полей
      * @return boolean
+     * @throws ValidationException
      */
     public function validate(&$model, array $attrs = null)
     {
@@ -137,12 +140,12 @@ class Validator extends \tachyon\Component
             foreach ($attrs as $attrName)
                 unset($attrsArray[$attrName]);
 
-        foreach ($attrsArray as $fieldName=> $fieldValue) {
+        foreach ($attrsArray as $fieldName => $fieldValue) {
             // если существует правило валидации для данного поля
             if ($fieldRules = $model->getRules($fieldName)) {
                 if (isset($fieldRules['on'])) {
                     // если правило не применимо к сценарию
-                    if ($fieldRules['on']!==$model->scenario) {
+                    if ($fieldRules['on'] !== $model->scenario) {
                         continue;
                     }
                     // убираем, чтобы не мешалось дальше
@@ -152,7 +155,7 @@ class Validator extends \tachyon\Component
                     if (is_array($rule)) {
                         if (isset($rule['on'])) {
                             // если правило не применимо к сценарию
-                            if ($rule['on']!==$model->scenario) {
+                            if ($rule['on'] !== $model->scenario) {
                                 continue;
                             }
                             // убираем, чтобы не мешалось дальше
@@ -163,24 +166,26 @@ class Validator extends \tachyon\Component
                                 $this->equals($model, $fieldName, $rule['with']);
                                 continue;
                             }
-                            if (!is_numeric($key))
+                            if (!is_numeric($key)) {
                                 continue;
-                            if (!method_exists($this, $subRule))
-                                throw new \Exception($validNotExist);
-
+                            }
+                            if (!method_exists($this, $subRule)) {
+                                throw new ValidationException($validNotExist);
+                            }
                             $this->$subRule($model, $fieldName);
                         }
                         continue;
                     }
-                    if ($rule=='equals') {
+                    if ($rule == 'equals') {
                         $this->equals($model, $fieldName, $fieldRules['with']);
                         continue;
                     }
-                    if (!is_numeric($key))
+                    if (!is_numeric($key)) {
                         continue;
-                    if (!method_exists($this, $rule))
-                        throw new \Exception($validNotExist);
-                        
+                    }
+                    if (!method_exists($this, $rule)) {
+                        throw new ValidationException($validNotExist);
+                    }
                     $this->$rule($model, $fieldName);
                 }
             }

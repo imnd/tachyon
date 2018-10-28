@@ -76,6 +76,9 @@
         <property name="assetManager">
             <ref id="AssetManager"/>
         </property>
+        <property name="msg">
+            <ref id="Message"/>
+        </property>
     </service>
 
     <service id="Grid" class="\tachyon\components\widgets\grid\Grid">

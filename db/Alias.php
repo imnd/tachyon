@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\db;
 
+use tachyon\exceptions\ModelException;
+
 /**
  * Класс отвечающий за подбор псевдонимов таблиц
  * 
@@ -9,6 +11,8 @@ namespace tachyon\db;
  */
 class Alias extends \tachyon\Component
 {
+    use \tachyon\dic\Message;
+
     const PK_GLUE = '____';
     /**
      * обозначение первичного ключа
@@ -127,8 +131,9 @@ class Alias extends \tachyon\Component
     {
         foreach ($fields as &$field) {
             $fieldArr = explode(' AS ', $field);
-            if (count($fieldArr)>1)
+            if (count($fieldArr) > 1) {
                 $field = trim($fieldArr[1]);
+            }
         }
         return $fields;
     }
@@ -138,9 +143,9 @@ class Alias extends \tachyon\Component
      */
     public function getPrimKeyAliasArr($with, $primKey=null)
     {
-        if (!$primKey)
-            throw new \Exception('Не объявлен первичный ключ связанной таблицы');
-
+        if (!$primKey) {
+            throw new ModelException($this->msg->i18n('The primary key of the related table is not declared.'));
+        }
         $primKeyAlias = array();
         // ключ может быть составным
         if (is_array($primKey)) {

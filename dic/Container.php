@@ -2,6 +2,7 @@
 namespace tachyon\dic;
 
 use tachyon\helpers\StringHelper;
+use tachyon\exceptions\ContainerException;
 
 /**
  * DI Container
@@ -165,7 +166,7 @@ class Container
             $service->$setterMethod($val);
             return;
         }
-        //throw new \ErrorException("Невозможно установить свойство $name в сервис " . get_class($service));
+        //throw new ContainerException("Unable to set property $name to service " . get_class($service));
     }
 
     private static function _getConfigParam($config, $param)

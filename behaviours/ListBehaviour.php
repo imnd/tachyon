@@ -39,12 +39,12 @@ class ListBehaviour extends \tachyon\Component
     public function getSelectList($items)
     {
         $retArr = array();
-        if ($this->emptyVal!==false)
+        if ($this->emptyVal!==false) {
             $retArr[] = array(
                 'value' => '',
                 'contents' => $this->emptyVal
             );
-
+        }
         foreach ($items as $item) {
             $retArr[] = array(
                 'value' => $item[$this->pkField],
@@ -61,19 +61,20 @@ class ListBehaviour extends \tachyon\Component
      * @param $keyIndexed boolean индексировать ключами или значениями массива
      * 
      * @return array
+     * @throws Exception
      */
     public function getSelectListFromArr($array, $keyIndexed=false, $emptyVal='...')
     {
-        if (is_array($this->valueField))
-            throw new \Exception('Метод getSelectListFromArr класса ListBehaviour не работает в случае, если valueField - массив.');
-
+        if (is_array($this->valueField)) {
+            throw new \Exception($this->msg->i18n('The getSelectListFromArr method of the ListBehaviour class does not work if valueField is an array.'));
+        }
         $items = array();
-        foreach ($array as $key => $value)
+        foreach ($array as $key => $value) {
             $items[] = array(
                 $this->pkField => $keyIndexed ? $key : $value,
                 $this->valueField => $value,
             );
-
+        }
         $this->emptyVal = $emptyVal;
         return $this->getSelectList($items);
     }

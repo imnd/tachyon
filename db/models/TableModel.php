@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\db\models;
 
+use tachyon\exceptions\ModelException;
+
 /**
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
@@ -674,11 +676,12 @@ abstract class TableModel extends Model
      */
     public static function getPrimKeyArr()
     {
-        if (!$primKey = static::$primKey)
-            throw new \Exception('Не объявлен первичный ключ связанной таблицы');
-        if (is_array($primKey))
+        if (!$primKey = static::$primKey) {
+            throw new ModelException($this->msg->i18n('The primary key of the related table is not declared.'));
+        }
+        if (is_array($primKey)) {
             return $primKey;
-            
+        }
         return array($primKey);
     }
 
