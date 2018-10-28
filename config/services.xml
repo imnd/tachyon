@@ -33,6 +33,7 @@
     <service id="DbCache" class="\tachyon\components\cache\Db" singleton="true"></service>
 
     <service id="AssetManager" class="\tachyon\components\AssetManager"></service>
+    <service id="FilesManager" class="\tachyon\components\FilesManager"></service>
     <service id="Message" class="\tachyon\components\Message" singleton="true">
         <property name="lang">
             <ref id="Lang"/>
