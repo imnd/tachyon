@@ -40,16 +40,6 @@ class Controller extends Component
      * @var $action string
      */
     protected $action;
-    /**
-     * Главное меню
-     * @var $mainMenu array
-     */
-    protected $mainMenu = array();
-    /**
-     * Меню страницы
-     * @var $subMenu array
-     */
-    protected $subMenu = array();
 
     # Переменные запроса
 
