@@ -17,7 +17,6 @@ class Controller extends Component
     use \tachyon\dic\Cookie;
     use \tachyon\dic\Message;
     use \tachyon\dic\Lang;
-    use \tachyon\dic\Db;
     use \tachyon\dic\View;
         
     /**

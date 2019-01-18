@@ -71,7 +71,6 @@ td.btn-column {
 .button-printout {
     background: transparent url(images/printout.png) no-repeat;
 }
-
 .pager {
     margin-top: 12px;
 }
@@ -83,6 +82,7 @@ td.btn-column {
 .control input {
     width: 66px;
 }
+
 .control select {
     max-width: 430px !important;
 }

@@ -1,3 +1,9 @@
+<style>
+    .search-form input.button {
+        margin-bottom: 0 !important;
+        margin-top: 10px;
+    }
+</style>
 <?php
 if (!empty($searchFields)) {
     $this->get('FormBuilder')

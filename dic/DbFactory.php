@@ -5,19 +5,19 @@ namespace tachyon\dic;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-trait Db
+trait DbFactory
 {
     /**
-     * @var \tachyon\db\Db $db
+     * @var \tachyon\db\DbFactory
      */
-    protected $db;
+    protected $dbFactory;
 
     /**
      * @param \tachyon\db\Db $service
      * @return void
      */
-    public function setDb(\tachyon\db\Db $service)
+    public function setDbFactory(\tachyon\db\DbFactory $service)
     {
-        $this->db = $service;
+        $this->dbFactory = $service;
     }
 }

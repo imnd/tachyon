@@ -11,32 +11,32 @@ if (empty($items)) {?>
 <?php } else {?>
 <table class="data-grid" id="<?=$widget->getController()->getId()?>">
     <thead>
-    <tr>
-        <?php
-        $columnNames = array();
-        $tableFields = $model->getTableFields();
-        foreach ($columns as $key => $options) {
-            if (is_numeric($key)) {
-                if (is_array($options)) {
-                    if (isset($options['name']))
-                        $fieldName = $options['name'];
-                    else
-                        throw new \Exception($this->msg->i18n('Undefined field name'));
+        <tr>
+            <?php
+            $columnNames = array();
+            $tableFields = $model->getTableFields();
+            foreach ($columns as $key => $options) {
+                if (is_numeric($key)) {
+                    if (is_array($options)) {
+                        if (isset($options['name']))
+                            $fieldName = $options['name'];
+                        else
+                            throw new \Exception($this->msg->i18n('Undefined field name'));
+                    } else
+                        $fieldName = $options;
                 } else
-                    $fieldName = $options;
-            } else
-                $fieldName = $key;
+                    $fieldName = $key;
 
-            $sortable = in_array($fieldName, $tableFields);
-            if ($sortable)
-                $columnNames[] = $fieldName;
-        ?>
-        <th id="<?=$fieldName?>"<?php if ($sortable) {?> class="sortable-column"<?php }?>><?=$model->getAttributeName($fieldName)?></th>
-        <?php }
-        if (!empty($buttons)) {?>
-            <th class="buttons" colspan="<?=count($buttons)?>">Операции</th>
-        <?php }?>
-    </tr>
+                $sortable = in_array($fieldName, $tableFields);
+                if ($sortable)
+                    $columnNames[] = $fieldName;
+            ?>
+            <th id="<?=$fieldName?>"<?php if ($sortable) {?> class="sortable-column"<?php }?>><?=$model->getAttributeName($fieldName)?></th>
+            <?php }
+            if (!empty($buttons)) {?>
+                <th class="buttons" colspan="<?=count($buttons)?>">Операции</th>
+            <?php }?>
+        </tr>
     </thead>
 
     <tbody>
@@ -81,13 +81,14 @@ if (empty($items)) {?>
     <?php }?>
     </tbody>
 </table>
+<?php }?>
 
 <?php $this->display('_btnHandler', compact('buttons', 'items', 'csrfJson', 'widget'))?>
 
 <?=
-$this->assetManager->coreJs("ajax"),
-$this->domain->js("sort"),
-$this->domain->css("style")
+$this->assetManager->coreJs('ajax'),
+$this->domain->js('sort'),
+$this->domain->css('style')
 ?>
 
 <script>
@@ -96,4 +97,3 @@ $this->domain->css("style")
         bindSortHandlers("<?=$widget->getActionUrl('index')?>", <?=json_encode($widget->getColumns())?>, "<?=$widget->getId()?>");
     };
 </script>
-<?php }?>

@@ -11,7 +11,7 @@ use tachyon\exceptions\ModelException;
  */
 abstract class TableModel extends Model
 {
-    use \tachyon\dic\Db;
+    use \tachyon\dic\DbFactory;
     use \tachyon\dic\Join;
     use \tachyon\dic\Alias;
 
@@ -57,14 +57,6 @@ abstract class TableModel extends Model
      */
     protected $defSortBy = array();
 
-    /**
-     * @return string
-     */
-    public function getTableAlias()
-    {
-        return !is_null($this->tableAlias) ? $this->tableAlias : static::$tableName;
-    }
-
     ##################################
     #                                #
     #  МЕТОДЫ ВЫБОРКИ СТРОК ТАБЛИЦЫ  #
@@ -100,7 +92,7 @@ abstract class TableModel extends Model
             $tableName .= " AS {$this->tableAlias}";
 
         // выбираем записи
-        $items = $this->db->select($tableName);
+        $items = $this->getDb()->select($tableName);
         $this->clearSelect();
         $this->clearAlias();
         return $items;
@@ -112,9 +104,10 @@ abstract class TableModel extends Model
      */
     public function getOne(array $conditions = array())
     {
-        $this->db->setLimit(1);
-        if ($items = $this->getAll($conditions))
+        $this->getDb()->setLimit(1);
+        if ($items = $this->getAll($conditions)) {
             return $items[0];
+        }
     }
 
     /**
@@ -171,7 +164,7 @@ abstract class TableModel extends Model
      */
     public function insert()
     {
-        if (!$lastInsertId = $this->db->insert(static::$tableName, $this->fieldAttributes()))
+        if (!$lastInsertId = $this->getDb()->insert(static::$tableName, $this->fieldAttributes()))
             return false;
         
         $pk = static::$primKey;
@@ -193,7 +186,7 @@ abstract class TableModel extends Model
         else
             $condition[$pk] = $this->$pk;
 
-        return $this->db->update(static::$tableName, $this->fieldAttributes(), $condition);
+        return $this->getDb()->update(static::$tableName, $this->fieldAttributes(), $condition);
     }
     
     /**
@@ -203,7 +196,7 @@ abstract class TableModel extends Model
     {
         $pk = static::$primKey;
         if ($this->$pk)
-            if ($this->db->delete(static::$tableName, array($pk => $this->$pk))) {
+            if ($this->getDb()->delete(static::$tableName, array($pk => $this->$pk))) {
                 unset($this);
                 return true;
             }
@@ -220,7 +213,7 @@ abstract class TableModel extends Model
      */
     public function deleteAllByAttrs(array $attrs)
     {
-        return $this->db->delete(static::$tableName, $attrs);
+        return $this->getDb()->delete(static::$tableName, $attrs);
     }
 
     /**
@@ -228,7 +221,7 @@ abstract class TableModel extends Model
      */
     public static function clear()
     {
-        $this->db->truncate(static::$tableName);
+        $this->getDb()->truncate(static::$tableName);
     }
 
     /**
@@ -306,19 +299,19 @@ abstract class TableModel extends Model
 
     public function where($where)
     {
-        $this->db->setWhere($this->_prepareWhere($where));
+        $this->getDb()->setWhere($this->_prepareWhere($where));
         return $this;
     }
 
     public function addWhere($where)
     {
-        $this->db->addWhere($this->_prepareWhere($where));
+        $this->getDb()->addWhere($this->_prepareWhere($where));
         return $this;
     }
 
     public function getWhere()
     {
-        return $this->db->getWhere();
+        return $this->getDb()->getWhere();
     }
 
     /**
@@ -334,7 +327,7 @@ abstract class TableModel extends Model
     {
         $where = $this->_prepareWhere($where);
         if (isset($where[$field]))
-            $this->db->addWhere(array("$field LIKE" => $where[$field]));
+            $this->getDb()->addWhere(array("$field LIKE" => $where[$field]));
 
         return $this;
     }
@@ -353,7 +346,7 @@ abstract class TableModel extends Model
     public function gt(&$where, $field, $arrKey, $precise=false)
     {
         if (isset($where[$arrKey])) {
-            $this->db->addWhere(array_filter(array("$field>" . ($precise ? '' : '=') => $where[$arrKey])));
+            $this->getDb()->addWhere(array_filter(array("$field>" . ($precise ? '' : '=') => $where[$arrKey])));
             unset($where[$arrKey]);
         }
         return $this;
@@ -373,7 +366,7 @@ abstract class TableModel extends Model
     public function lt(&$where, $field, $arrKey, $precise=false)
     {
         if (isset($where[$arrKey])) {
-            $this->db->addWhere(array_filter(array("$field<" . ($precise ? '' : '=') => $where[$arrKey])));
+            $this->getDb()->addWhere(array_filter(array("$field<" . ($precise ? '' : '=') => $where[$arrKey])));
             unset($where[$arrKey]);
         }
         return $this;
@@ -412,7 +405,7 @@ abstract class TableModel extends Model
     public function sortBy($colName, $order='ASC')
     {
         $colName = $this->_orderByCast($colName);
-        $this->db->orderBy($colName, $order);
+        $this->getDb()->orderBy($colName, $order);
         return $this; 
     }
     
@@ -421,13 +414,13 @@ abstract class TableModel extends Model
      */
     public function setSortBy(array $sortBy)
     {
-        $this->db->setOrderBy($sortBy);
+        $this->getDb()->setOrderBy($sortBy);
         return $this;
     }
 
     public function getSortBy()
     {
-        return $this->db->getOrderBy();
+        return $this->getDb()->getOrderBy();
     }
 
     /**
@@ -446,22 +439,20 @@ abstract class TableModel extends Model
                 }
                 $colName = $this->alias->aliasField($colName, static::$tableName);
                 $colName = $this->_orderByCast($colName);
-                $this->db->orderBy($colName, $order);
+                $this->getDb()->orderBy($colName, $order);
             }
     }
 
     /**
-     * _setSortByCast
-     * 
      * @param $colName string
      * @return string
      */
     private function _orderByCast($colName)
     {
         $searchColName = str_replace("{$this->getTableAlias()}.", '', $colName);
-        if (in_array($searchColName, $this->scalarFields))
-            return "CAST($colName as unsigned)";
-
+        if (in_array($searchColName, $this->scalarFields)) {
+            return $this->getDb()->orderByCast($colName);
+        }
         return $colName;
     }
     
@@ -472,13 +463,13 @@ abstract class TableModel extends Model
      */
     public function limit($limit, $offset=null)
     {
-        $this->db->setLimit($limit, $offset);
+        $this->getDb()->setLimit($limit, $offset);
         return $this; 
     }
     
     public function getLimit()
     {
-        return $this->db->getLimit();
+        return $this->getDb()->getLimit();
     }
 
     # GROUP BY
@@ -488,13 +479,13 @@ abstract class TableModel extends Model
      */
     public function groupBy($fieldName)
     {
-        $this->db->setGroupBy($fieldName);
+        $this->getDb()->setGroupBy($fieldName);
         return $this;
     }
 
     public function getGroupBy()
     {
-        return $this->db->getGroupBy();
+        return $this->getDb()->getGroupBy();
     }
 
     /**
@@ -522,7 +513,7 @@ abstract class TableModel extends Model
                 $fieldNames[] = $field;
             }
         }
-        $this->db->setFields($fieldNames);
+        $this->getDb()->setFields($fieldNames);
         return $this;
     }
 
@@ -543,7 +534,7 @@ abstract class TableModel extends Model
      */
     public function getSelect()
     {
-        return $this->db->getFields();
+        return $this->getDb()->getFields();
     }
 
     /**
@@ -656,6 +647,14 @@ abstract class TableModel extends Model
     }
 
     /**
+     * @return string
+     */
+    public function getTableAlias()
+    {
+        return $this->tableAlias ?? static::$tableName;
+    }
+
+    /**
      * возвращает список полей таблицы
      */
     public static function getTableFields()
@@ -717,9 +716,13 @@ abstract class TableModel extends Model
         return $this;
     }
 
+    /**
+     * Шорткат
+     * @return \tachyon\db\Db
+     */
     public function getDb()
     {
-        return $this->db;
+        return $this->dbFactory->getDb();
     }
 
     public function getJoin()

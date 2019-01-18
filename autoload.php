@@ -1,7 +1,5 @@
 <?php
-
-function __autoload($className)
-{
+spl_autoload_register(function($className) {
     $basePath = '..';
     $className = str_replace('\\', '/', $className);
     foreach (array(
@@ -15,4 +13,4 @@ function __autoload($className)
             break;
         }
     }
-}
+});

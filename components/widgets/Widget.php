@@ -3,7 +3,7 @@ namespace tachyon\components\widgets;
 
 /**
  * class Widget
- * Предок всех виджетов
+ * Базовый класс для всех виджетов
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND

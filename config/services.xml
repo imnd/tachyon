@@ -115,15 +115,19 @@
         <property name="lang">
             <ref id="Lang"/>
         </property>
-        <property name="db">
-            <ref id="Db"/>
+        <property name="dbFactory">
+            <ref id="DbFactory"/>
         </property>
         <property name="view">
             <ref id="View"/>
         </property>
     </service>
 
-    <service id="Db" class="\tachyon\db\Db" singleton="true"></service>
+    <service id="DbFactory" class="\tachyon\db\DbFactory" singleton="true">
+        <property name="msg">
+            <ref id="Message"/>
+        </property>
+    </service>
     <service id="Join" class="\tachyon\db\Join"></service>
     <service id="Alias" class="\tachyon\db\Alias"></service>
     <service id="Relation" class="\tachyon\db\relations\Relation"></service>
@@ -141,8 +145,8 @@
         <property name="alias">
             <ref id="Alias"/>
         </property>
-        <property name="db">
-            <ref id="Db"/>
+        <property name="dbFactory">
+            <ref id="DbFactory"/>
         </property>
         <property name="join">
             <ref id="Join"/>

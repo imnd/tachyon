@@ -25,14 +25,83 @@ class ArrayHelper
         }
         return $tmpArr;
     }
+    /**
+     * Суммирует значения, извлекаемые из ассоциативного массива по ключу $key
+     */
+    public static function sum($array, $key)
+    {
+        $result = 0;
+        foreach ($array as $item)
+            $result += is_array($item) ? $item[$key] : $item->$key;
+
+        return $result;
+    }
+
+    /**
+     * Превращает массив ассоциативных массивов в обычный, извлекая из ассоциативных
+     * массивов значения по ключу $key
+     */
+    public static function flatten($array, $key)
+    {
+        $result = array();
+        if (is_array($key)) {
+            $ind = array_keys($key)[0];
+            $key = array_values($key)[0];
+        } else
+            $i = 0;
+
+        foreach ($array as $item)
+            if ($value = self::_extractValue($item, $key)) {
+                $resultKey = isset($i) ? $i++ : self::_extractValue($item, $ind);
+                $result[$resultKey] = $value;
+            }
+
+        return $result;
+    }
+
+    private static function _extractValue($item, $key)
+    {
+        return is_array($item) ? $item[$key] : $item->$key;
+    }
+
+    /**
+     * 
+     * @param mixed $from
+     * @param mixed $to
+     * @return void
+     */
+    public static function changeKey(&$arr, $from, $to)
+    {
+        $arr[$to] = $arr[$from];
+        unset($arr[$from]);
+    }
+
+    /**
+     * Выбирает максимальное значение поля $key массива $array
+     */
+    public static function max($array, $key)
+    {
+        $array = self::flatten($array, $key);
+        return max($array);
+    }
+
+    /**
+     * Выбирает минимальное значение поля $key массива $array
+     */
+    public static function min($array, $key)
+    {
+        $array = self::flatten($array, $key);
+        return min($array);
+    }
 
     public static function transposeArray($array)
     {
         $transposed = array();
-        foreach ($array as $key => $params)
-            foreach ($params as $num => $val)
+        foreach ($array as $key => $params) {
+            foreach ($params as $num => $val) {
                 $transposed[$num][$key] = $val;
-
+            }
+        }
         return $transposed;
     }
 }

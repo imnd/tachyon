@@ -4,214 +4,233 @@ namespace tachyon\db;
 use tachyon\exceptions\DataBaseException;
 
 /**
- * ДБАЛ (на PDO)
+ * DBAL (на PDO)
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2019 IMND
  */
-class Db extends \tachyon\Component
+abstract class Db extends \tachyon\Component
 {
     # сеттеры DIC
     use \tachyon\dic\Message;
 
     /**
+     * параметры БД
+     */
+    protected $config;
+    /**
      * соединение с БД (PDO)
      */
-    private static $_conn;
+    protected $connection;
+    /**
+     * Компонент msg
+     */
+    protected $msg;
+    /**
+     * Выводить ли анализ запросов в файл
+     */
+    protected $explain;
 
     /**
      * поля для выборки
      */
-    private $_fields = array();
+    protected $fields = array();
     /**
      * условия для выборки
      */
-    private $_where = array();
-    private $_join = '';
-    private $_groupBy = '';
-    private $_orderBy = array();
-    private $_limit = '';
+    protected $where = array();
+    protected $join = '';
+    protected $groupBy = '';
+    protected $orderBy = array();
+    protected $limit = '';
 
     /**
      * путь к файлу где лежит explain.xls
      */
-    private static $explainPath;
+    protected $explainPath;
 
     /**
      * Инициализация
      * @return void
      */
-    public function __construct()
+    public function __construct(array $config, $msg)
     {
-        // подключаем ДБ
-        $this->_connect();
-            
-        if ($this->get('config')->getOption('mode')!=='debug') {
-            return;
-        }
-        // путь к файлу explain для запросов
-        self::$explainPath = '../runtime/explain.xls';
-        // удаляем файл
-        if (file_exists(self::$explainPath)) {
-            unlink(self::$explainPath);
+        $this->config = $config;
+        $this->msg = $msg;
+
+        if ($this->explain = $this->config['mode']==='debug') {
+            $this->explainPath = $this->config['explain_path'] ?? '../runtime/explain.xls';
+            // удаляем файл
+            if (file_exists($this->explainPath)) {
+                unlink($this->explainPath);
+            }
         }
     }
 
     /**
-     * подключаем ДБ
+     * Подключаем ДБ
+     * Lazy loading
      * 
      * return void;
      */
-    private function _connect()
+    protected function connect()
     {
-        if (!is_null(self::$_conn)) {
+        if (!is_null($this->connection)) {
             return;
         }
         try {
-            $dbOptions = $this->get('config')->getOption('db');
-            self::$_conn = new \PDO(
-                'mysql:host=' . $dbOptions['host'] .
-                ';dbname=' . $dbOptions['name'],
-                $dbOptions['user'],
-                $dbOptions['password']
+            $this->connection = new \PDO(
+                $this->getDsn(),
+                $this->config['user'],
+                $this->config['password']
             );
-            self::$_conn->exec('set names ' . $dbOptions['char_set']);
+            $this->connection->exec("SET NAMES {$this->config['charset']}");
         } catch (\PDOException $e) {
-            throw new DataBaseException($this->get('msg')->i18n('conn_err'));
+            throw new DataBaseException($this->msg->i18n('conn_err') . "\n{$e->getMessage()}");
         }
+    }
+
+    /**
+     * @return \PDO
+     */
+    abstract protected function getDsn();
+
+    abstract public function isTableExists(string $tableName);
+
+    public function select($tblName, array $where=array(), array $fields=array())
+    {
+        $this->connect();
+
+        $where = array_merge($where, $this->where);
+        $conditions = $this->prepareConditions($where, 'where');
+        $fields = array_merge($fields, $this->fields);
+        $fields = $this->prepareFields($fields);
+
+        $query =
+                  "SELECT $fields FROM $tblName {$this->join} {$conditions['clause']}"
+                . $this->groupByString()
+                . $this->orderByString()
+                . $this->limit;
+
+        // очищаем переменные
+        $this->clearOrderBy();
+        $this->clearWhere();
+        $this->clearFields();
+        $this->clearJoin();
+        $this->clearGroupBy();
+        $this->clearLimit();
+
+        if ($this->explain) {
+            $this->explain($query, $conditions);
+        }
+        $stmt = $this->connection->prepare($query);
+        $rows = $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : array();
+        return $rows;
+    }
+
+    public function insert($tblName, array $fields=array(), $check=false)
+    {
+        $this->connect();
+
+        $fields = array_merge($fields, $this->fields);
+        $conditions = $this->prepareConditions($fields, 'insert');
+        $placeholder = $this->getPlaceholder($fields);
+        $query = "INSERT INTO `$tblName` ({$conditions['clause']}) VALUES ($placeholder)";
+        $stmt = $this->connection->prepare($query);
+        $this->clearFields();
+
+        if ($this->execute($stmt, $conditions['vals']))
+            return $this->connection->lastInsertId();
+
+        return false;
+    }
+
+    public function update($tblName, array $fields=array(), array $where=array(), $check=false)
+    {
+        $this->connect();
+
+        $where = array_merge($where, $this->where);
+        $fields = array_merge($fields, $this->fields);
+        $updateConditions = $this->prepareConditions($fields, 'update');
+        $whereConditions = $this->prepareConditions($where, 'where');
+        $query = "UPDATE `$tblName` {$updateConditions['clause']} {$whereConditions['clause']}";
+        $stmt = $this->connection->prepare($query);
+        $this->clearWhere();
+        $this->clearFields();
+
+        return $this->execute($stmt, array_merge($updateConditions['vals'], $whereConditions['vals']));
+    }
+
+    /**
+     * быстро очищает таблицу
+     */
+    public function delete($tblName, array $where=array(), $check=false)
+    {
+        $this->connect();
+
+        $where = array_merge($where, $this->where);
+        $whereConditions = $this->prepareConditions($where, 'where');
+        $stmt = $this->connection->prepare("DELETE FROM `$tblName` {$whereConditions['clause']}");
+        $this->clearWhere();
+        
+        return $this->execute($stmt, $whereConditions['vals']);
     }
 
     public function beginTransaction()
     {
-        self::$_conn->beginTransaction();
+        $this->connect();
+        $this->connection->beginTransaction();
     }
 
     public function endTransaction()
     {
-        self::$_conn->commit();
+        $this->connection->commit();
     }
-
-    public function isTableExists($tableName)
-    {
-        $stmt = self::$_conn->prepare("SHOW TABLES LIKE ?");
-        $this->_execute($stmt, array(str_replace('`', '', $tableName)));
-        // если такая таблица существует
-        return (count($stmt->fetchAll()) > 0);
-    }
-    
-	public function select($tblName, $where=array(), $fields=array())
-	{
-        $where = array_merge($where, $this->_where);
-        $conditions = $this->_prepareConditions($where, 'where');
-        $fields = array_merge($fields, $this->_fields);
-        $fields = $this->_prepareFields($fields);
-
-        $query = "SELECT $fields FROM $tblName {$this->_join} {$conditions['clause']}" . $this->_groupByString() . $this->_orderByString() . $this->_limit;
-
-        // очищаем переменные
-        $this->_clearOrderBy();
-        $this->_clearWhere();
-        $this->_clearFields();
-        $this->_clearJoin();
-        $this->_clearGroupBy();
-        $this->_clearLimit();
-
-        if ($this->config->getOption('mode')==='debug')
-            $this->_explain($query, $conditions);
-
-		$stmt = self::$_conn->prepare($query);
-        $rows = $stmt->execute($conditions['vals']) ? $this->_prepareRows($stmt->fetchAll()) : array();
-		return $rows;
-	}
 
 	public function selectOne($tblName, $where=array(), $fields=array())
 	{
 		$rows = $this->select($tblName, $where, $fields);
-		return $this->_getOneRow($rows);
+		return $this->getOneRow($rows);
 	}
 		
 	public function selectById($tblName, $id, $fields=array())
 	{
 		$rows = $this->select($tblName, compact('id'), $fields);
-		return $this->_getOneRow($rows);
+		return $this->getOneRow($rows);
 	}
 
 	public function selectValById($tblName, $field, $id)
 	{
-		$rows = $this->select($tblName, compact('id'), $field);
-		$row = $rows['0'];
-		return $row[$field];
+		if ($rows = $this->select($tblName, compact('id'), $field)) {
+            return $rows[0][$field];
+        }
 	}
-
-	public function insert($tblName, $fields=array(), $check=false)
-	{
-        $fields = array_merge($fields, $this->_fields);
-		$conditions = $this->_prepareConditions($fields, 'insert');
-		$placeholder = $this->_getPlaceholder($fields);
-        $query = "INSERT INTO `$tblName` ({$conditions['clause']}) VALUES ($placeholder)";
-		$stmt = self::$_conn->prepare($query);
-        $this->_clearFields();
-
-        if ($this->_execute($stmt, $conditions['vals']))
-		    return self::$_conn->lastInsertId();
-
-        return false;
-	}
-
-	public function update($tblName, $fields=array(), $where=array(), $check=false)
-	{
-        $where = array_merge($where, $this->_where);
-        $fields = array_merge($fields, $this->_fields);
-		$updateConditions = $this->_prepareConditions($fields, 'update');
-		$whereConditions = $this->_prepareConditions($where, 'where');
-		$query = "UPDATE `$tblName` {$updateConditions['clause']} {$whereConditions['clause']}";
-        $stmt = self::$_conn->prepare($query);
-        $this->_clearWhere();
-        $this->_clearFields();
-
-        return $this->_execute($stmt, array_merge($updateConditions['vals'], $whereConditions['vals']));
-	}
-	
-	public function delete($tblName, $where=array(), $check=false)
-	{
-        $where = array_merge($where, $this->_where);
-		$whereConditions = $this->_prepareConditions($where, 'where');
-		$stmt = self::$_conn->prepare("DELETE FROM `$tblName` {$whereConditions['clause']}");
-        $this->_clearWhere();
-		
-		return $this->_execute($stmt, $whereConditions['vals']);
-	}
-
-    /**
-     * быстро очищает таблицу
-     */
-    public function truncate($tblName)
-    {
-        $stmt = self::$_conn->prepare("TRUNCATE `$tblName`");
-        return $this->_execute($stmt);
-    }
     
     public function query($query)
     {
-        $stmt = self::$_conn->prepare($query);
-        if (!$this->_execute($stmt))
+        $this->connect();
+
+        $stmt = $this->connection->prepare($query);
+        if (!$this->execute($stmt)) {
             return false;
-        
+        }
         return $stmt;
     }
     
     public function queryAll($query)
     {
-        $stmt = self::$_conn->prepare($query);
-        if ($stmt->execute())
-            return $this->_prepareRows($stmt->fetchAll());
+        $this->connect();
 
+        $stmt = $this->connection->prepare($query);
+        if ($stmt->execute()) {
+            return $this->prepareRows($stmt->fetchAll());
+        }
         return array();
     }
     
     public function fetchRows($stmt)
     {
-        return $this->_prepareRows($stmt->fetchAll());
+        return $this->prepareRows($stmt->fetchAll());
     }
     
     # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
@@ -221,7 +240,7 @@ class Db extends \tachyon\Component
      */
     public function addWhere($where)
     {
-        $this->_where = array_merge($this->_where, $where);
+        $this->where = array_merge($this->where, $where);
     }
 
     /**
@@ -229,7 +248,7 @@ class Db extends \tachyon\Component
      */
     public function setWhere($where)
     {
-        $this->_where = $where;
+        $this->where = $where;
     }
     
     /**
@@ -237,7 +256,7 @@ class Db extends \tachyon\Component
      */
     public function getWhere()
     {
-        return $this->_where;
+        return $this->where;
     }
 
     /**
@@ -245,7 +264,7 @@ class Db extends \tachyon\Component
      */
     public function setFields($fieldNames)
     {
-        $this->_fields = $fieldNames;
+        $this->fields = $fieldNames;
     }
 
     /**
@@ -253,147 +272,152 @@ class Db extends \tachyon\Component
      */
     public function getFields()
     {
-        return $this->_fields;
+        return $this->fields;
     }
     
     public function setJoin($tblName, $onCond, $joinMode='INNER')
     {
-        $this->_join .= " $joinMode JOIN $tblName ON $onCond ";
+        $this->join .= " $joinMode JOIN $tblName ON $onCond ";
     }
 
     /**
-     * добавляет в массив _orderBy новый эт-т
+     * добавляет в массив orderBy новый эт-т
      */
     public function orderBy($fieldName, $order = 'ASC')
     {
-        $this->_orderBy[$fieldName] = $order;
+        $this->orderBy[$fieldName] = $order;
     }
 
     /**
-     * устанавливает _orderBy
+     * устанавливает orderBy
      */
     public function setOrderBy($orderBy)
     {
-        $this->_orderBy = $orderBy;
+        $this->orderBy = $orderBy;
     }
 
     /**
-     * возвращает _orderBy
+     * возвращает orderBy
      */
     public function getOrderBy()
     {
-        return $this->_orderBy;
+        return $this->orderBy;
     }
 
-    private function _orderByString()
-    {
-        if (count($this->_orderBy)===0)
-            return '';
-        
-        $orderBy = array();
-        foreach ($this->_orderBy as $fieldName => $order)
-            $orderBy[] = "$fieldName $order";
+    /**
+     * Строка order by cast
+     */
+    abstract public function orderByCast($colName);
 
+    protected function orderByString()
+    {
+        if (count($this->orderBy)===0) {
+            return '';
+        }
+        $orderBy = array();
+        foreach ($this->orderBy as $fieldName => $order) {
+            $orderBy[] = "$fieldName $order";
+        }
         return ' ORDER BY ' . implode(',', $orderBy);
     }
 
     public function setLimit($limit, $offset = null)
     {
-        $this->_limit = $limit;
+        $this->limit = $limit;
         
         if (!is_null($offset))
-            $this->_limit = " $offset, {$this->_limit}";
+            $this->limit = " $offset, {$this->limit}";
             
-        $this->_limit = " LIMIT {$this->_limit} ";
+        $this->limit = " LIMIT {$this->limit} ";
     }
     
     public function getLimit()
     {
-        return $this->_limit;
+        return $this->limit;
     }
 
     public function setGroupBy($fieldName)
     {
-        $this->_groupBy = $fieldName;
+        $this->groupBy = $fieldName;
     }
 
     public function getGroupBy()
     {
-        return $this->_groupBy;
+        return $this->groupBy;
     }
 
-    private function _groupByString()
+    protected function groupByString()
     {
-        if ($this->_groupBy!=='')
-            return " GROUP BY {$this->_groupBy} ";
+        if ($this->groupBy!=='')
+            return " GROUP BY {$this->groupBy} ";
         
         return '';
     }
 
     /**
-     * очищает _orderBy
+     * очищает orderBy
      */
-    private function _clearOrderBy()
+    protected function clearOrderBy()
     {
-        $this->_orderBy = array();
+        $this->orderBy = array();
     }
 
     /**
      * очищает условие
      */
-    private function _clearWhere()
+    protected function clearWhere()
     {
-        $this->_where = array();
+        $this->where = array();
     }
     
     /**
      * очищает поля выборки
      */
-    private function _clearFields()
+    protected function clearFields()
     {
-        $this->_fields = array();
+        $this->fields = array();
     }    
 
     /**
-     * очищает _join
+     * очищает join
      */
-    private function _clearJoin()
+    protected function clearJoin()
     {
-        $this->_join = '';
+        $this->join = '';
     }
     
     /**
-     * очищает _limit
+     * очищает limit
      */
-    private function _clearLimit()
+    protected function clearLimit()
     {
-        $this->_limit = '';
+        $this->limit = '';
     }
     
     /**
      * очищает GroupBy
      */
-    private function _clearGroupBy()
+    protected function clearGroupBy()
     {
-        $this->_groupBy = '';
+        $this->groupBy = '';
     }
 
-	private function _prepareConditions($conditions, $type, $operator='=')
+	protected function prepareConditions($conditions, $type, $operator='=')
 	{
 		switch ($type) {
 		    case 'where':
-			    return $this->_createConditions($conditions, 'WHERE', "$operator ?", 'AND');
+			    return $this->createConditions($conditions, 'WHERE', "$operator ?", 'AND');
             case 'update':
-                return $this->_createConditions($conditions, 'SET', "$operator ?", ',');
+                return $this->createConditions($conditions, 'SET', "$operator ?", ',');
 		    // TODO: перенести
             case 'insert':
-			    return $this->_createConditions($conditions, '', '', ',');
+			    return $this->createConditions($conditions, '', '', ',');
 		    default:
 			    return null;
 		}
 	}
 
-	private function _createConditions($conditions, $keyword, $operator, $glue)
+	protected function createConditions($conditions, $keyword, $operator, $glue)
 	{
 		$clause = '';
         $vals = array();
@@ -401,15 +425,15 @@ class Db extends \tachyon\Component
             $clauseArr = array();
 			foreach ($conditions as $field=> $val) {
                 if (preg_match('/ IN/', $field, $matches)!==0) {
-                    $clauseArr[] = $this->_clearifyField($field, $matches[0]) . $matches[0] . " ?";
+                    $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = '(' . implode(',', $val) . ')';
                 } elseif (preg_match('/ LIKE/', $field, $matches)!==0) {
-                    $clauseArr[] = $this->_clearifyField($field, $matches[0]) . $matches[0] . " ?";
+                    $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = "%$val%";
                 } elseif (preg_match('/<=|<|>=|>/', $field, $matches)!==0)
-                    $clauseArr[] = $this->_clearifyField($field, $matches[0]) . $matches[0] . ' ?';
+                    $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . ' ?';
                 else
-				    $clauseArr[] = $this->_prepareField($field) . $operator;
+				    $clauseArr[] = $this->prepareField($field) . $operator;
 
 				$vals[] = $val;
 			}
@@ -418,97 +442,68 @@ class Db extends \tachyon\Component
 		return compact('clause', 'vals');
 	}
 
-    private function _clearifyField($field, $text)
+    protected function clearifyField($field, $text)
     {
         $field = str_replace($text, '', $field);
         $field = trim($field);
-        $field = $this->_prepareField($field);
+        $field = $this->prepareField($field);
         return $field;
     }
 
-    private function _prepareFields(array $fields)
+    protected function prepareFields(array $fields)
     {
-        if (count($fields)==0)
+        if (count($fields)==0) {
             return '*';
-            
-        foreach ($fields as &$field)
-            $field = $this->_prepareField($field);
-
+        }
+        foreach ($fields as &$field) {
+            $field = $this->prepareField($field);
+        }
         return implode(',', $fields);
     }
 
-	private function _prepareField($field)
+	protected function prepareField($field)
 	{
-        if (preg_match('/[.( ]/', $field)===0)
+        if (preg_match('/[.( ]/', $field)===0) {
 			$field = "`" . trim($field) . "`";
-
+        }
 		return $field;
 	}
 
-	private function _getPlaceholder($fields)
+	protected function getPlaceholder($fields)
 	{
 		$plholdArr = array_fill(0, count($fields), '?');
 
 		return implode(',', $plholdArr);
 	}	
 	
-	private function _getOneRow($rows)
+	protected function getOneRow($rows)
 	{
 		if (count($rows)>0) {
-			$rows =  $this->_prepareRows($rows);
+			$rows =  $this->prepareRows($rows);
 			return $rows[0];
 		}
 	}
     
-    private function _prepareRows($rows=array())
+    protected function prepareRows($rows=array())
     {
-        foreach ($rows as &$row)
-            foreach ($row as $key => $value)
-                if (is_integer($key))
+        foreach ($rows as &$row) {
+            foreach ($row as $key => $value) {
+                if (is_integer($key)) {
                     unset($row[$key]);
-
+                }
+            }
+        }
         return $rows;
     }
     
-    private function _execute($stmt, $fields=null)
+    protected function execute($stmt, $fields=null)
     {
         if (!$stmt->execute($fields)) {
-            //if ('00000' == self::$_conn->errorCode())
+            //if ('00000' == $this->connection->errorCode())
                 //return false;
 
             throw new DataBaseException($this->msg->i18n('db_err') . ': ' . serialize(self::$_conn->errorInfo()));
         }
         return true;
-    }
-
-    /**
-     * выдает отчет EXPLAIN
-     */
-    private function _explain($query, $conditions1, $conditions2=null)
-    {
-        $query = trim(preg_replace('!\s+!', ' ', str_replace(array("\r", "\n"), ' ', $query)));
-        $output = "query: $query\r\n";
-        $output .= "id\tselect_type\ttable\ttype\tpossible_keys\tkey\tkey_len\tref\trows\tExtra\r\n";
-
-        $fields = $conditions1['vals'];
-        if (!is_null($conditions2))
-            $fields = array_merge($fields, $conditions2['vals']);
-        
-        // выводим в файл
-        $stmt = self::$_conn->prepare("EXPLAIN $query");
-        try {
-            $this->_execute($stmt, $fields);
-            $rows = $stmt->fetchAll();
-            foreach ($rows as $row) {
-                foreach ($row as $key => $value)
-                    if (is_numeric($key))
-                        $output .= "$value\t";
-
-                $output .= "\r\n";
-            }
-            $file = fopen(self::$explainPath, "w");
-            fwrite($file, $output);
-            fclose($file);
-        } catch (\Exception $e) {}
     }
 }
