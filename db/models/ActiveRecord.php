@@ -9,7 +9,7 @@ use tachyon\exceptions\ModelException;
  * 
  * Класс модели Active Record
  */
-abstract class ArModel extends TableModel
+abstract class ActiveRecord extends TableModel
 {
     use \tachyon\dic\DbCache;
     use \tachyon\dic\Message;
@@ -300,7 +300,7 @@ abstract class ArModel extends TableModel
 
     /**
      * shortcut
-     * @return \tachyon\db\models\ArModel
+     * @return \tachyon\db\models\ActiveRecord
      */
     public function findByPk($pk)
     {
@@ -316,7 +316,7 @@ abstract class ArModel extends TableModel
     }
 
     /**
-     * @return \tachyon\db\models\ArModel
+     * @return \tachyon\db\models\ActiveRecord
      */
     public function findOne($conditions = array())
     {

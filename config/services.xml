@@ -136,7 +136,7 @@
     <service id="HasmanyRelation" class="\tachyon\db\relations\HasmanyRelation"></service>
     <service id="ManytomanyRelation" class="\tachyon\db\relations\ManytomanyRelation"></service>
 
-    <service id="ArModel" class="\tachyon\db\models\ArModel">
+    <service id="ActiveRecord" class="\tachyon\db\models\ActiveRecord">
         <property name="cache">
             <ref id="DbCache"/>
         </property>
