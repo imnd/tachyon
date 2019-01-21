@@ -22,7 +22,8 @@ Components:
 - work with cookies;
 - authentication;
 - Tiny JS framework;
-- XSLT template system.
+- XSLT template system;
+- component for publishing js and css resource files.
 
 All PHP and JS code, except datepicker is written by me.
 
@@ -42,6 +43,7 @@ MVC микро-PHP-фреймворк.
 - компоненты для загрузки файлов, работы с куки и авторизации;
 - несложный layout;
 - XSLT шаблонизация;
+- компонент для публикации файлов ресурсов, js и css;
 - виджет для отображения таблиц из массива моделей.
 
 В составе так же есть микро-JS-фреймворк.
