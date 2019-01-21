@@ -25,6 +25,7 @@ Components:
 - XSLT template system;
 - component for publishing js and css resource files.
 
+The code was written in compliance with the PSR-2 standard.
 All PHP and JS code, except datepicker is written by me.
 
 
@@ -52,4 +53,5 @@ MVC микро-PHP-фреймворк.
 
 На этом фреймворке работает реальная бухгалтерия  (https://github.com/imnd/bookkeep).
 
+Код написан с соблюдением стандарта PSR-2.
 Весь PHP и JS код, за исключением дэйтпикера, написан лично мной.
