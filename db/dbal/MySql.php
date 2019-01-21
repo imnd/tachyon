@@ -1,44 +1,33 @@
 <?php
-namespace tachyon\db;
+namespace tachyon\db\dbal;
 
 /**
- * PostgreSQL DBAL
+ * MySql DBAL
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-class PgSql extends Db
+class MySql extends Db
 {
     /**
      * @inheritdoc
      */
-    protected function getDsn()
+    protected function getDsn(): string
     {
-        return "pgsql:host={$this->config['host']};port=5432;dbname={$this->config['dbname']}";
+        return "mysql:host={$this->config['host']};dbname={$this->config['dbname']}";
     }
 
     /**
      * @inheritdoc
      */
-    public function isTableExists(string $tableName)
+    public function isTableExists(string $tableName): boolean
     {
         $this->connect();
 
-        $stmt = $this->connection->prepare("SELECT * FROM pg_catalog.pg_tables");
+        $stmt = $this->connection->prepare("SHOW TABLES LIKE ?");
         $this->execute($stmt, array(str_replace('`', '', $tableName)));
         // если такая таблица существует
         return count($stmt->fetchAll()) > 0;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function truncate($tblName)
-    {
-        $this->connect();
-
-        $stmt = $this->connection->prepare("TRUNCATE `$tblName`");
-        return $this->execute($stmt);
     }
     
     # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
@@ -46,9 +35,9 @@ class PgSql extends Db
     /**
      * @inheritdoc
      */
-    public function orderByCast($colName)
+    public function orderByCast(string $colName): string
     {
-        return "$colName::int";
+        return "CAST($colName as unsigned)";
     }
 
     /**
@@ -64,22 +53,22 @@ class PgSql extends Db
             $fields = array_merge($fields, $conditions2['vals']);
         }
         // выводим в файл
-        $stmt = $this->connection->prepare("EXPLAIN EXECUTE $query");
+        $stmt = $this->connection->prepare("EXPLAIN $query");
         try {
             $this->execute($stmt, $fields);
             $rows = $stmt->fetchAll();
             foreach ($rows as $row) {
-                foreach ($row as $key => $value) {
+                foreach ($row as $key => $value)
                     if (is_numeric($key))
                         $output .= "$value\t";
-                }
+
                 $output .= "\r\n";
             }
             $file = fopen(self::$explainPath, "w");
             fwrite($file, $output);
             fclose($file);
         } catch (\Exception $e) {
-            throw new \tachyon\exceptions\DataBaseException('');
+            throw new \tachyon\exceptions\DataBaseException('Some error occured');
         }
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db;
+namespace tachyon\db\dbal;
 
 /**
  * Реализует паттерн "фабричный метод"
@@ -14,14 +14,14 @@ class DbFactory extends \tachyon\Component
     use \tachyon\dic\Message;
 
     /**
-     * @var \tachyon\db\Db
+     * @var Db
      */
     private $db;
 
     /**
-     * @return \tachyon\db\Db
+     * @return Db
      */
-    public function getDb()
+    public function getDb(): Db
     {
         if (is_null($this->db)) {
             if (!$config = $this->config->getOption('db')) {
@@ -30,12 +30,12 @@ class DbFactory extends \tachyon\Component
             if (!isset($config['engine'])) {
                 throw new \tachyon\exceptions\DataBaseException('Не задан параметр конфигурации "engine"');
             }
+            $config['mode'] = $this->get('config')->getOption('mode');
             $className = [
                 'mysql' => 'MySql',
                 'pgsql' => 'PgSql',
             ][$config['engine']];
-            $config['mode'] = $this->get('config')->getOption('mode');
-            $className = "\\tachyon\\db\\$className";
+            $className = "\\tachyon\\db\\dbal\\$className";
 
             $this->db = new $className($config, $this->get('msg'));
         }

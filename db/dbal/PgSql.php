@@ -1,30 +1,30 @@
 <?php
-namespace tachyon\db;
+namespace tachyon\db\dbal;
 
 /**
- * MySql DBAL
+ * PostgreSQL DBAL
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-class MySql extends Db
+class PgSql extends Db
 {
     /**
      * @inheritdoc
      */
-    protected function getDsn()
+    protected function getDsn(): string
     {
-        return "mysql:host={$this->config['host']};dbname={$this->config['dbname']}";
+        return "pgsql:host={$this->config['host']};port=5432;dbname={$this->config['dbname']}";
     }
 
     /**
      * @inheritdoc
      */
-    public function isTableExists(string $tableName)
+    public function isTableExists(string $tableName): boolean
     {
         $this->connect();
 
-        $stmt = $this->connection->prepare("SHOW TABLES LIKE ?");
+        $stmt = $this->connection->prepare("SELECT * FROM pg_catalog.pg_tables");
         $this->execute($stmt, array(str_replace('`', '', $tableName)));
         // если такая таблица существует
         return count($stmt->fetchAll()) > 0;
@@ -35,9 +35,9 @@ class MySql extends Db
     /**
      * @inheritdoc
      */
-    public function orderByCast($colName)
+    public function orderByCast(string $colName): string
     {
-        return "CAST($colName as unsigned)";
+        return "$colName::int";
     }
 
     /**
@@ -53,22 +53,22 @@ class MySql extends Db
             $fields = array_merge($fields, $conditions2['vals']);
         }
         // выводим в файл
-        $stmt = $this->connection->prepare("EXPLAIN $query");
+        $stmt = $this->connection->prepare("EXPLAIN EXECUTE $query");
         try {
             $this->execute($stmt, $fields);
             $rows = $stmt->fetchAll();
             foreach ($rows as $row) {
-                foreach ($row as $key => $value)
+                foreach ($row as $key => $value) {
                     if (is_numeric($key))
                         $output .= "$value\t";
-
+                }
                 $output .= "\r\n";
             }
             $file = fopen(self::$explainPath, "w");
             fwrite($file, $output);
             fclose($file);
         } catch (\Exception $e) {
-            throw new \tachyon\exceptions\DataBaseException('Some error occured');
+            throw new \tachyon\exceptions\DataBaseException('');
         }
     }
 }

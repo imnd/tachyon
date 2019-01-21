@@ -152,9 +152,9 @@ abstract class ArModel extends TableModel
                     $relTableName = $relModel->getTableName();
                     $pk = static::$primKey;
                     $thisTableName = $this->getTableName();
-                    $this->db->setJoin("{$relModel->getSource()} AS $relTableName", "$relTableName.$linkKey=$thisTableName.$pk");
-                    $this->db->setFields($relationArr[3]);
-                    return $this->db->selectOne($thisTableName, array("$thisTableName.$pk" => $this->$pk));
+                    $this->getDb()->setJoin("{$relModel->getSource()} AS $relTableName", "$relTableName.$linkKey=$thisTableName.$pk");
+                    $this->getDb()->setFields($relationArr[3]);
+                    return $this->getDb()->selectOne($thisTableName, array("$thisTableName.$pk" => $this->$pk));
                 break;
                 
                 default: break;
@@ -223,9 +223,9 @@ abstract class ArModel extends TableModel
         $this->alias->aliasWhereTableNames($tableAliases, $this);
 
         // ВЫБИРАЕМ ЗАПИСИ
-        if (!$items = $this->db->select($tableName))
+        if (!$items = $this->getDb()->select($tableName)) {
             return array();
-
+        }
         $this->clearSelect();
 
         $retItems = array();

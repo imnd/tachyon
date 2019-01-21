@@ -46,14 +46,14 @@ class View extends Component
      * @param $view string файл представления
      * @param $vars array переменные представления
      * @param $return boolean показывать или возвращать 
-     * @return void
+     * @return mixed
      */
     public function display($viewName, array $vars=array(), $return=false)
 	{
         $contents = $this->_view("{$this->viewsPath}/$viewName.php", $vars);
-        if ($return)
+        if ($return) {
             return $contents;
-
+        }
         echo $contents;
 	}
 
@@ -143,9 +143,9 @@ class View extends Component
 
     /**
      * @param string $path
-     * @return void
+     * @return View
      */
-    public function setViewsPath($path)
+    public function setViewsPath($path): View
     {
         $this->viewsPath = $path;
         return $this;
@@ -154,7 +154,7 @@ class View extends Component
     /**
      * @return string
      */
-    public function getViewsPath()
+    public function getViewsPath(): string
     {
         return $this->viewsPath;
     }
@@ -162,16 +162,16 @@ class View extends Component
     /**
      * @return string
      */
-    public function getLayout()
+    public function getLayout(): string
     {
         return $this->layout;
     }
 
     /**
      * @param string $layout
-     * @return void
+     * @return View
      */
-    public function setLayout($layout)
+    public function setLayout($layout): View
     {
         $this->layout = $layout;
         return $this;
@@ -180,16 +180,16 @@ class View extends Component
     /**
      * @return string
      */
-    public function getPageTitle()
+    public function getPageTitle(): string
     {
         return $this->pageTitle;
     }
 
     /**
      * @param string $pageTitle
-     * @return void
+     * @return View
      */
-    public function setPageTitle($pageTitle)
+    public function setPageTitle($pageTitle): View
     {
         $this->pageTitle = $pageTitle;
         return $this;
@@ -197,9 +197,9 @@ class View extends Component
 
     /**
      * @param Controller $controller
-     * @return void
+     * @return View
      */
-    public function setController(Controller $controller)
+    public function setController(Controller $controller): View
     {
         $this->controller = $controller;
         return $this;
@@ -208,7 +208,7 @@ class View extends Component
     /**
      * @return Controller
      */
-    public function getController()
+    public function getController(): Controller
     {
         return $this->controller;
     }

@@ -1,6 +1,8 @@
 <?php
 namespace tachyon;
 
+use \tachyon\dic\Container;
+
 /**
  * Базовый класс для всех классов приложения.
  * Содержит несколько общих функций.
@@ -59,14 +61,14 @@ abstract class Component
             if (!is_null($this->$varName)) {
                 // если уже есть одноименная скалярная переменная
                 if (gettype($this->$varName)!='object') {
-                    return \tachyon\dic\Container::getInstanceOf($serviceName, $this, $params);
+                    return Container::getInstanceOf($serviceName, $this, $params);
                 }
             } else {
-                $this->$varName = \tachyon\dic\Container::getInstanceOf($serviceName, $this, $params);
+                $this->$varName = Container::getInstanceOf($serviceName, $this, $params);
             }
             return $this->$varName;
         }
-        return \tachyon\dic\Container::getInstanceOf($serviceName, $this, $params);
+        return Container::getInstanceOf($serviceName, $this, $params);
     }
 
     /**

@@ -134,8 +134,9 @@ class Controller extends Component
      */
     private function _setRequestVar($requestVars, $name)
     {
-        if (isset($requestVars[$name]))
+        if (isset($requestVars[$name])) {
             $this->$name = $requestVars[$name];
+        }
     }
 
 	/**
@@ -167,9 +168,9 @@ class Controller extends Component
 	{
         $this->view->setLayout($this->layout);
 
-        if (empty($view))
+        if (empty($view)) {
             $view = lcfirst($this->action);
-
+        }
         $this->view->layout($view, $vars);
 	}
 
@@ -202,7 +203,7 @@ class Controller extends Component
     public function getQuery($queryType)
     {
         if (!in_array($queryType, array('get', 'post', 'files'))) {
-            throw new HttpException($this->msg->i18n('Invalid request type.', array('action' => $actionName)), HttpException::BAD_REQUEST);
+            throw new HttpException($this->msg->i18n('Invalid request type.', array('action' => $this->action)), HttpException::BAD_REQUEST);
         }
         return $this->$queryType;
     }

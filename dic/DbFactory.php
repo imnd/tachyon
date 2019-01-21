@@ -8,15 +8,15 @@ namespace tachyon\dic;
 trait DbFactory
 {
     /**
-     * @var \tachyon\db\DbFactory
+     * @var \tachyon\db\dbal\DbFactory
      */
     protected $dbFactory;
 
     /**
-     * @param \tachyon\db\Db $service
+     * @param \tachyon\db\dbal\Db $service
      * @return void
      */
-    public function setDbFactory(\tachyon\db\DbFactory $service)
+    public function setDbFactory(\tachyon\db\dbal\DbFactory $service)
     {
         $this->dbFactory = $service;
     }

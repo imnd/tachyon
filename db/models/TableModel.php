@@ -88,9 +88,9 @@ abstract class TableModel extends Model
 
         $this->alias->prependTableNameOnWhere($tableName, $this->getWhere());
         // алиасим имя таблицы
-        if (!is_null($this->tableAlias))
+        if (!is_null($this->tableAlias)) {
             $tableName .= " AS {$this->tableAlias}";
-
+        }
         // выбираем записи
         $items = $this->getDb()->select($tableName);
         $this->clearSelect();
@@ -625,7 +625,7 @@ abstract class TableModel extends Model
         $this->select($modelFields);
     }
 
-    # геттеры
+    # Геттеры
 
     /**
      * fieldsList
@@ -718,7 +718,7 @@ abstract class TableModel extends Model
 
     /**
      * Шорткат
-     * @return \tachyon\db\Db
+     * @return \tachyon\db\dbal\Db
      */
     public function getDb()
     {

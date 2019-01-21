@@ -40,27 +40,20 @@ class XsltView extends View
     {
         $xml = $this->arrayToXML($vars, 'root');
         $output = $this->_xsltTransform($xml, $view);
-        if ($return)
+        if ($return) {
             return $output;
-        else    
-            echo $output;
+        }
+        echo $output;
     }
 
     private function arrayToXML($inpArray, $rootTag='root', $innerTag='element')
     {
          $xml = "<$rootTag>";
          foreach ($inpArray as $key => $val) {
-             if (is_numeric($key))
-                 $tag = $innerTag;
-             else    
-                 $tag = $key;
-                 
-             if (is_array($val))
-                 $xml .= $this->arrayToXML($val, $tag);
-             else
-                 $xml .= "<$tag>$val</$tag>";
+             $tag = is_numeric($key) ? $innerTag : $key;
+             $xml .= is_array($val) ? $this->arrayToXML($val, $tag) : "<$tag>$val</$tag>";
          }
-         return $xml .= "</$rootTag>";
+         return "$xml</$rootTag>";
     }
     
     /**

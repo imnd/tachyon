@@ -62,38 +62,38 @@ abstract class QueryModel extends Model
      * 
      * @return array
      */
-    final public static function getPrimKey()
+    /*final public static function getPrimKey()
     {
         return null;
-    }
+    }*/
         
     /**
      * возвращает первичный ключ
      * 
      * @return array
      */
-    final public static function getPrimKeyArr()
+    /*final public static function getPrimKeyArr()
     {
         return array();
-    }
+    }*/
 
     /**
      * алиас первичного ключа
      * 
      * @return array
      */
-    final public static function getPrimKeyAliasArr()
+    /*final public static function getPrimKeyAliasArr()
     {
         return array();
-    }
+    }*/
 
     /**
      * возвращает типы аттрибутов модели
      * 
      * @return array
      */
-    final public static function getAttributeTypes()
+    /*final public static function getAttributeTypes()
     {
         return array();
-    }
+    }*/
 }

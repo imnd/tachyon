@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db;
+namespace tachyon\db\dbal;
 
 use tachyon\exceptions\DataBaseException;
 
@@ -30,9 +30,8 @@ abstract class Db extends \tachyon\Component
      * Выводить ли анализ запросов в файл
      */
     protected $explain;
-
     /**
-     * поля для выборки
+     * поля для выборки/вставки/обновления
      */
     protected $fields = array();
     /**
@@ -93,11 +92,11 @@ abstract class Db extends \tachyon\Component
     /**
      * @return \PDO
      */
-    abstract protected function getDsn();
+    abstract protected function getDsn(): string;
 
-    abstract public function isTableExists(string $tableName);
+    abstract public function isTableExists(string $tableName): boolean;
 
-    public function select($tblName, array $where=array(), array $fields=array())
+    public function select(string $tblName, array $where=array(), array $fields=array()): array
     {
         $this->connect();
 
@@ -124,34 +123,39 @@ abstract class Db extends \tachyon\Component
             $this->explain($query, $conditions);
         }
         $stmt = $this->connection->prepare($query);
-        $rows = $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : array();
-        return $rows;
+        return $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : array();
     }
 
-    public function insert($tblName, array $fields=array(), $check=false)
+    /**
+     * Вставляет записи со значениями $fields по условию $where
+     */
+    public function insert(string $tblName, array $fieldValues=array()): boolean
     {
         $this->connect();
 
-        $fields = array_merge($fields, $this->fields);
-        $conditions = $this->prepareConditions($fields, 'insert');
-        $placeholder = $this->getPlaceholder($fields);
+        $fieldValues = array_merge($fieldValues, $this->fields);
+        $conditions = $this->prepareConditions($fieldValues, 'insert');
+        $placeholder = $this->getPlaceholder($fieldValues);
         $query = "INSERT INTO `$tblName` ({$conditions['clause']}) VALUES ($placeholder)";
         $stmt = $this->connection->prepare($query);
         $this->clearFields();
 
-        if ($this->execute($stmt, $conditions['vals']))
+        if ($this->execute($stmt, $conditions['vals'])) {
             return $this->connection->lastInsertId();
-
+        }
         return false;
     }
 
-    public function update($tblName, array $fields=array(), array $where=array(), $check=false)
+    /**
+     * Обновляет поля $fieldValues записей по условию $where
+     */
+    public function update(string $tblName, array $fieldValues=array(), array $where=array())
     {
         $this->connect();
 
         $where = array_merge($where, $this->where);
-        $fields = array_merge($fields, $this->fields);
-        $updateConditions = $this->prepareConditions($fields, 'update');
+        $fieldValues = array_merge($fieldValues, $this->fields);
+        $updateConditions = $this->prepareConditions($fieldValues, 'update');
         $whereConditions = $this->prepareConditions($where, 'where');
         $query = "UPDATE `$tblName` {$updateConditions['clause']} {$whereConditions['clause']}";
         $stmt = $this->connection->prepare($query);
@@ -162,9 +166,9 @@ abstract class Db extends \tachyon\Component
     }
 
     /**
-     * быстро очищает таблицу
+     * удаляет записи по условию $where
      */
-    public function delete($tblName, array $where=array(), $check=false)
+    public function delete(string $tblName, array $where=array())
     {
         $this->connect();
 
@@ -174,6 +178,17 @@ abstract class Db extends \tachyon\Component
         $this->clearWhere();
         
         return $this->execute($stmt, $whereConditions['vals']);
+    }
+
+    /**
+     * быстро очищает таблицу
+     */
+    public function truncate(string $tblName)
+    {
+        $this->connect();
+
+        $stmt = $this->connection->prepare("TRUNCATE `$tblName`");
+        return $this->execute($stmt);
     }
 
     public function beginTransaction()
@@ -307,7 +322,7 @@ abstract class Db extends \tachyon\Component
     /**
      * Строка order by cast
      */
-    abstract public function orderByCast($colName);
+    abstract public function orderByCast(string $colName): string;
 
     protected function orderByString()
     {
