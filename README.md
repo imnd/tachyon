@@ -17,12 +17,12 @@ Components:
 - form generator, which picks up the model validation rules and turns them to JS (instead of AJAX-validation for speed sake). Usual server-side validation also exists. It depends on the "scenario" of model using;
 - html tag helper;
 - grid widget;
-- datepicker widget;
 - model validator;
 - files-uploading;
 - work with cookies;
-- authentication.
-- Tiny JS framework.
+- authentication;
+- Tiny JS framework;
+- XSLT template system.
 
 All PHP and JS code, except datepicker is written by me.
 
@@ -35,12 +35,13 @@ MVC микро-PHP-фреймворк.
 Связанные записи могут загружаться как "жадно" так и "лениво".
 
 Компоненты:
-- генератор форм, который подхватывает правила валидации из модели и превращает в JS (вместо AJAX-валидации, для скорости). Обычная валидация на основе правил валидации из модели так же имеется. Она зависит от "сценария" использования модели.
-- 2 вида кэширования в простейшем виде для ДБ и http запросов. Для этого используется файловая система.
-- защита от XSS и SQL injection.
-- элементарная многоязычность.
-- компоненты для загрузки файлов, работы с куки и авторизации.
-- несложный layout. Шаблонизация: простая PHP и XSLT.
+- генератор форм, который подхватывает правила валидации из модели и превращает в JS (вместо AJAX-валидации, для скорости). Обычная валидация на основе правил валидации из модели так же имеется. Она зависит от "сценария" использования модели;
+- 2 вида кэширования в простейшем виде для ДБ и http запросов. Для этого используется файловая система;
+- защита от XSS и SQL injection;
+- многоязычность;
+- компоненты для загрузки файлов, работы с куки и авторизации;
+- несложный layout;
+- XSLT шаблонизация;
 - виджет для отображения таблиц из массива моделей.
 
 В составе так же есть микро-JS-фреймворк.
