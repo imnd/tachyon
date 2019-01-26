@@ -10,7 +10,7 @@ Features:
     - Active Record with foreign keys support and special kind of models for sub-queries, which interacts with the database using the Bridge pattern via a DBAL. Related records can be extracted by "greedy" (by one request) or "lazy" way;
     - Data Mapper. 
 - 2 types of simplest (file system) caching for DB and http requests;
-- protection against CSRF and SQL injection;
+- protection against XSS, CSRF assaults and SQL injections;
 - very simple i18n;
 - view layout (vanilla PHP and XSLT).
 
@@ -42,7 +42,7 @@ MVC микро-PHP-фреймворк.
 - несложный layout;
 - 2 вида кэширования в простейшем виде для ДБ и http запросов. Для этого используется файловая система;
 - компонент для публикации файлов ресурсов, js и css;
-- защита от CSRF и SQL injection;
+- защита от XSS, CSRF атак и SQL инъекций;
 - многоязычность;
 
 Вспомогательные компоненты:
