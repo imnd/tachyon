@@ -10,10 +10,9 @@ namespace tachyon\components\cache;
 abstract class Cache extends \tachyon\Component
 {
     protected $duration = 60;
-    protected $cacheFolder = '../runtime/cache/';
-    protected $cacheFile = '';
     protected $key = '';
-    protected $turnedOn = false;
+    protected $enabled = false;
+    protected $serialize = false;
 
     /**
      * Инициализация
@@ -23,64 +22,64 @@ abstract class Cache extends \tachyon\Component
     {
         $type = strtolower($this->getClassName());
         $cache = $this->get('config')->getOption('cache');
-        if ($this->get('config')->getOption('mode')!=='production' || !isset($cache[$type]))
+        if ($this->get('config')->getOption('mode')!=='production' || !isset($cache[$type])) {
             return;
-
-        $this->turnedOn = false;
+        }
+        $this->enabled = false;
         $options = $cache[$type];
-        foreach ($options as $key => $value)
-            if (property_exists($type, $key))
+        foreach ($options as $key => $value) {
+            if (property_exists($type, $key)) {
                 $this->$key = $value;
+            }
+        }
     }
 
     /**
-     * возвращает содержимое файла кэша или включает буфферинг вывода
+     * возвращает содержимое кэша или включает буфферинг вывода
      * @param string $cacheKey
      */
-    abstract public function start($cacheKey);
+    public function start($cacheKey)
+    {
+        if (!$this->enabled) {
+            return;
+        }
+        if ($cacheContents = $this->getContents($cacheKey)) {
+            return $cacheContents;
+        }
+        // запускаем кеширование
+        $this->setKey($cacheKey);
+        ob_start();
+    }
 
     /**
-     * заканчиваем кеширование (слив содержимого вывода в файл)
+     * заканчиваем кеширование
+     * @param string $contents
+     */
+    public function end($contents=null)
+    {
+        if (!$this->enabled) {
+            return;
+        }
+        if (is_null($contents)) {
+            $contents = ob_get_contents();
+        }
+        $this->save($contents);
+    }
+
+    /**
+     * слив содержимого вывода в хранилище
      * @param string $contents
      */
     abstract protected function save($contents);
 
     /**
-     * заканчиваем кеширование (слив содержимого вывода в файл)
-     * @param string $contents
+     * возвращает содержимое кэша
+     * @param string $cacheKey
      */
-    abstract public function end($contents = null);
-
-    protected function getContents($key, $unserialize = false)
-    {
-        $this->setKey($key);
-        $this->getCacheFilePath();
-        if (file_exists($this->cacheFile)) {
-            $modifTime = filemtime($this->cacheFile);
-            $time = time();
-            $age = $time - $modifTime;
-            if ($this->duration < $age)
-                return;
-            
-            ob_start();
-            require($this->cacheFile);
-            $contents = ob_get_contents();
-            if ($unserialize)
-                $contents = unserialize($contents);
-
-            ob_end_clean();
-            return $contents;
-        }
-        return;
-    }
+    abstract protected function getContents($key);
 
     protected function setKey($key)
     {
         $this->key = md5($key);
-    }
-
-    protected function getCacheFilePath()
-    {
-        $this->cacheFile = "{$this->cacheFolder}{$this->key}.php";
     }
 }

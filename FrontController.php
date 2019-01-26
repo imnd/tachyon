@@ -12,7 +12,7 @@ use tachyon\exceptions\HttpException;
 final class FrontController extends Component
 {
     # сеттеры сервисов, которые внедряются в компонент
-    use \tachyon\dic\OutputCache;
+    use \tachyon\dic\FileCache;
     use \tachyon\dic\Message;
 
 	/**

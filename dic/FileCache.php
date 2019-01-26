@@ -7,18 +7,18 @@ namespace tachyon\dic;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-trait OutputCache
+trait FileCache
 {
     /**
-     * @var \tachyon\components\cache\Output $cache
+     * @var \tachyon\components\cache\File $cache
      */
     protected $cache;
 
     /**
-     * @param \tachyon\components\cache\Output $service
+     * @param \tachyon\components\cache\File $service
      * @return void
      */
-    public function setCache(\tachyon\components\cache\Output $service)
+    public function setCache(\tachyon\components\cache\File $service)
     {
         $this->cache = $service;
     }
