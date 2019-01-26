@@ -2,8 +2,7 @@
 namespace tachyon\db\relations;
 
 /**
- * class HasmanyRelation
- * Класс реализующий связь "имеет много" между моделями
+ * Класс, реализующий связь "имеет много" между моделями
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND

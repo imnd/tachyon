@@ -68,7 +68,7 @@ class PgSql extends Db
             fwrite($file, $output);
             fclose($file);
         } catch (\Exception $e) {
-            throw new \tachyon\exceptions\DataBaseException('');
+            throw new \tachyon\exceptions\DBALException('');
         }
     }
 }

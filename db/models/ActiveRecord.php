@@ -4,10 +4,10 @@ namespace tachyon\db\models;
 use tachyon\exceptions\ModelException;
 
 /**
+ * Класс модели Active Record
+ * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
- * 
- * Класс модели Active Record
  */
 abstract class ActiveRecord extends TableModel
 {
@@ -63,6 +63,7 @@ abstract class ActiveRecord extends TableModel
     /**
      * Инициализация
      * @return void
+     * @throws ModelException
      */
     public function __construct()
     {

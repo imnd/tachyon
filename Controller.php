@@ -18,6 +18,7 @@ class Controller extends Component
     use \tachyon\dic\Message;
     use \tachyon\dic\Lang;
     use \tachyon\dic\View;
+    use \tachyon\dic\DbFactory;
         
     /**
      * Язык сайта

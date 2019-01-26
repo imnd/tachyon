@@ -25,10 +25,10 @@ class DbFactory extends \tachyon\Component
     {
         if (is_null($this->db)) {
             if (!$config = $this->config->getOption('db')) {
-                throw new \tachyon\exceptions\DataBaseException('Не задан параметр конфигурации "db"');
+                throw new \tachyon\exceptions\DBALException('Не задан параметр конфигурации "db"');
             }
             if (!isset($config['engine'])) {
-                throw new \tachyon\exceptions\DataBaseException('Не задан параметр конфигурации "engine"');
+                throw new \tachyon\exceptions\DBALException('Не задан параметр конфигурации "engine"');
             }
             $config['mode'] = $this->get('config')->getOption('mode');
             $className = [
