@@ -119,6 +119,9 @@ class Container
             }
             self::_setProperties($service, $parentConfig);
         }
+        if (method_exists($service, 'initialize')) {
+            $service->initialize();
+        }
         return $service;
     }
 
@@ -166,7 +169,9 @@ class Container
             $service->$setterMethod($val);
             return;
         }
-        //throw new ContainerException("Unable to set property $name to service " . get_class($service));
+        if ($name!=='domain') {
+            throw new ContainerException("Unable to set property $name to service " . get_class($service));
+        }
     }
 
     private static function _getConfigParam($config, $param)

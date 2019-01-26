@@ -1,7 +1,7 @@
 <?php
 namespace tachyon\db\dbal;
 
-use tachyon\exceptions\DataBaseException;
+use tachyon\exceptions\DBALException;
 
 /**
  * DBAL (на PDO)
@@ -85,7 +85,7 @@ abstract class Db extends \tachyon\Component
             );
             $this->connection->exec("SET NAMES {$this->config['charset']}");
         } catch (\PDOException $e) {
-            throw new DataBaseException($this->msg->i18n('conn_err') . "\n{$e->getMessage()}");
+            throw new DBALException($this->msg->i18n('conn_err') . "\n{$e->getMessage()}");
         }
     }
 
@@ -241,11 +241,6 @@ abstract class Db extends \tachyon\Component
             return $this->prepareRows($stmt->fetchAll());
         }
         return array();
-    }
-    
-    public function fetchRows($stmt)
-    {
-        return $this->prepareRows($stmt->fetchAll());
     }
     
     # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
@@ -445,11 +440,11 @@ abstract class Db extends \tachyon\Component
                 } elseif (preg_match('/ LIKE/', $field, $matches)!==0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = "%$val%";
-                } elseif (preg_match('/<=|<|>=|>/', $field, $matches)!==0)
+                } elseif (preg_match('/<=|<|>=|>/', $field, $matches)!==0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . ' ?';
-                else
-				    $clauseArr[] = $this->prepareField($field) . $operator;
-
+                } else {
+				    $clauseArr[] = $this->quoteField($field) . $operator;
+                }
 				$vals[] = $val;
 			}
 			$clause = "$keyword " . implode(" $glue ", $clauseArr);
@@ -461,8 +456,7 @@ abstract class Db extends \tachyon\Component
     {
         $field = str_replace($text, '', $field);
         $field = trim($field);
-        $field = $this->prepareField($field);
-        return $field;
+        return $this->quoteField($field);
     }
 
     protected function prepareFields(array $fields)
@@ -471,12 +465,12 @@ abstract class Db extends \tachyon\Component
             return '*';
         }
         foreach ($fields as &$field) {
-            $field = $this->prepareField($field);
+            $field = $this->quoteField($field);
         }
         return implode(',', $fields);
     }
 
-	protected function prepareField($field)
+	protected function quoteField($field)
 	{
         if (preg_match('/[.( ]/', $field)===0) {
 			$field = "`" . trim($field) . "`";
@@ -517,7 +511,7 @@ abstract class Db extends \tachyon\Component
             //if ('00000' == $this->connection->errorCode())
                 //return false;
 
-            throw new DataBaseException($this->msg->i18n('db_err') . ': ' . serialize(self::$_conn->errorInfo()));
+            throw new DBALException($this->msg->i18n('db_err') . ': ' . serialize(self::$_conn->errorInfo()));
         }
         return true;
     }

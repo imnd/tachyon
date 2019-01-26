@@ -1,7 +1,7 @@
 <services>
     <service id="FrontController" class="\tachyon\FrontController">
         <property name="cache">
-            <ref id="OutputCache"/>
+            <ref id="FileCache"/>
         </property>
         <property name="msg">
             <ref id="Message"/>
@@ -29,7 +29,7 @@
         </property>
     </service>
     <service id="Csrf" class="\tachyon\components\Csrf" singleton="true"></service>
-    <service id="OutputCache" class="\tachyon\components\cache\Output" singleton="true"></service>
+    <service id="FileCache" class="\tachyon\components\cache\File" singleton="true"></service>
     <service id="DbCache" class="\tachyon\components\cache\Db" singleton="true"></service>
 
     <service id="AssetManager" class="\tachyon\components\AssetManager"></service>
@@ -128,6 +128,19 @@
             <ref id="Message"/>
         </property>
     </service>
+
+    <service id="Persistence" class="\tachyon\db\dataMapper\Persistence">
+        <property name="dbFactory">
+            <ref id="DbFactory"/>
+        </property>
+    </service>
+
+    <service id="Repository" class="\tachyon\db\dataMapper\Repository">
+        <property name="persistence">
+            <ref id="Persistence"/>
+        </property>
+    </service>
+
     <service id="Join" class="\tachyon\db\Join"></service>
     <service id="Alias" class="\tachyon\db\Alias"></service>
     <service id="Relation" class="\tachyon\db\relations\Relation"></service>
