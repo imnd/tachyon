@@ -1,7 +1,7 @@
 <services>
     <service id="FrontController" class="\tachyon\FrontController">
         <property name="cache">
-            <ref id="FileCache"/>
+            <ref id="OutputCache"/>
         </property>
         <property name="msg">
             <ref id="Message"/>
@@ -29,7 +29,7 @@
         </property>
     </service>
     <service id="Csrf" class="\tachyon\components\Csrf" singleton="true"></service>
-    <service id="FileCache" class="\tachyon\components\cache\File" singleton="true"></service>
+    <service id="OutputCache" class="\tachyon\components\cache\Output" singleton="true"></service>
     <service id="DbCache" class="\tachyon\components\cache\Db" singleton="true"></service>
 
     <service id="AssetManager" class="\tachyon\components\AssetManager"></service>
@@ -143,18 +143,18 @@
 
     <service id="Join" class="\tachyon\db\Join"></service>
     <service id="Alias" class="\tachyon\db\Alias"></service>
-    <service id="Relation" class="\tachyon\db\relations\Relation"></service>
-    <service id="JoinRelation" class="\tachyon\db\relations\JoinRelation"></service>
-    <service id="HasoneRelation" class="\tachyon\db\relations\HasoneRelation"></service>
-    <service id="HasmanyRelation" class="\tachyon\db\relations\HasmanyRelation"></service>
-    <service id="ManytomanyRelation" class="\tachyon\db\relations\ManytomanyRelation"></service>
+    <service id="Relation" class="\tachyon\db\activeRecord\Relation"></service>
+    <service id="JoinRelation" class="\tachyon\db\activeRecord\JoinRelation"></service>
+    <service id="HasoneRelation" class="\tachyon\db\activeRecord\HasoneRelation"></service>
+    <service id="HasmanyRelation" class="\tachyon\db\activeRecord\HasmanyRelation"></service>
+    <service id="ManytomanyRelation" class="\tachyon\db\activeRecord\ManytomanyRelation"></service>
 
-    <service id="ActiveRecord" class="\tachyon\db\models\ActiveRecord">
+    <service id="ActiveRecord" class="\tachyon\db\activeRecord\ActiveRecord">
         <property name="cache">
             <ref id="DbCache"/>
         </property>
     </service>
-    <service id="TableModel" class="\tachyon\db\models\TableModel">
+    <service id="TableModel" class="\tachyon\db\TableModel">
         <property name="alias">
             <ref id="Alias"/>
         </property>

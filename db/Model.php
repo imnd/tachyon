@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db\models;
+namespace tachyon\db;
 
 /**
  * Базовый класс для всех моделей

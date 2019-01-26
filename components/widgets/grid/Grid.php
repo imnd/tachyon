@@ -14,7 +14,7 @@ class Grid extends \tachyon\components\widgets\Widget
     use \tachyon\dic\Csrf;
 
     /**
-     * @var \tachyon\db\models\TableModel $model
+     * @var \tachyon\db\TableModel $model
      */
     protected $model;
     /**

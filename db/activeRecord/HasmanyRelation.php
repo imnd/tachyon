@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db\relations;
+namespace tachyon\db\activeRecord;
 
 /**
  * Класс, реализующий связь "имеет много" между моделями

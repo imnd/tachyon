@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db\relations;
+namespace tachyon\db\activeRecord;
 
 /**
  * class HasoneRelation

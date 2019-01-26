@@ -124,7 +124,7 @@ class Validator extends \tachyon\Component
      * функция валидации полей модели
      * TODO: убрать копипаст
      * 
-     * @param \tachyon\db\models\Model $model
+     * @param \tachyon\db\Model $model
      * @param $attrs array массив полей
      * @return boolean
      * @throws ValidationException

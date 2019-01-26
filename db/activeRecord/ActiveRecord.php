@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db\models;
+namespace tachyon\db\activeRecord;
 
 use tachyon\exceptions\ModelException;
 
@@ -9,7 +9,7 @@ use tachyon\exceptions\ModelException;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-abstract class ActiveRecord extends TableModel
+abstract class ActiveRecord extends \tachyon\db\TableModel
 {
     use \tachyon\dic\DbCache;
     use \tachyon\dic\Message;
@@ -79,7 +79,7 @@ abstract class ActiveRecord extends TableModel
 
             // приделываем первичные ключи связанной таблицы
             $relationParams[3] = array_merge($relationParams[3], $relationModel->getPrimKeyArr());
-            if (get_parent_class($relationModel)==='\tachyon\TableModel') {
+            if (get_parent_class($relationModel)==='\tachyon\db\TableModel') {
                 // приделываем алиасы первичных ключей связанной таблицы
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->alias->getPrimKeyAliasArr($with));
             }
@@ -251,7 +251,7 @@ abstract class ActiveRecord extends TableModel
             // приделываем внешние объекты
             // заполняем внешние поля, присоединенные ч/з JOIN
             foreach ($this->with as $with) {
-                /** @var \tachyon\db\relations\Relation $relation */
+                /** @var \tachyon\db\activeRecord\Relation $relation */
                 $relation = $this->relationClasses[$with];
                 // выбираем значения внешних полей
                 $relation->setValues($item);
@@ -301,7 +301,7 @@ abstract class ActiveRecord extends TableModel
 
     /**
      * shortcut
-     * @return \tachyon\db\models\ActiveRecord
+     * @return \tachyon\db\activeRecord\ActiveRecord
      */
     public function findByPk($pk)
     {
@@ -317,7 +317,7 @@ abstract class ActiveRecord extends TableModel
     }
 
     /**
-     * @return \tachyon\db\models\ActiveRecord
+     * @return \tachyon\db\activeRecord\ActiveRecord
      */
     public function findOne($conditions = array())
     {

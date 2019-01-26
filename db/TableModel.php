@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db\models;
+namespace tachyon\db;
 
 use tachyon\exceptions\ModelException;
 

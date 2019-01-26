@@ -16,7 +16,7 @@ class Active extends \tachyon\Component
     /**
      * Делает сущность активной
      * 
-     * @param \tachyon\db\models\Model $model
+     * @param \tachyon\db\Model $model
      * @return boolean
      */
     public function activate($model)
@@ -27,7 +27,7 @@ class Active extends \tachyon\Component
     /**
      * Делает сущность неактивной
      * 
-     * @param \tachyon\db\models\Model $model
+     * @param \tachyon\db\Model $model
      * @return boolean
      */
     public function deactivate($model)
@@ -38,7 +38,7 @@ class Active extends \tachyon\Component
     /**
      * Устанавливает состояние сущности
      * 
-     * @param \tachyon\db\models\Model $model
+     * @param \tachyon\db\Model $model
      * @return boolean
      */
     protected function setState($model, $state)
@@ -49,7 +49,7 @@ class Active extends \tachyon\Component
     /**
      * Текстовая расшифровка для значения поля БД "активность"
      * 
-     * @param \tachyon\db\models\Model $model
+     * @param \tachyon\db\Model $model
      * @param array $item
      * @return string
      */
