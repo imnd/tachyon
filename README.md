@@ -5,11 +5,12 @@ Tiny MVC php framework.
 Features:
 - Dependency Injection Container. It uses setter methods and xml configuration files;
 - Front Controller with a simple (file system) routing;
-- PDO based DBAL;
-
-- ORM (AR with foreign keys support and special self-invented kind of models for sub-queries), which interacts with the database using the Bridge pattern via a PDAL-based DBAL. DBAL works on both MySql and PgSql. Instantiation of the corresponding DBAL class occurs using the Factory Method pattern. Related records can be extracted by "greedy" (by one request) or "lazy" way;
+- PDO based DBAL. It works on both MySql and PgSql. Instantiation of the corresponding class occurs using the Factory Method pattern;
+- ORM 
+    - Active Record with foreign keys support and special kind of models for sub-queries, which interacts with the database using the Bridge pattern via a DBAL. Related records can be extracted by "greedy" (by one request) or "lazy" way;
+    - Data Mapper. 
 - 2 types of simplest (file system) caching for DB and http requests;
-- protection against XSS and SQL injection;
+- protection against CSRF and SQL injection;
 - very simple i18n;
 - view layout (vanilla PHP and XSLT).
 
@@ -21,7 +22,7 @@ Components:
 - files-uploading;
 - work with cookies;
 - authentication;
-- Tiny JS framework;
+- tiny JS framework;
 - XSLT template system;
 - component for publishing js and css resource files.
 
@@ -32,26 +33,30 @@ All PHP and JS code, except datepicker is written by me.
 MVC микро-PHP-фреймворк.
 
 Это Front Controller с простым (физическим) роутингом.
-Реализован Dependency Injection Container, который реализован с использованием сеттеров и файлов конфигурации xml;
-Реализована ORM (AR с поддержкой внешних ключей + особый вид моделей для подзапросов), которая взаимодействует с БД используя паттерн Bridge через DBAL на основе PDO. DBAL работает как на MySql так и на PgSql. Инстанциирование соответствующего класса DBAL происходит с помощью паттерна Factory Method.
-Связанные записи могут загружаться как "жадно" так и "лениво".
-
-Компоненты:
-- генератор форм, который подхватывает правила валидации из модели и превращает в JS (вместо AJAX-валидации, для скорости). Обычная валидация на основе правил валидации из модели так же имеется. Она зависит от "сценария" использования модели;
-- 2 вида кэширования в простейшем виде для ДБ и http запросов. Для этого используется файловая система;
-- защита от XSS и SQL injection;
-- многоязычность;
-- компоненты для загрузки файлов, работы с куки и авторизации;
+Компоненты ядра:
+- Dependency Injection Container, который реализован с использованием сеттеров и файлов конфигурации xml;
+- DBAL на основе PDO. DBAL работает как на MySql так и на PgSql. Инстанциирование соответствующего класса DBAL происходит с помощью паттерна Factory Method.;
+- 2 типа ORM, которые взаимодействует с БД через DBAL используя паттерн Bridge: 
+  - Active Record с поддержкой внешних ключей + особый вид моделей для подзапросов. Связанные записи могут загружаться как "жадно" так и "лениво".
+  - Data Mapper.
 - несложный layout;
-- XSLT шаблонизация;
+- 2 вида кэширования в простейшем виде для ДБ и http запросов. Для этого используется файловая система;
 - компонент для публикации файлов ресурсов, js и css;
+- защита от CSRF и SQL injection;
+- многоязычность;
+
+Вспомогательные компоненты:
+- генератор форм, который подхватывает правила валидации из модели и превращает в JS (вместо AJAX-валидации, для скорости). Обычная валидация на основе правил валидации из модели так же имеется. Она зависит от "сценария" использования модели;
+- компоненты для загрузки файлов, работы с куки и авторизации;
+- XSLT шаблонизация;
 - виджет для отображения таблиц из массива моделей.
 
 В составе так же есть микро-JS-фреймворк.
 
-От первой версии отличеется наличием DIC, архитектура полностью переписана под это. Удалены "поведения" и магические вызовы методов. Все компоненты полностью независимы и ничего не знают друг о друге.
-
-На этом фреймворке работает реальная бухгалтерия  (https://github.com/imnd/bookkeep).
+От первой версии отличеется наличием Dependency Injection Container, архитектура полностью переписана под это. Удалены "поведения" и магические методы. Все компоненты полностью независимы.
 
 Код написан с соблюдением стандарта PSR-2.
 Весь PHP и JS код, за исключением дэйтпикера, написан лично мной.
+
+На этом фреймворке работает реальная бухгалтерия  (https://github.com/imnd/bookkeep).
+
