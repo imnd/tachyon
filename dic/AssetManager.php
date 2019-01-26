@@ -10,12 +10,12 @@ namespace tachyon\dic;
 trait AssetManager
 {
     /**
-     * @var \tachyon\db\Alias $Alias
+     * @var \tachyon\components\AssetManager $Alias
      */
     protected $assetManager;
 
     /**
-     * @param \tachyon\db\Alias $service
+     * @param \tachyon\components\AssetManager $service
      * @return void
      */
     public function setAssetManager(\tachyon\components\AssetManager $service)

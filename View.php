@@ -80,7 +80,7 @@ class View extends Component
     {
         if (!file_exists($filePath)) {
             $error = "{$this->msg->i18n('No view file found')}: \"$filePath\"\n";
-            require __DIR__ . '/error.php';
+            echo "<div class='error'>$error</div>";
             die;
         }
         extract($vars);
@@ -211,5 +211,16 @@ class View extends Component
     public function getController(): Controller
     {
         return $this->controller;
+    }
+
+    /**
+     * Экранирование вывода
+     * 
+     * @param string $text
+     * @return string
+     */
+    public function escape($text)
+    {
+        return htmlspecialchars( $text );
     }
 }

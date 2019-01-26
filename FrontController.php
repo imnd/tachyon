@@ -12,7 +12,7 @@ use tachyon\exceptions\HttpException;
 final class FrontController extends Component
 {
     # сеттеры сервисов, которые внедряются в компонент
-    use \tachyon\dic\FileCache;
+    use \tachyon\dic\OutputCache;
     use \tachyon\dic\Message;
 
 	/**
@@ -21,6 +21,9 @@ final class FrontController extends Component
 	 */
 	public function dispatch()
 	{
+        // Защита от XSS. HTTP Only
+        ini_set('session.cookie_httponly', 1);
+
         $requestUri = $_SERVER['REQUEST_URI'];
         // кеширование
         $this->cache->start($requestUri);

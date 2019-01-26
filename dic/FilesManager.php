@@ -10,12 +10,12 @@ namespace tachyon\dic;
 trait FilesManager
 {
     /**
-     * @var \tachyon\db\Alias $Alias
+     * @var \tachyon\components\FilesManager $filesManager
      */
     protected $filesManager;
 
     /**
-     * @param \tachyon\db\Alias $service
+     * @param \tachyon\components\FilesManager $service
      * @return void
      */
     public function setFilesManager(\tachyon\components\FilesManager $service)
