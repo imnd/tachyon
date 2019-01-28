@@ -25,35 +25,96 @@ final class FrontController extends Component
         ini_set('session.cookie_httponly', 1);
 
         $requestUri = $_SERVER['REQUEST_URI'];
+
         // кеширование
         $this->cache->start($requestUri);
+
         // разбираем запрос
-		$requestArr = explode('/', $requestUri);
+        $requestVars = [
+            'get' => $_GET,
+            'post' => $_POST,
+            'files' => $_FILES,
+        ];
+        $urlInfo = parse_url($requestUri);
+		$requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
-		// разбираем имена контроллера
-        // TODO: применить parse_url
+        // Извлекаем имя контроллера
 		$controllerName = $this->_getNameFromRequest($requestArr, 'Index');
-        if (strpos($controllerName, '?') !== false) {
-            $requestVars['get'] = $this->_parseGet($controllerName);
-            $controllerName = substr($controllerName, 0, strpos($controllerName, '?'));
-            $actionName = 'index';
-        } else {
-            // и действия
-            $requestStr = $this->_getNameFromRequest($requestArr, 'index');
-            $actionName = $this->_getActionName($requestStr);
-            // разбираем массив параметров
-            $requestVars['get'] = $this->_parseGet($requestStr);
-            // разбираем массив параметров
-            $requestVars = array_merge_recursive($requestVars, $this->_parseRequest($requestArr));
+        // Извлекаем имя экшна
+        $actionName = $this->_getNameFromRequest($requestArr, 'index');
+        // разбираем массив параметров
+        $requestVars = array_merge_recursive($requestVars, $this->_parseRequest($requestArr));
+        foreach (['get', 'post', 'inline'] as $key) {
+            $this->_filterVars($requestVars[$key]);
         }
-        // прибавляем переменные $_POST и $_FILES
-        $requestVars['post'] = $_POST ?? null;
-        $requestVars['files'] = $_FILES ?? null;
-		// запускаем соотв. контроллер
+        // запускаем соотв. контроллер
 		$this->_startController($controllerName, $actionName, $requestVars);
         // кеширование
         $this->cache->end();
 	}
+
+    /**
+     * Извлечение имени контроллера или экшна
+     * 
+     * @param $requestArr array Массив параметров
+     * @param $default string имя по умолчанию
+     * 
+     * @return string
+     */
+    private function _getNameFromRequest(array &$requestArr, $default): string
+    {
+        if (count($requestArr)===0) {
+            return $default;
+        }
+        if (is_numeric($requestArr[0])) {
+            return $default;
+        }
+        $name = array_shift($requestArr);
+        if ($name==='') {
+            return $default;
+        }
+        return $name;
+    }
+
+    /**
+     * @param $requestArr array
+     * 
+     * @return array
+     */
+    private function _parseRequest(array $requestArr)
+    {
+        $requestVars = ['get' => array()];
+        if (!empty($requestArr)) {
+            $requestArr = array_chunk($requestArr, 2);
+            foreach ($requestArr as $pair) {
+                if (isset($pair[1])) {
+                    $requestVars['get'][$pair[0]] = urldecode($pair[1]);
+                } elseif ($pair[0]!=='') {
+                    $requestVars['inline'] = $pair[0];
+                }
+            }
+        }
+        return $requestVars;
+    }
+
+    /**
+     * Защита от XSS и SQL injection
+     * @param array $vars
+     * @return void
+     */
+    private function _filterVars(&$vars)
+    {
+        if (empty($vars)) {
+            return;
+        }
+        if (is_string($vars)) {
+            $vars = array($vars);
+        }
+        foreach ($vars as &$value) {
+            $value = urlencode($value);
+            //$value = str_replace(['|', '&', ';', '$', '%', '@', "\\'", "'", '\\"', '"', '\\', '<', '>', '(', ')', '+', ',', "\t", "\n", "\r"], '', $value);
+        }
+    }
 
     /**
      * запускаем контроллер
@@ -91,96 +152,4 @@ final class FrontController extends Component
         echo $error;
         die;
     }
-
-    /**
-     * _getActionName
-     * Извлекает название экшна
-     * 
-     * @param $requestStr string
-     * 
-     * @return string
-     */
-    private function _getActionName($requestStr)
-    {
-        $requestArr = explode('?', $requestStr);
-        return $requestArr[0];
-    }
-
-    /**
-     * _parseGet
-     * Разбор строки запроса и извлечение перем. GET
-     * 
-     * @param $requestStr string
-     * 
-     * @return array
-     */
-    private function _parseGet($requestStr)
-    {
-        $getVars = array();
-        $requestArr = explode('?', $requestStr);
-        if (count($requestArr) > 1) {
-            $requestStr = $requestArr[1];
-            $requestArr = explode('&', $requestStr);
-            foreach ($requestArr as $getStr) {
-                $getArr = explode('=', $getStr);
-                if (count($getArr) > 1) {
-                    $getVars[$getArr[0]] = urldecode($getArr[1]);
-                }
-            }
-        }
-        return $getVars;
-    }
-
-    /**
-     * _parseRequest
-     * @param $requestArr array
-     * 
-     * @return array
-     */
-	private function _parseRequest(array $requestArr)
-	{
-		$requestVars = array();
-        if (count($requestArr)>0) {
-            $getVars = array();
-            $requestArr = array_chunk($requestArr, 2);
-            foreach ($requestArr as $pair) {
-                if (isset($pair[1])) {
-                    $getVars[$pair[0]] = urldecode($pair[1]);
-                } elseif ($pair[0]!=='') {
-                    $vars = $this->_parseGet($pair[0]);
-                    if (count($vars)) {
-                        $getVars = array_merge($getVars, $vars);
-                        if (strpos($pair[0], '?')!==false)
-                            $requestVars['inline'] = substr($pair[0], 0, strpos($pair[0], '?'));
-                    } else
-                        $requestVars['inline'] = $pair[0];
-                }
-            }
-            $requestVars['get'] = $getVars;
-        }
-		return $requestVars;
-	}
-
-	/**
-	 * _getNameFromRequest
-	 * 
-	 * @param $requestArr array 
-	 * @param $default string
-	 * 
-	 * @return string
-	 */
-	private function _getNameFromRequest(array &$requestArr, $default)
-	{
-		if (count($requestArr)==0)
-			return $default;
-
-        if (is_numeric($requestArr[0]))
-            return $default;
-
-		$name = array_shift($requestArr);
-		if ($name=='')
-			return $default;
-
-		return $name;
-	}
 }
