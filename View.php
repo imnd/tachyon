@@ -69,11 +69,21 @@ class View extends Component
     public function layout($viewPath, array $vars=array())
 	{
         $view = $this->display($viewPath, $vars, true);
-        $layoutPath = "{$this->rootViewsPath}/layouts/{$this->layout}";
-        $head = $this->_view("$layoutPath/head.php", $vars);
-        $foot = $this->_view("$layoutPath/foot.php", $vars);
 
-        echo $head, $view, $foot;
+        $layoutPath = "{$this->rootViewsPath}/layouts";
+        $layoutHtml = $this->_view("$layoutPath/{$this->layout}.php", $vars);
+
+        while (false!==$includePos = strpos($layoutHtml, '@include')) {
+            $start = $includePos + 10;
+            $end = strpos($layoutHtml, "'", $start);
+            $fileNameLen = $end - $start;
+            $fileName = substr($layoutHtml, $start, $fileNameLen);
+            $layoutHtml = substr($layoutHtml, 0, $includePos) . $this->_view("$layoutPath/$fileName.php", $vars, true) . substr($layoutHtml, $end + 2);
+        }
+        $contentsPos = strpos($layoutHtml, '@contents');
+        $layoutHtml = substr($layoutHtml, 0, $contentsPos) . $view . substr($layoutHtml, $contentsPos + 10);
+
+        echo $layoutHtml;
 	}
 
     private function _view($filePath, array $vars=array())

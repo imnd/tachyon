@@ -57,7 +57,6 @@ class Controller extends Component
     protected $files;
 
     protected $postActions = array();
-
     /**
      * Экшны только для аутентифицированных юзеров
      * @var array $protectedActions
@@ -187,9 +186,24 @@ class Controller extends Component
 	}
 
     /**
+     * Вывод сообщения об ошибке
+     * @param string $msg
+     * @return void
+     */
+    public function error($code, $msg)
+    {
+        $codes = array(404 => 'Not Found');
+        header("HTTP/1.0 $code {$codes[$code]}");
+        $this->layout('/../error', compact('code', 'msg'));
+        die;
+    }
+
+    # Getters and setters
+
+    /**
      * @return boolean
      */
-    public function isRequestPost()
+    public function isRequestPost(): boolean
     {
         return $_SERVER['REQUEST_METHOD']==='POST';
     }
@@ -201,7 +215,7 @@ class Controller extends Component
      * @return string
      * @throws HttpException
      */
-    public function getQuery($queryType)
+    public function getQuery($queryType): string
     {
         if (!in_array($queryType, array('get', 'post', 'files'))) {
             throw new HttpException($this->msg->i18n('Invalid request type.', array('action' => $this->action)), HttpException::BAD_REQUEST);
@@ -212,7 +226,7 @@ class Controller extends Component
     /**
      * @return string
      */
-    public function getRoute()
+    public function getRoute(): string
     {
         return htmlspecialchars($_SERVER['REQUEST_URI']);
     }
@@ -220,15 +234,23 @@ class Controller extends Component
     /**
      * @return string
      */
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
     }
 
     /**
+     * @return void
+     */
+    public function setLayout(string $layout)
+    {
+        $this->layout = $layout;
+    }
+
+    /**
      * @return string
      */
-    public function getLayout()
+    public function getLayout(): string
     {
         return $this->layout;
     }
@@ -236,7 +258,7 @@ class Controller extends Component
     /**
      * @return string
      */
-    public function getLanguage()
+    public function getLanguage(): string
     {
         return $this->language;
     }
