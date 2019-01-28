@@ -2,7 +2,6 @@
 namespace tachyon\components;
 
 /**
- * class Upload
  * Класс работы с файлами
  * 
  * @author Андрей Сердюк
@@ -39,7 +38,6 @@ class Upload extends \tachyon\Component
     }
     
     /**
-     * uploadFile
      * Сохраняет файлы на сервере
      * 
      * @param $file string
@@ -67,7 +65,6 @@ class Upload extends \tachyon\Component
     }
     
     /**
-     * thumb
      * генерация тумбочки при сохранении картинки
      * 
      * @param $thumbName string
@@ -104,7 +101,6 @@ class Upload extends \tachyon\Component
     }
     
     /**
-     * _getExt
      * получает расширение файла
      * 
      * @param $fileName string
@@ -117,7 +113,6 @@ class Upload extends \tachyon\Component
     }
     
     /**
-     * _isAllowedFiletype
      * проверяет тип файла
      * 
      * @param $fileName string
@@ -135,9 +130,8 @@ class Upload extends \tachyon\Component
             
         return false;    
     }
-    
+
     /**
-     * _checkUploadPath
      * проверяет путь файла
      * 
      * @return boolean
@@ -153,9 +147,8 @@ class Upload extends \tachyon\Component
         $this->uploadPath .= '/';
         return false;
     }
-    
+
     /**
-     * _uploadFile
      * заливает файл на сервак
      * 
      * @param $file string
@@ -188,7 +181,6 @@ class Upload extends \tachyon\Component
     }
 
     /**
-     * _resize
      * изменяет размер файла
      * 
      * @param $image resource
@@ -206,7 +198,6 @@ class Upload extends \tachyon\Component
     }
     
     /**
-     * _save
      * Output image to browser or file
      * 
      * @param $image resource
@@ -225,7 +216,6 @@ class Upload extends \tachyon\Component
     }    
     
     /**
-     * _prepareFilesArray
      * превращаем массив $files в удобоваримый вид
      * 
      * @param $files array

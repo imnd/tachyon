@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db;
+namespace tachyon;
 
 /**
  * Базовый класс для всех моделей
@@ -72,7 +72,7 @@ abstract class Model extends \tachyon\Component
     /**
      * Присваивание значений аттрибутам модели
      * 
-     * @param $arr array 
+     * @param $attributes array 
      */
     public function setAttributes(array $attributes)
     {

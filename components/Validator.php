@@ -85,7 +85,7 @@ class Validator extends \tachyon\Component
         if (empty($fieldVal))
             return;
 
-        if ($rows = $model->getAll(array($fieldName => $fieldVal)))
+        if ($rows = $model->findAllScalar(array($fieldName => $fieldVal)))
             $this->_addError($fieldName, $this->msg->i18n('unique'));
     }    
 
@@ -124,7 +124,7 @@ class Validator extends \tachyon\Component
      * функция валидации полей модели
      * TODO: убрать копипаст
      * 
-     * @param \tachyon\db\Model $model
+     * @param \tachyon\db\activeRecord\Model $model
      * @param $attrs array массив полей
      * @return boolean
      * @throws ValidationException
@@ -133,13 +133,13 @@ class Validator extends \tachyon\Component
     {
         $this->csrfValidate();
         $validNotExist = 'Валидатора с таким именем нет.';
+
         // перебираем все поля
-        
-        $attrsArray = $model->attributes;
-        if (!is_null($attrs))
+        $attrsArray = $model->getAttributes();
+        if (!is_null($attrs)) {
             foreach ($attrs as $attrName)
                 unset($attrsArray[$attrName]);
-
+        }
         foreach ($attrsArray as $fieldName => $fieldValue) {
             // если существует правило валидации для данного поля
             if ($fieldRules = $model->getRules($fieldName)) {

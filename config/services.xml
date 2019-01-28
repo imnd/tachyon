@@ -129,18 +129,6 @@
         </property>
     </service>
 
-    <service id="Persistence" class="\tachyon\db\dataMapper\Persistence">
-        <property name="dbFactory">
-            <ref id="DbFactory"/>
-        </property>
-    </service>
-
-    <service id="Repository" class="\tachyon\db\dataMapper\Repository">
-        <property name="persistence">
-            <ref id="Persistence"/>
-        </property>
-    </service>
-
     <service id="Join" class="\tachyon\db\Join"></service>
     <service id="Alias" class="\tachyon\db\Alias"></service>
     <service id="Relation" class="\tachyon\db\activeRecord\Relation"></service>
@@ -153,8 +141,6 @@
         <property name="cache">
             <ref id="DbCache"/>
         </property>
-    </service>
-    <service id="TableModel" class="\tachyon\db\TableModel">
         <property name="alias">
             <ref id="Alias"/>
         </property>
@@ -165,9 +151,28 @@
             <ref id="Join"/>
         </property>
     </service>
+
+    <service id="Model" class="\tachyon\Model">
+        <property name="validator">
+            <ref id="Validator"/>
+        </property>
+    </service>
+
     <service id="Component" class="\tachyon\Component">
         <property name="config">
             <ref id="Config"/>
+        </property>
+    </service>
+
+    <service id="Persistence" class="\tachyon\db\dataMapper\Persistence">
+        <property name="dbFactory">
+            <ref id="DbFactory"/>
+        </property>
+    </service>
+
+    <service id="Repository" class="\tachyon\db\dataMapper\Repository">
+        <property name="persistence">
+            <ref id="Persistence"/>
         </property>
     </service>
 </services>

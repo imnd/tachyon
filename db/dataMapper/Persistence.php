@@ -5,20 +5,14 @@ class Persistence extends \tachyon\Component
 {
     use \tachyon\dic\DbFactory;
 
-    protected $tableName;
-
-    /**
-     * @param string $tableName
-     * @return void
-     */
-    public function setTableName(string $tableName)
+    public function findByPk($pk)
     {
-        $this->tableName = $tableName;
+        return $this->dbFactory->getDb()->selectById($this->domain->getTableName(), $pk);
     }
 
     public function findAll(array $condition = array()): array
     {
-        return $this->dbFactory->getDb()->select($this->tableName, $condition);
+        return $this->dbFactory->getDb()->select($this->domain->getTableName(), $condition);
     }
 
     public function findAllBySql(string $sql): array

@@ -111,7 +111,7 @@ class FilesManager extends \tachyon\Component
     }
 
     /**
-     * Количество файлов. Считаем с нуля
+     * Массив файлов в папке
      * 
      * @param string $dirPath
      * @return array

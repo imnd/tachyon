@@ -210,17 +210,9 @@ abstract class Db extends \tachyon\Component
 		
 	public function selectById($tblName, $id, $fields=array())
 	{
-		$rows = $this->select($tblName, compact('id'), $fields);
-		return $this->getOneRow($rows);
+		return $this->selectOne($tblName, compact('id'), $fields);
 	}
 
-	public function selectValById($tblName, $field, $id)
-	{
-		if ($rows = $this->select($tblName, compact('id'), $field)) {
-            return $rows[0][$field];
-        }
-	}
-    
     public function query($query)
     {
         $this->connect();

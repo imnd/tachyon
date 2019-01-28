@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\db\dataMapper;
 
+use Iterator;
+use tachyon\db\dataMapper\Entity;
 use tachyon\helpers\StringHelper;
 
 /**
@@ -19,12 +21,15 @@ abstract class Repository extends \tachyon\Component
      * Имя класса сущности
      */
     protected $entityName;
+    /**
+     * Массив сущностей
+     */
+    protected $collection;
 
     public function initialize()
     {
-        $this->persistence->setTableName($this->tableName);
         if (is_null($this->entityName)) {
-            $this->entityName = str_replace('Repository', '', StringHelper::getShortClassName(get_called_class()));
+            $this->entityName = lcfirst( str_replace('Repository', '', StringHelper::getShortClassName(get_called_class())) );
         }
     }
 
@@ -38,15 +43,36 @@ abstract class Repository extends \tachyon\Component
     }
 
     /**
-     * Получить все записи 
+     * Добавляет в массив сущностей элемент $entity
+     * 
+     * @param Entity $entity
+     * @return void
      */
-    public function findAll(): array
+    public function add($entity)
+    {
+        $this->collection[$entity->getPk()] = $entity;
+    }
+
+    /**
+     * Получить запись по первичному ключу
+     */
+    public function findByPk($pk)//: ?Entity
+    {
+        if (!isset($this->collection[$pk])) {
+            $data = $this->persistence->findByPk($pk);
+            $this->collection[$pk] = $this->{$this->entityName}->fromState($data);
+        }
+        return $this->collection[$pk];
+    }
+
+    /**
+     * Получить все записи
+     */
+    public function findAll(): Iterator
     {
         $arrayData = $this->persistence->findAll();
-        $entities = array();
         foreach ($arrayData as $data) {
-            $entities[] = $this->{$this->entityName}->fromState($data);
+            yield $this->{$this->entityName}->fromState($data);
         }
-        return $entities;
     }
 }
