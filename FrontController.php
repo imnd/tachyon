@@ -2,6 +2,7 @@
 namespace tachyon;
 
 use tachyon\exceptions\HttpException;
+use tachyon\helpers\ArrayHelper;
 
 /**
  * Front Controller приложения
@@ -108,11 +109,11 @@ final class FrontController extends Component
             return;
         }
         if (is_string($vars)) {
-            $vars = array($vars);
-        }
-        foreach ($vars as &$value) {
-            $value = urlencode($value);
-            //$value = str_replace(['|', '&', ';', '$', '%', '@', "\\'", "'", '\\"', '"', '\\', '<', '>', '(', ')', '+', ',', "\t", "\n", "\r"], '', $value);
+            $vars = ArrayHelper::filterText($vars);
+        } elseif (is_array($vars)) {
+            foreach ($vars as &$value) {
+                $value = ArrayHelper::filterText($value);
+            }
         }
     }
 

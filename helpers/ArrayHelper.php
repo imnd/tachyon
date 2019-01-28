@@ -10,6 +10,18 @@ namespace tachyon\helpers;
  */
 class ArrayHelper
 {
+    /**
+     * @param string $value
+     * @return string
+     */
+    public static function filterText($value)
+    {
+        $value = urlencode($value);
+        $value = str_replace(['|', '&', ';', '$', '%', '@', "\\'", "'", '\\"', '"', '\\', '<', '>', '(', ')', ',', "\x27", "\x22", "\x60", "\t", "\n", "\r"], '', $value);
+        $value = str_replace("+", "\\+", $value);
+        return $value;
+    }
+
     public static function convertObjToArr($object)
     {
         $tmpArr = array();
@@ -25,6 +37,7 @@ class ArrayHelper
         }
         return $tmpArr;
     }
+
     /**
      * Суммирует значения, извлекаемые из ассоциативного массива по ключу $key
      */

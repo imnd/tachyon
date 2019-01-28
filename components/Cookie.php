@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\components;
 
+use tachyon\helpers\ArrayHelper;
+
 /**
  * class Cookie
  * Инкапсулирует работу с cookie
@@ -24,7 +26,7 @@ class Cookie extends \tachyon\Component
     
     public function setCookie($key, $val, $path = '/')
     {
-        setcookie($key, $val, time() + 30 * 24 * 60 * $this->duration, $path);
+        setcookie($key, ArrayHelper::filterText($val), time() + 30 * 24 * 60 * $this->duration, $path);
     }
 
     public function deleteCookie($key, $path = '/')
