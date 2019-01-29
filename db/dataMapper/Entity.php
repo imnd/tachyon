@@ -38,14 +38,6 @@ abstract class Entity extends \tachyon\Component
 
     abstract public function getAttributes(): array;
 
-    public function getAttribute($attribute)
-    {
-        $methodName = 'get' . ucfirst($attribute);
-        if (method_exists($this, $methodName)) {
-            return $this->$methodName();
-        }
-    }
-
     /**
      * Подпись для поля сущности
      * 
@@ -55,6 +47,14 @@ abstract class Entity extends \tachyon\Component
     public function getAttributeCaption(string $attribute): string
     {
         return $this->attributeCaptions[$attribute] ?? $attribute;
+    }
+
+    public function getAttribute($attribute)
+    {
+        $methodName = 'get' . ucfirst($attribute);
+        if (method_exists($this, $methodName)) {
+            return $this->$methodName();
+        }
     }
 
     /**

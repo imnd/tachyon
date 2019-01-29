@@ -102,6 +102,7 @@ abstract class Db extends \tachyon\Component
      * @param string $tblName имя таблицы
      * @param array $where условие поиска
      * @param array $fields имена полей
+     * 
      */
     public function select(string $tblName, array $where=array(), array $fields=array()): array
     {
@@ -138,8 +139,9 @@ abstract class Db extends \tachyon\Component
      * 
      * @param string $tblName имя таблицы
      * @param array $fieldValues массив: [имена => значения] полей
+     * @return mixed
      */
-    public function insert(string $tblName, array $fieldValues=array()): boolean
+    public function insert(string $tblName, array $fieldValues=array())
     {
         $this->connect();
 
@@ -162,8 +164,9 @@ abstract class Db extends \tachyon\Component
      * @param string $tblName имя таблицы
      * @param array $fieldValues массив: [имена => значения] полей
      * @param array $where условие поиска
+     * @return boolean
      */
-    public function update(string $tblName, array $fieldValues=array(), array $where=array())
+    public function update(string $tblName, array $fieldValues=array(), array $where=array()): boolean
     {
         $this->connect();
 
@@ -184,8 +187,9 @@ abstract class Db extends \tachyon\Component
      * 
      * @param string $tblName имя таблицы
      * @param array $where условие поиска
+     * @return boolean
      */
-    public function delete(string $tblName, array $where=array())
+    public function delete(string $tblName, array $where=array()): boolean
     {
         $this->connect();
 
@@ -201,8 +205,9 @@ abstract class Db extends \tachyon\Component
      * Быстро очищает таблицу $tblName
      * 
      * @param string $tblName имя таблицы
+     * @return boolean
      */
-    public function truncate(string $tblName)
+    public function truncate(string $tblName): boolean
     {
         $this->connect();
 

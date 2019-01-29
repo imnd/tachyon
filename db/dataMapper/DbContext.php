@@ -41,6 +41,9 @@ class DbContext extends \tachyon\Component
      */
     public function registerDirty(Entity $entity)
     {
+        if ($this->isNew($entity)) {
+            return;
+        }
         $this->dirtyEntities[spl_object_hash($entity)] = $entity;
     }
 
@@ -52,6 +55,9 @@ class DbContext extends \tachyon\Component
      */
     public function registerDeleted(Entity $entity)
     {
+        if ($this->isNew($entity)) {
+            return;
+        }
         $this->deletedEntities[spl_object_hash($entity)] = $entity;
     }
 

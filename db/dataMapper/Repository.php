@@ -54,6 +54,17 @@ abstract class Repository extends \tachyon\Component
     }
 
     /**
+     * Создать новую сущность
+     * @return Entity
+     */
+    public function create()//: ?Entity
+    {
+        $entity = clone($this->{$this->entityName});
+        $entity->markNew();
+        return $entity;
+    }
+
+    /**
      * Получить все сущности по условию $condition
      * 
      * @return array
@@ -68,7 +79,7 @@ abstract class Repository extends \tachyon\Component
     }
 
     /**
-     * Получить запись по первичному ключу
+     * Получить сущность по первичному ключу
      * @return Entity
      */
     public function findByPk($pk)//: ?Entity
