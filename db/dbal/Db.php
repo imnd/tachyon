@@ -96,6 +96,13 @@ abstract class Db extends \tachyon\Component
 
     abstract public function isTableExists(string $tableName): boolean;
 
+    /**
+     * Извлекает поля $fields записей из таблицы $tblName по условию $where
+     * 
+     * @param string $tblName имя таблицы
+     * @param array $where условие поиска
+     * @param array $fields имена полей
+     */
     public function select(string $tblName, array $where=array(), array $fields=array()): array
     {
         $this->connect();
@@ -127,7 +134,10 @@ abstract class Db extends \tachyon\Component
     }
 
     /**
-     * Вставляет записи со значениями $fields по условию $where
+     * Вставляет записи со значениями $fieldValues
+     * 
+     * @param string $tblName имя таблицы
+     * @param array $fieldValues массив: [имена => значения] полей
      */
     public function insert(string $tblName, array $fieldValues=array()): boolean
     {
@@ -148,6 +158,10 @@ abstract class Db extends \tachyon\Component
 
     /**
      * Обновляет поля $fieldValues записей по условию $where
+     * 
+     * @param string $tblName имя таблицы
+     * @param array $fieldValues массив: [имена => значения] полей
+     * @param array $where условие поиска
      */
     public function update(string $tblName, array $fieldValues=array(), array $where=array())
     {
@@ -166,7 +180,10 @@ abstract class Db extends \tachyon\Component
     }
 
     /**
-     * удаляет записи по условию $where
+     * Удаляет записи по условию $where
+     * 
+     * @param string $tblName имя таблицы
+     * @param array $where условие поиска
      */
     public function delete(string $tblName, array $where=array())
     {
@@ -181,7 +198,9 @@ abstract class Db extends \tachyon\Component
     }
 
     /**
-     * быстро очищает таблицу
+     * Быстро очищает таблицу $tblName
+     * 
+     * @param string $tblName имя таблицы
      */
     public function truncate(string $tblName)
     {
@@ -208,11 +227,6 @@ abstract class Db extends \tachyon\Component
 		return $this->getOneRow($rows);
 	}
 		
-	public function selectById($tblName, $id, $fields=array())
-	{
-		return $this->selectOne($tblName, compact('id'), $fields);
-	}
-
     public function query($query)
     {
         $this->connect();
@@ -496,14 +510,14 @@ abstract class Db extends \tachyon\Component
         }
         return $rows;
     }
-    
+
     protected function execute($stmt, $fields=null)
     {
         if (!$stmt->execute($fields)) {
             //if ('00000' == $this->connection->errorCode())
                 //return false;
 
-            throw new DBALException($this->msg->i18n('db_err') . ': ' . serialize(self::$_conn->errorInfo()));
+            throw new DBALException($this->msg->i18n('db_err'));
         }
         return true;
     }

@@ -25,6 +25,14 @@ abstract class Component
     protected $domain;
 
     /**
+     * @return mixed
+     */
+    public function getDomain()
+    {
+        return $this->domain;
+    }
+
+    /**
      * @param mixed $domain
      * @return void
      */

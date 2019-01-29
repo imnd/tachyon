@@ -207,8 +207,9 @@ abstract class Model extends \tachyon\Component
         $rules = $this->rules();
         foreach ($rules as $key => $rule) {
             $fieldNames = array_map('trim', explode(',', $key));
-            if (in_array($fieldName, $fieldNames) && in_array('required', $rule))
+            if (in_array($fieldName, $fieldNames) && in_array('required', $rule)) {
                 return true;
+            }
         }
         return false;
     }

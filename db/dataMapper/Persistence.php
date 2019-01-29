@@ -5,18 +5,52 @@ class Persistence extends \tachyon\Component
 {
     use \tachyon\dic\DbFactory;
 
-    public function findByPk($pk)
-    {
-        return $this->dbFactory->getDb()->selectById($this->domain->getTableName(), $pk);
-    }
-
+    /**
+     * Находит все записи по условию $condition
+     */
     public function findAll(array $condition = array()): array
     {
         return $this->dbFactory->getDb()->select($this->domain->getTableName(), $condition);
     }
 
-    public function findAllBySql(string $sql): array
+    /**
+     * Находит запись по первичному ключу
+     * 
+     * return mixed;
+     */
+    public function findByPk($pk)
     {
-        return $this->dbFactory->getDb()->queryAll($sql);
+        return $this->dbFactory->getDb()->selectOne($this->domain->getTableName(), ['id' => $pk]);
+    }
+
+    /**
+     * Обновляет запись по первичному ключу
+     * 
+     * @return boolean
+     */
+    public function updateByPk($pk, array $fieldValues)
+    {
+        return $this->dbFactory->getDb()->update($this->domain->getTableName(), $fieldValues, ['id' => $pk]);
+    }
+
+    /**
+     * Сохраняет запись в хранилище
+     * 
+     * @return boolean
+     */
+    public function insert(array $fieldValues)
+    {
+        return $this->dbFactory->getDb()->insert($this->domain->getTableName(), $fieldValues);
+    }
+
+    /**
+     * Удаляет запись из хранилища
+     *
+     * @param mixed $pk
+     * @return boolean
+     */
+    public function deleteByPk($pk)
+    {
+        return $this->dbFactory->getDb()->delete($this->domain->getTableName(), ['id' => $pk]);
     }
 }

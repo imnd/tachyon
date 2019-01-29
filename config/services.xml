@@ -44,14 +44,6 @@
             <ref id="Cookie"/>
         </property>
     </service>
-    <service id="Validator" class="\tachyon\components\Validator">
-        <property name="msg">
-            <ref id="Message"/>
-        </property>
-        <property name="csrf">
-            <ref id="Csrf"/>
-        </property>
-    </service>
 
     <service id="DateTime" class="\tachyon\behaviours\DateTime"></service>
     <service id="List" class="\tachyon\behaviours\ListBehaviour"></service>
@@ -158,21 +150,38 @@
         </property>
     </service>
 
+    <service id="Validator" class="\tachyon\components\Validator">
+        <property name="msg">
+            <ref id="Message"/>
+        </property>
+        <property name="csrf">
+            <ref id="Csrf"/>
+        </property>
+    </service>
+
     <service id="Component" class="\tachyon\Component">
         <property name="config">
             <ref id="Config"/>
         </property>
     </service>
 
-    <service id="Persistence" class="\tachyon\db\dataMapper\Persistence">
-        <property name="dbFactory">
-            <ref id="DbFactory"/>
+    <service id="DbContext" class="\tachyon\db\dataMapper\DbContext"></service>
+
+    <service id="Entity" class="\tachyon\db\dataMapper\Entity">
+        <property name="dbContext">
+            <ref id="DbContext"/>
         </property>
     </service>
 
     <service id="Repository" class="\tachyon\db\dataMapper\Repository">
         <property name="persistence">
             <ref id="Persistence"/>
+        </property>
+    </service>
+
+    <service id="Persistence" class="\tachyon\db\dataMapper\Persistence">
+        <property name="dbFactory">
+            <ref id="DbFactory"/>
         </property>
     </service>
 </services>

@@ -215,7 +215,7 @@ class Controller extends Component
      * @return string
      * @throws HttpException
      */
-    public function getQuery($queryType): string
+    public function getQuery(string $queryType): array
     {
         if (!in_array($queryType, array('get', 'post', 'files'))) {
             throw new HttpException($this->msg->i18n('Invalid request type.', array('action' => $this->action)), HttpException::BAD_REQUEST);
@@ -237,6 +237,14 @@ class Controller extends Component
     public function getId(): string
     {
         return $this->id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAction(): string
+    {
+        return $this->action;
     }
 
     /**

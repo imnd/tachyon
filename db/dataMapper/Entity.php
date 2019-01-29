@@ -1,9 +1,10 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-abstract class Entity
+abstract class Entity extends \tachyon\Component
 {
     use \tachyon\dic\Validator;
+    use \tachyon\dic\DbContext;
 
     /**
      * @var array Подписи для поля сущностей
@@ -14,18 +15,36 @@ abstract class Entity
      * @var mixed
      */
     protected $pk = 'id';
+
     /**
-     * Сущность нуждается в сохранении в хранилище
-     * Это свойство нужно для реализации Unit of Work
-     * @var boolean
+     * @return DbContext
      */
-    protected $dirty = false;
+    public function getDbContext()
+    {
+        return $this->dbContext;
+    }
+
+    /**
+     * @return Repository
+     */
+    public function getRepository()
+    {
+        return $this->getDomain();
+    }
 
     abstract public function fromState(array $state): Entity;
 
     abstract public function setAttributes(array $state);
 
     abstract public function getAttributes(): array;
+
+    public function getAttribute($attribute)
+    {
+        $methodName = 'get' . ucfirst($attribute);
+        if (method_exists($this, $methodName)) {
+            return $this->$methodName();
+        }
+    }
 
     /**
      * Подпись для поля сущности
@@ -39,21 +58,49 @@ abstract class Entity
     }
 
     /**
-     * Первичный ключ
+     * Имя поля первичного ключа
      * 
-     * @return mixed
+     * @return string
      */
-    public function getPk()
+    public function getPkName(): string
     {
         return $this->pk;
     }
 
     /**
-     * @return void
+     * Значение первичного ключа
+     * 
+     * @return mixed
      */
-    public function markDirty(): Entity
+    public function getPk()
     {
-        $this->dirty = true;
+        return $this->getAttribute($this->pk);
+    }
+
+    /**
+     * Помечает только что созданую сущность как новую.
+     */
+    public function markNew()
+    {
+        $this->dbContext->registerNew($this);
+        return $this;
+    }
+
+    /**
+     * Помечает сущность как измененную.
+     */
+    public function markDirty()
+    {
+        $this->dbContext->registerDirty($this);
+        return $this;
+    }
+
+    /**
+     * Помечает сущность на удаление.
+     */
+    public function markDeleted()
+    {
+        $this->dbContext->registerDeleted($this);
         return $this;
     }
 }

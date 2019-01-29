@@ -43,7 +43,7 @@ abstract class Repository extends \tachyon\Component
     }
 
     /**
-     * Добавляет в массив сущностей элемент $entity
+     * Добавляет в коллекцию сущность $entity
      * 
      * @param Entity $entity
      * @return void
@@ -54,7 +54,22 @@ abstract class Repository extends \tachyon\Component
     }
 
     /**
+     * Получить все сущности по условию $condition
+     * 
+     * @return array
+     */
+    public function findAll(array $condition = array()): Iterator
+    {
+        $arrayData = $this->persistence->findAll($condition);
+        foreach ($arrayData as $data) {
+            $entity = $this->{$this->entityName}->fromState($data);
+            yield $this->collection[$entity->getPk()] = $entity;
+        }
+    }
+
+    /**
      * Получить запись по первичному ключу
+     * @return Entity
      */
     public function findByPk($pk)//: ?Entity
     {
@@ -66,13 +81,35 @@ abstract class Repository extends \tachyon\Component
     }
 
     /**
-     * Получить все записи
+     * Сохраняет в хранилище измененную сущность
+     * 
+     * @param Entity $entity
+     * @return boolean
      */
-    public function findAll(): Iterator
+    public function update(Entity $entity)
     {
-        $arrayData = $this->persistence->findAll();
-        foreach ($arrayData as $data) {
-            yield $this->{$this->entityName}->fromState($data);
-        }
+        return $this->persistence->updateByPk($entity->getPk(), $entity->getAttributes());
+    }
+
+    /**
+     * Вставляет в хранилище новую сущность
+     *
+     * @param Entity $entity
+     * @return boolean
+     */
+    public function insert(Entity $entity)
+    {
+        return $this->persistence->insert($entity->getAttributes());
+    }
+
+    /**
+     * Удаляет сущность из хранилища
+     * 
+     * @param Entity $entity
+     * @return boolean
+     */
+    public function delete(Entity $entity)
+    {
+        return $this->persistence->delete($entity->getPk());
     }
 }
