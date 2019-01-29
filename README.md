@@ -8,7 +8,7 @@ Features:
 - PDO based DBAL. It works on both MySql and PgSql. Instantiation of the corresponding class occurs using the Factory Method pattern;
 - ORM 
     - Active Record with foreign keys support and special kind of models for sub-queries, which interacts with the database using the Bridge pattern via a DBAL. Related records can be extracted by "greedy" (by one request) or "lazy" way;
-    - Data Mapper. 
+    - Data Mapper with Unit of work. 
 - 2 types of simplest (file system) caching for DB and http requests;
 - protection against XSS, CSRF assaults and SQL injections;
 - very simple i18n;
@@ -38,7 +38,7 @@ MVC микро-PHP-фреймворк.
 - DBAL на основе PDO. DBAL работает как на MySql так и на PgSql. Инстанциирование соответствующего класса DBAL происходит с помощью паттерна Factory Method.;
 - 2 типа ORM, которые взаимодействует с БД через DBAL используя паттерн Bridge: 
   - Active Record с поддержкой внешних ключей + особый вид моделей для подзапросов. Связанные записи могут загружаться как "жадно" так и "лениво".
-  - Data Mapper.
+  - Data Mapper с Unit of work.
 - несложный layout;
 - 2 вида кэширования в простейшем виде для ДБ и http запросов. Для этого используется файловая система;
 - компонент для публикации файлов ресурсов, js и css;
