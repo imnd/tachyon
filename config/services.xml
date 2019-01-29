@@ -171,6 +171,9 @@
         <property name="dbContext">
             <ref id="DbContext"/>
         </property>
+        <property name="validator">
+            <ref id="Validator"/>
+        </property>
     </service>
 
     <service id="Repository" class="\tachyon\db\dataMapper\Repository">

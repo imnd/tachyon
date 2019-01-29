@@ -15,6 +15,11 @@ abstract class Entity extends \tachyon\Component
      * @var mixed
      */
     protected $pk = 'id';
+    /**
+     * Ошибки валидации
+     * @var array $errors
+     */
+    protected $errors = array();
 
     /**
      * @return DbContext
@@ -44,16 +49,36 @@ abstract class Entity extends \tachyon\Component
      * @param string $attribute имя сущности
      * @return string
      */
-    public function getAttributeCaption(string $attribute): string
+    public function getCaption(string $attribute): string
     {
         return $this->attributeCaptions[$attribute] ?? $attribute;
     }
 
+    /**
+     * Извлечение значения аттрибута $attribute
+     * 
+     * @param string $attribute 
+     * @return mixed 
+     */
     public function getAttribute($attribute)
     {
         $methodName = 'get' . ucfirst($attribute);
         if (method_exists($this, $methodName)) {
             return $this->$methodName();
+        }
+    }
+
+    /**
+     * Присваивание значения $value аттрибуту $attribute
+     * 
+     * @param string $attribute 
+     * @param mixed $value 
+     */
+    public function setAttribute(string $attribute, $value)
+    {
+        $methodName = 'set' . ucfirst($attribute);
+        if (method_exists($this, $methodName)) {
+            $this->$methodName();
         }
     }
 
@@ -76,6 +101,8 @@ abstract class Entity extends \tachyon\Component
     {
         return $this->getAttribute($this->pk);
     }
+
+    # UNIT OF WORK
 
     /**
      * Помечает только что созданую сущность как новую.
@@ -102,5 +129,44 @@ abstract class Entity extends \tachyon\Component
     {
         $this->dbContext->registerDeleted($this);
         return $this;
+    }
+
+    # ВАЛИДАЦИЯ
+
+    /**
+     * Возвращает список правил валидации
+     * 
+     * @return array
+     */
+    public function rules(): array
+    {
+        return array();
+    }
+
+    /**
+     * Валидация полей сущности
+     * 
+     * @param $attrs array массив полей
+     * @return boolean
+     */
+    public function validate(array $attributes=null)
+    {
+        $this->errors = $this->validator->validate($this, $attributes);
+        return empty($this->errors);
+    }
+
+    public function getRules($fieldName)
+    {
+        return $this->validator->getRules($this, $fieldName);
+    }
+
+    /**
+     * Сообщение об ошибках
+     * 
+     * @return array
+     */
+    public function getErrorsSummary()
+    {
+        return $this->validator->getErrorsSummary($this);
     }
 }

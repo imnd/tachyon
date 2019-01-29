@@ -20,73 +20,82 @@ class Validator extends \tachyon\Component
 
     public function required($model, $fieldName)
     {
-        if ($model->$fieldName==='')
+        if ($model->getAttribute($fieldName)==='') {
             $this->_addError($fieldName, $this->msg->i18n('fieldRequired'));
+        }
     }
     
     public function integer($model, $fieldName)
     {
-        $val = $model->$fieldName;
-        if (!empty($val) && preg_match('/[^0-9]+/', $val)>0)
+        $val = $model->getAttribute($fieldName);
+        if (!empty($val) && preg_match('/[^0-9]+/', $val) > 0) {
             $this->_addError($fieldName, $this->msg->i18n('alpha'));
+        }
     }
 
     public function numerical($model, $fieldName)
     {
-        $val = $model->$fieldName;
-        if (!empty($val) && preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $val)===0)
+        $val = $model->getAttribute($fieldName);
+        if (!empty($val) && preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $val)===0) {
             $this->_addError($fieldName, $this->msg->i18n('alpha'));
+        }
     }
 
     public function alpha($model, $fieldName)
     {
-        $val = $model->$fieldName;
-        if (!empty($val) && preg_match('/[^А-ЯЁа-яёA-Za-z ]+/u', $val)>0)
+        $val = $model->getAttribute($fieldName);
+        if (!empty($val) && preg_match('/[^А-ЯЁа-яёA-Za-z ]+/u', $val) > 0) {
             $this->_addError($fieldName, $this->msg->i18n('alpha'));
+        }
     }
 
     public function alphaExt($model, $fieldName)
     {
-        $val = $model->$fieldName;
-        if (!empty($val) && preg_match('/[^А-ЯЁа-яёA-Za-z-_.,0-9 ]+/u', $val)>0)
+        $val = $model->getAttribute($fieldName);
+        if (!empty($val) && preg_match('/[^А-ЯЁа-яёA-Za-z-_.,0-9 ]+/u', $val) > 0) {
             $this->_addError($fieldName, $this->msg->i18n('alpha'));
+        }
     }
 
     public function phone($model, $fieldName)
     {
-        if (!preg_match('/^\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}$/', $model->$fieldName))
+        if (!preg_match('/^\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}$/', $model->getAttribute($fieldName))) {
             $this->_addError($fieldName, $this->msg->i18n('phone'));
+        }
     }
 
     public function password($model, $fieldName)
     {
-        $val = $model->$fieldName;
-        if (!empty($val) && preg_match('/[^A-Za-z0-9]+/u', $val)>0)
+        $val = $model->getAttribute($fieldName);
+        if (!empty($val) && preg_match('/[^A-Za-z0-9]+/u', $val) > 0) {
             $this->_addError($fieldName, $this->msg->i18n('password'));
+        }
     }
 
     public function email($model, $fieldName)
     {
-        if (!preg_match('/^[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/', $model->$fieldName))
+        if (!preg_match('/^[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/', $model->getAttribute($fieldName))) {
             $this->_addError($fieldName, $this->msg->i18n('email'));
+        }
     }
 
     public function equals($model, $fieldName1 = null, $fieldName2 = null)
     {
-        $val1 = $model->$fieldName1;
-        $val2 = $model->$fieldName2;
-        if (!empty($val1) && !empty($val2) && $val1!==$val2)
+        $val1 = $model->getAttribute($fieldName1);
+        $val2 = $model->getAttribute($fieldName2);
+        if (!empty($val1) && !empty($val2) && $val1!==$val2) {
             $this->_addError($fieldName1, $this->msg->i18n('equals'));
+        }
     }
 
     public function unique($model, $fieldName)
     {
-        $fieldVal = $model->$fieldName;
-        if (empty($fieldVal))
+        if (!$fieldVal = $model->getAttribute($fieldName)) {
             return;
-
-        if ($rows = $model->findAllScalar(array($fieldName => $fieldVal)))
+        }
+        if ($rows = $model->findAllScalar(array($fieldName => $fieldVal))) {
             $this->_addError($fieldName, $this->msg->i18n('unique'));
+        }
     }    
 
     public function safe()
@@ -120,32 +129,48 @@ class Validator extends \tachyon\Component
             $this->_errors[$fieldName] = array($message);
     }
 
+    public function getRules($object, $fieldName)
+    {
+        $rulesArray = array();
+        $rules = $object->rules();
+        foreach ($rules as $key => $rule) {
+            $fieldNames = array_map('trim', explode(',', $key));
+            if (in_array($fieldName, $fieldNames)) {
+                if (!is_array($rule)) {
+                    $rule = array($rule);
+                }
+                $rulesArray = array_merge($rulesArray, $rule);
+            }
+        }
+        return $rulesArray;
+    }
+
     /**
-     * функция валидации полей модели
+     * Валидация полей модели/сущности
      * TODO: убрать копипаст
      * 
-     * @param \tachyon\db\activeRecord\Model $model
-     * @param $attrs array массив полей
-     * @return boolean
+     * @param mixed $object
+     * @param array $attrs массив полей
+     * @return array
+     * 
      * @throws ValidationException
      */
-    public function validate(&$model, array $attrs = null)
+    public function validate($object, array $attrs = null)
     {
         $this->csrfValidate();
-        $validNotExist = 'Валидатора с таким именем нет.';
+        $methodNotExist = 'Валидатора с таким именем нет.';
 
         // перебираем все поля
-        $attrsArray = $model->getAttributes();
+        $attrsArray = $object->getAttributes();
         if (!is_null($attrs)) {
-            foreach ($attrs as $attrName)
-                unset($attrsArray[$attrName]);
+            $attrsArray = array_intersect_key($attrsArray, array_flip($attrs));
         }
         foreach ($attrsArray as $fieldName => $fieldValue) {
             // если существует правило валидации для данного поля
-            if ($fieldRules = $model->getRules($fieldName)) {
+            if ($fieldRules = $this->getRules($object, $fieldName)) {
                 if (isset($fieldRules['on'])) {
                     // если правило не применимо к сценарию
-                    if ($fieldRules['on'] !== $model->scenario) {
+                    if ($fieldRules['on'] !== $object->scenario) {
                         continue;
                     }
                     // убираем, чтобы не мешалось дальше
@@ -155,41 +180,55 @@ class Validator extends \tachyon\Component
                     if (is_array($rule)) {
                         if (isset($rule['on'])) {
                             // если правило не применимо к сценарию
-                            if ($rule['on'] !== $model->scenario) {
+                            if ($rule['on'] !== $object->scenario) {
                                 continue;
                             }
                             // убираем, чтобы не мешалось дальше
                             unset($rule['on']);
                         }
-                        foreach ($rule as $subKey=> $subRule) {
+                        foreach ($rule as $subKey => $subRule) {
                             if ($subRule=='equals') {
-                                $this->equals($model, $fieldName, $rule['with']);
+                                $this->equals($object, $fieldName, $rule['with']);
                                 continue;
                             }
                             if (!is_numeric($key)) {
                                 continue;
                             }
                             if (!method_exists($this, $subRule)) {
-                                throw new ValidationException($validNotExist);
+                                throw new ValidationException($methodNotExist);
                             }
-                            $this->$subRule($model, $fieldName);
+                            $this->$subRule($object, $fieldName);
                         }
                         continue;
                     }
                     if ($rule == 'equals') {
-                        $this->equals($model, $fieldName, $fieldRules['with']);
+                        $this->equals($object, $fieldName, $fieldRules['with']);
                         continue;
                     }
                     if (!is_numeric($key)) {
                         continue;
                     }
                     if (!method_exists($this, $rule)) {
-                        throw new ValidationException($validNotExist);
+                        throw new ValidationException($methodNotExist);
                     }
-                    $this->$rule($model, $fieldName);
+                    $this->$rule($object, $fieldName);
                 }
             }
         }
-        $model->setErrors($this->_errors);
+        return $this->_errors;
+    }
+
+    /**
+     * Сообщение об ошибках
+     * 
+     * @return array
+     */
+    public function getErrorsSummary($object)
+    {
+        $summary = '';
+        foreach ($object->errors as $attribute => $errors) {
+            $summary .= "{$object->getCaption($attribute)}: " . implode(', ', $errors) . "\n";
+        }
+        return $summary;
     }
 }

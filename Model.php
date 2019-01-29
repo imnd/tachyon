@@ -70,6 +70,17 @@ abstract class Model extends \tachyon\Component
     }
 
     /**
+     * Извлечение значения аттрибута $name
+     * 
+     * @param string $attribute 
+     * @returns mixed 
+     */
+    public function getAttribute(string $name)
+    {
+        return $this->attributes[$name];
+    }
+
+    /**
      * Присваивание значений аттрибутам модели
      * 
      * @param $attributes array 
@@ -186,20 +197,13 @@ abstract class Model extends \tachyon\Component
      */
     public function validate(array $attrs=null)
     {
-        $this->validator->validate($this, $attrs);
+        $this->errors = $this->validator->validate($this, $attrs);
         return empty($this->errors);
     }
 
     public function getRules($fieldName)
     {
-        $rulesRet = array();
-        $rules = $this->rules();
-        foreach ($rules as $key => $rule) {
-            $fieldNames = array_map('trim', explode(',', $key));
-            if (in_array($fieldName, $fieldNames))
-                $rulesRet = array_merge($rulesRet, $rule);
-        }
-        return $rulesRet;
+        return $this->validator->getRules($this, $fieldName);
     }
 
     public function isRequired($fieldName)
@@ -212,6 +216,16 @@ abstract class Model extends \tachyon\Component
             }
         }
         return false;
+    }
+
+    /**
+     * ошибки
+     * 
+     * @return array
+     */
+    public function getErrors()
+    {
+        return $this->errors;
     }
 
     /**

@@ -183,7 +183,7 @@ class Controller extends Component
     public function redirect($path)
 	{
 		header("Location: $path");
-        exit;
+        die;
 	}
 
     /**
