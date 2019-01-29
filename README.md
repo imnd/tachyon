@@ -24,7 +24,8 @@ Components:
 - authentication;
 - tiny JS framework;
 - XSLT template system;
-- component for publishing js and css resource files.
+- component for publishing js and css resource files
+- flash messages.
 
 The code was written in compliance with the PSR-2 standard.
 All PHP and JS code, except datepicker is written by me.
@@ -49,7 +50,8 @@ MVC микро-PHP-фреймворк.
 - генератор форм, который подхватывает правила валидации из модели и превращает в JS (вместо AJAX-валидации, для скорости). Обычная валидация на основе правил валидации из модели так же имеется. Она зависит от "сценария" использования модели;
 - компоненты для загрузки файлов, работы с куки и авторизации;
 - XSLT шаблонизация;
-- виджет для отображения таблиц из массива моделей.
+- виджет для отображения таблиц из массива моделей;
+- отображение флэш-сообщений.
 
 В составе так же есть микро-JS-фреймворк.
 
