@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\components\cache;
+namespace tachyon\cache;
 
 /**
  * кеширование

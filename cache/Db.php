@@ -1,13 +1,14 @@
 <?php
-namespace tachyon\components\cache;
+namespace tachyon\cache;
 
 /**
- * кеширование содержимого страницы целиком
+ * class DbCache
+ * кеширование содержимого Db
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Output extends Cache
+class Db extends Cache
 {
     /**
      * @inheritdoc
@@ -18,8 +19,7 @@ class Output extends Cache
             return;
         }
         if ($cacheContents = $this->getContents($cacheKey)) {
-            echo $cacheContents;
-            die;
+            return $cacheContents;
         }
         // запускаем кеширование
         $this->setKey($cacheKey);
@@ -33,9 +33,6 @@ class Output extends Cache
     {
         if (!$this->enabled) {
             return;
-        }
-        if (is_null($contents)) {
-            $contents = ob_get_contents();
         }
         $this->save($contents);
     }

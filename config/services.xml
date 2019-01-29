@@ -29,8 +29,8 @@
         </property>
     </service>
     <service id="Csrf" class="\tachyon\components\Csrf" singleton="true"></service>
-    <service id="OutputCache" class="\tachyon\components\cache\Output" singleton="true"></service>
-    <service id="DbCache" class="\tachyon\components\cache\Db" singleton="true"></service>
+    <service id="OutputCache" class="\tachyon\cache\Output" singleton="true"></service>
+    <service id="DbCache" class="\tachyon\cache\Db" singleton="true"></service>
 
     <service id="AssetManager" class="\tachyon\components\AssetManager"></service>
     <service id="FilesManager" class="\tachyon\components\FilesManager"></service>

@@ -10,15 +10,15 @@ namespace tachyon\dic;
 trait DbCache
 {
     /**
-     * @var \tachyon\components\cache\Db $cache
+     * @var \tachyon\cache\Db $cache
      */
     protected $cache;
 
     /**
-     * @param \tachyon\components\cache\Db $service
+     * @param \tachyon\cache\Db $service
      * @return void
      */
-    public function setCache(\tachyon\components\cache\Db $service)
+    public function setCache(\tachyon\cache\Db $service)
     {
         $this->cache = $service;
     }
