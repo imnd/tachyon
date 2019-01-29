@@ -20,7 +20,7 @@ class MySql extends Db
     /**
      * @inheritdoc
      */
-    public function isTableExists(string $tableName): boolean
+    public function isTableExists(string $tableName): bool
     {
         $this->connect();
 

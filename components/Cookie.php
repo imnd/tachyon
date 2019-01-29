@@ -4,9 +4,7 @@ namespace tachyon\components;
 use tachyon\helpers\ArrayHelper;
 
 /**
- * class Cookie
  * Инкапсулирует работу с cookie
- * TODO: сделать singleton'ом
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
@@ -17,7 +15,7 @@ class Cookie extends \tachyon\Component
      * Время жизни куки дней
      * @var integer $duration
      */
-    protected $duration;
+    private $duration;
 
     public function getCookie($key)
     {

@@ -20,7 +20,7 @@ class PgSql extends Db
     /**
      * @inheritdoc
      */
-    public function isTableExists(string $tableName): boolean
+    public function isTableExists(string $tableName): bool
     {
         $this->connect();
 

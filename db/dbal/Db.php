@@ -94,7 +94,7 @@ abstract class Db extends \tachyon\Component
      */
     abstract protected function getDsn(): string;
 
-    abstract public function isTableExists(string $tableName): boolean;
+    abstract public function isTableExists(string $tableName): bool;
 
     /**
      * Извлекает поля $fields записей из таблицы $tblName по условию $where
@@ -166,7 +166,7 @@ abstract class Db extends \tachyon\Component
      * @param array $where условие поиска
      * @return boolean
      */
-    public function update(string $tblName, array $fieldValues=array(), array $where=array()): boolean
+    public function update(string $tblName, array $fieldValues=array(), array $where=array()): bool
     {
         $this->connect();
 
@@ -189,7 +189,7 @@ abstract class Db extends \tachyon\Component
      * @param array $where условие поиска
      * @return boolean
      */
-    public function delete(string $tblName, array $where=array()): boolean
+    public function delete(string $tblName, array $where=array()): bool
     {
         $this->connect();
 
@@ -207,7 +207,7 @@ abstract class Db extends \tachyon\Component
      * @param string $tblName имя таблицы
      * @return boolean
      */
-    public function truncate(string $tblName): boolean
+    public function truncate(string $tblName): bool
     {
         $this->connect();
 
@@ -516,7 +516,7 @@ abstract class Db extends \tachyon\Component
         return $rows;
     }
 
-    protected function execute($stmt, $fields=null)
+    protected function execute($stmt, $fields=null): bool
     {
         if (!$stmt->execute($fields)) {
             //if ('00000' == $this->connection->errorCode())
