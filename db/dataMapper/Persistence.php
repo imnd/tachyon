@@ -8,9 +8,15 @@ class Persistence extends \tachyon\Component
     /**
      * Находит все записи по условию $condition
      */
-    public function findAll(array $condition = array()): array
+    public function findAll(array $condition = array(), array $sort = array()): array
     {
-        return $this->dbFactory->getDb()->select($this->domain->getTableName(), $condition);
+        $db = $this->dbFactory->getDb();
+        if (!empty($sort)) {
+            foreach ($sort as $fieldName => $order) {
+                $db->orderBy($fieldName, $order);
+            }
+        }
+        return $db->select($this->domain->getTableName(), $condition);
     }
 
     /**

@@ -14,6 +14,7 @@ use tachyon\helpers\StringHelper;
 abstract class Repository extends \tachyon\Component
 {
     use \tachyon\dic\Persistence;
+    use \tachyon\dic\Terms;
 
     /** @var string */
     protected $tableName;
@@ -25,6 +26,14 @@ abstract class Repository extends \tachyon\Component
      * Массив сущностей
      */
     protected $collection;
+    /**
+     * условия для поиска
+     */
+    protected $where = array();
+    /**
+     * сортировка
+     */
+    protected $sortBy = array();
 
     public function initialize()
     {
@@ -43,14 +52,40 @@ abstract class Repository extends \tachyon\Component
     }
 
     /**
-     * Добавляет в коллекцию сущность $entity
+     * Устанавливает условия поиска для хранилища
      * 
-     * @param Entity $entity
+     * @param array $conditions условия поиска
+     * @return Repository
+     */
+    public function setSearchConditions($conditions=array()): Repository
+    {
+        return $this;
+    }
+
+    /**
+     * Устанавливает условия сортировки для хранилища
+     * 
+     * @param array $attrs
+     * @return Repository
+     */
+    public function setSort($attrs)
+    {
+        if (isset($attrs['order'])) {
+            $this->addSortBy($attrs['field'], $attrs['order']);
+        }
+        return $this;
+    }
+
+    /**
+     * Добавляет условия сортировки для хранилища к уже существующим
+     * 
+     * @param string $field
+     * @param string $order
      * @return void
      */
-    public function add($entity)
+    public function addSortBy($field, $order)
     {
-        $this->collection[$entity->getPk()] = $entity;
+        $this->sortBy = array_merge($this->sortBy, [$field => $order]);
     }
 
     /**
@@ -69,9 +104,10 @@ abstract class Repository extends \tachyon\Component
      * 
      * @return array
      */
-    public function findAll(array $condition = array()): Iterator
+    public function findAll(array $conditions = array(), array $sort = array()): Iterator
     {
-        $arrayData = $this->persistence->findAll($condition);
+        $arrayData = $this->persistence->findAll(array_merge($this->where, $conditions), $sort);
+        $this->where = $this->sortBy = array();
         foreach ($arrayData as $data) {
             $entity = $this->{$this->entityName}->fromState($data);
             yield $this->collection[$entity->getPk()] = $entity;

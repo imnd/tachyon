@@ -142,7 +142,12 @@
         <property name="join">
             <ref id="Join"/>
         </property>
+        <property name="terms">
+            <ref id="Terms"/>
+        </property>
     </service>
+
+    <service id="Terms" class="tachyon\db\Terms"></service>
 
     <service id="Model" class="\tachyon\Model">
         <property name="validator">
@@ -179,6 +184,9 @@
     <service id="Repository" class="\tachyon\db\dataMapper\Repository">
         <property name="persistence">
             <ref id="Persistence"/>
+        </property>
+        <property name="terms">
+            <ref id="Terms"/>
         </property>
     </service>
 
