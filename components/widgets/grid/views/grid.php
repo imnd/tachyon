@@ -9,7 +9,7 @@ $this->display('_search', compact('model', 'searchFields', 'widget'));
 if (empty($items)) {?>
     <p>Список пуст</p>
 <?php } else {?>
-<table class="data-grid" id="<?=$widget->getController()->getId()?>">
+<table class="data-grid" id="<?=$widget->getId()?>">
     <thead>
         <tr>
             <?php

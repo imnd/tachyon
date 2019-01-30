@@ -92,7 +92,7 @@ class FormBuilder extends \tachyon\Component
 
         $this->_options['attrs']['class'] = $this->_options['class'] ?? null;
         $this->_options['attrs']['action'] = $this->_options['action'] ?? '';
-        $this->_options['attrs']['method'] = $this->_options['method'] ?? null;
+        $this->_options['attrs']['method'] = $this->_options['method'] ?? 'GET';
         $this->_options['text']['submitCaption'] = $this->_options['submitCaption'] ?? null;
         $this->_options['final'] = $this->_options['final'] ?? true;
 

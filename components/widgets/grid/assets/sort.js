@@ -14,7 +14,7 @@ var sort = function(url, field, tblId) {
             order : sortOrder,
         },
         function(resp) {
-            var xmlDoc = parser.parseFromString(resp, "text/xml");
+            var xmlDoc = parser.parseFromString(resp, "text/html");
             var newTable = dom.findByClass("data-grid", xmlDoc);
             var newTableId = newTable.id;
             var oldTable = dom.findById(tblId);

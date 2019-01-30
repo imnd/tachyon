@@ -16,6 +16,7 @@ abstract class ActiveRecord extends \tachyon\Model
     use \tachyon\dic\DbFactory;
     use \tachyon\dic\Join;
     use \tachyon\dic\Alias;
+    use \tachyon\dic\Terms;
 
     /**
      * Название таблицы в БД или алиаса
@@ -122,7 +123,7 @@ abstract class ActiveRecord extends \tachyon\Model
 
             // приделываем первичные ключи связанной таблицы
             $relationParams[3] = array_merge($relationParams[3], $relationModel->getPrimKeyArr());
-            if (get_parent_class($relationModel)==='\tachyon\db\activeRecord\RowDataModel') {
+            if (get_parent_class($relationModel)==='\tachyon\db\activeRecord\ActiveRecord') {
                 // приделываем алиасы первичных ключей связанной таблицы
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->alias->getPrimKeyAliasArr($with));
             }
@@ -601,17 +602,9 @@ abstract class ActiveRecord extends \tachyon\Model
         return $this;
     }
 
-    /**
-     * setSearchConditions
-     * Устанавливает специфические для модели условия для поиска
-     * 
-     * @param $attrs array 
-     * @return RowDataModel
-     */
-    public function setSearchConditions($where=array())
+    public function getWhere()
     {
-        $this->where($where);
-        return $this;
+        return $this->getDb()->getWhere();
     }
 
     public function where($where)
@@ -626,74 +619,11 @@ abstract class ActiveRecord extends \tachyon\Model
         return $this;
     }
 
-    public function getWhere()
-    {
-        return $this->getDb()->getWhere();
-    }
-
-    /**
-     * like
-     * Устанавливает условие LIKE
-     * 
-     * @param $where array 
-     * @param $field string
-     * 
-     * @return RowDataModel
-     */
-    public function like($where, $field)
-    {
-        $where = $this->_prepareWhere($where);
-        if (isset($where[$field]))
-            $this->getDb()->addWhere(array("$field LIKE" => $where[$field]));
-
-        return $this;
-    }
-
-    /**
-     * greatThen
-     * Устанавливает условие больше чем
-     * 
-     * @param $where array массив условий
-     * @param $field string поле на котором устанавливается условие
-     * @param $arrKey string ключ массива условий
-     * @param $precise "меньше" или "меньше или равно"
-     * 
-     * @return RowDataModel
-     */
-    public function gt(&$where, $field, $arrKey, $precise=false)
-    {
-        if (isset($where[$arrKey])) {
-            $this->getDb()->addWhere(array_filter(array("$field>" . ($precise ? '' : '=') => $where[$arrKey])));
-            unset($where[$arrKey]);
-        }
-        return $this;
-    }
-
-    /**
-     * lessThen
-     * Устанавливает условие меньше чем
-     * 
-     * @param $where array массив условий
-     * @param $field string поле на котором устанавливается условие
-     * @param $arrKey string ключ массива условий
-     * @param $precise "меньше" или "меньше или равно"
-     * 
-     * @return RowDataModel
-     */
-    public function lt(&$where, $field, $arrKey, $precise=false)
-    {
-        if (isset($where[$arrKey])) {
-            $this->getDb()->addWhere(array_filter(array("$field<" . ($precise ? '' : '=') => $where[$arrKey])));
-            unset($where[$arrKey]);
-        }
-        return $this;
-    }
-
     /**
      * @param $where array 
      * @return array
      */
-    private function _prepareWhere($where)
+    private function _prepareWhere(array $where)
     {
         foreach ($where as $field => &$value) {
             if (!isset(static::$fieldTypes[$field])) {
@@ -707,13 +637,49 @@ abstract class ActiveRecord extends \tachyon\Model
         return $where;
     }
 
+    /**
+     * Устанавливает условия поиска для модели
+     * 
+     * @param $where array 
+     * @return ActiveRecord
+     */
+    public function setSearchConditions(array $where=array())
+    {
+        $this->where($where);
+        return $this;
+    }
+
+    public function gt(array &$where, $field, $arrKey, $precise=false)
+    {
+        $this->getDb()->addWhere($this->terms->gt($where, $field, $arrKey, $precise));
+        return $this;
+    }
+
+    public function lt(array &$where, $field, $arrKey, $precise=false)
+    {
+        $this->getDb()->addWhere($this->terms->lt($where, $field, $arrKey, $precise));
+        return $this;
+    }
+
+    /**
+     * Устанавливает условие LIKE
+     * 
+     * @param $where array 
+     * @param $field string
+     */
+    public function like(array $where, $field)
+    {
+        $this->getDb()->addWhere($this->terms->like($where, $field));
+        return $this;
+    }
+
     # ORDER BY
 
     public function setSortConditions($attrs)
     {
-        if (isset($attrs['order']))
+        if (isset($attrs['order'])) {
             $this->sortBy($attrs['field'], $attrs['order']);
-
+        }
         return $this;
     }
 

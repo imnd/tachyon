@@ -17,6 +17,6 @@ if (!empty($searchFields)) {
             ),
             'model' => $model,
             'fields' => $searchFields,
-            'fieldValues' => $widget->getController()->getQuery('get'),
+            'fieldValues' => $widget->getController()->getGet(),
         ));
 }

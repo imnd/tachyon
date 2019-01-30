@@ -14,7 +14,7 @@ class Grid extends \tachyon\components\widgets\Widget
     use \tachyon\dic\Csrf;
 
     /**
-     * @var \tachyon\db\activeRecord\RowDataModel $model
+     * @var \tachyon\db\activeRecord\ActiveRecord $model
      */
     protected $model;
     /**
@@ -52,10 +52,10 @@ class Grid extends \tachyon\components\widgets\Widget
      * включать ли компонент защиты от csrf-атак
      */
     protected $csrfJson = '';
-    protected $confirmMsgs = array(
+    protected $confirmMsgs = [
         'deactivate' => 'деактивировать?',
         'delete' => 'удалить?',
-    );
+    ];
     /**
      * Имя первичного ключа модели таблицы
      * @var $pkName string

@@ -26,21 +26,20 @@ class DateTimeHelper
     /**
      * Устанавливает диапазон первый и последний день года.
      * 
+     * @param \tachyon\db\activeRecord\ActiveRecord $model
      * @return void
      */
     public static function setYearBorders(&$model, $where)
     {
-        if (!isset($where['dateFrom']))
+        if (!isset($where['dateFrom'])) {
             $where['dateFrom'] = DateTimeHelper::getYearBorders()['first'];
-
+        }
         $model->gt($where, 'date', 'dateFrom');
 
-        if (!isset($where['dateTo']))
+        if (!isset($where['dateTo'])) {
             $where['dateTo'] = DateTimeHelper::getYearBorders()['last'];
-
+        }
         $model->lt($where, 'date', 'dateTo');
-
-        $model->addWhere($where);
     }
 
     /**
