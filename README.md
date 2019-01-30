@@ -12,7 +12,9 @@ Features:
 - 2 types of simplest (file system) caching for DB and http requests;
 - protection against XSS, CSRF assaults and SQL injections;
 - very simple i18n;
-- view layout (vanilla PHP and XSLT).
+- view layout: 
+    - plain PHP template with inheritance (3 template instructions: @include, @contents, @extends);
+    - XSLT template.
 
 Components:
 - form generator, which picks up the model validation rules and turns them to JS (instead of AJAX-validation for speed sake). Usual server-side validation also exists. It depends on the "scenario" of model using;
@@ -39,17 +41,18 @@ MVC микро-PHP-фреймворк.
 - DBAL на основе PDO. DBAL работает как на MySql так и на PgSql. Инстанциирование соответствующего класса DBAL происходит с помощью паттерна Factory Method.;
 - 2 типа ORM, которые взаимодействует с БД через DBAL используя паттерн Bridge: 
   - Active Record с поддержкой внешних ключей + особый вид моделей для подзапросов. Связанные записи могут загружаться как одним запросом в основной записью так и по требованию.
-  - Data Mapper с Unit of work.
-- несложный layout;
+  - Data Mapper, использующий DAO Entity Repository и шаблон Unit of work.
 - 2 вида кэширования в простейшем виде для ДБ и http запросов. Для этого используется файловая система;
 - компонент для публикации файлов ресурсов, js и css;
 - защита от XSS, CSRF атак и SQL инъекций;
 - многоязычность;
+- несложный layout 2-х видов:
+    - PHP шаблонизация c возможностью наследования шаблонов (поддерживаются инструкции: @include, @contents, @extends);
+    - XSLT шаблонизация;
 
 Вспомогательные компоненты:
 - генератор форм, который подхватывает правила валидации из модели и превращает в JS (вместо AJAX-валидации, для скорости). Обычная валидация на основе правил валидации из модели так же имеется. Она зависит от "сценария" использования модели;
 - компоненты для загрузки файлов, работы с куки и авторизации;
-- XSLT шаблонизация;
 - виджет для отображения таблиц из массива моделей;
 - отображение флэш-сообщений.
 
