@@ -105,28 +105,26 @@ class Validator extends \tachyon\Component
 
     public function csrfValidate()
     {
-        if ($this->config->getOption('csrf_check')===false)
+        if ($this->config->getOption('csrf_check')===false) {
             return false;
-        
+        }
         $result = $this->csrf->isTokenValid();
-        if (!$result)
+        if (!$result) {
             $this->_addError('csrf', 'Неверный csrf token');
-            
+        }
         return $result;
     }
 
     /**
-     * _addError
-     * 
      * @param $fieldName string
      * @param $message string
      */
     private function _addError($fieldName, $message)
     {
-        if (!empty($this->_errors[$fieldName]))
-            $this->_errors[$fieldName][] = $message;
-        else
-            $this->_errors[$fieldName] = array($message);
+        if (empty($this->_errors[$fieldName]))
+            $this->_errors[$fieldName] = [];
+
+        $this->_errors[$fieldName][] = $message;
     }
 
     public function getRules($object, $fieldName)

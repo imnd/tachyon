@@ -26,6 +26,11 @@ class View extends Component
      * @var string $rootViewsPath
      */
     protected $viewsPath;
+    /**
+     * путь к папке layout
+     * @var string $layoutPath
+     */
+    protected $layoutPath;
     protected $layout;
     protected $pageTitle;
 
@@ -50,7 +55,7 @@ class View extends Component
      */
     public function display($viewName, array $vars=array(), $return=false)
 	{
-        $contents = $this->_view("{$this->viewsPath}/$viewName.php", $vars);
+        $contents = $this->_view("{$this->viewsPath}/$viewName", $vars);
         if ($return) {
             return $contents;
         }
@@ -68,26 +73,68 @@ class View extends Component
      */
     public function layout($viewPath, array $vars=array())
 	{
-        $view = $this->display($viewPath, $vars, true);
+        $this->layoutPath = "{$this->rootViewsPath}/layouts";
 
-        $layoutPath = "{$this->rootViewsPath}/layouts";
-        $layoutHtml = $this->_view("$layoutPath/{$this->layout}.php", $vars);
-
-        while (false!==$includePos = strpos($layoutHtml, '@include')) {
-            $start = $includePos + 10;
-            $end = strpos($layoutHtml, "'", $start);
-            $fileNameLen = $end - $start;
-            $fileName = substr($layoutHtml, $start, $fileNameLen);
-            $layoutHtml = substr($layoutHtml, 0, $includePos) . $this->_view("$layoutPath/$fileName.php", $vars, true) . substr($layoutHtml, $end + 2);
-        }
-        $contentsPos = strpos($layoutHtml, '@contents');
-        $layoutHtml = substr($layoutHtml, 0, $contentsPos) . $view . substr($layoutHtml, $contentsPos + 10);
-
-        echo $layoutHtml;
+        echo $this->_displayLayout($this->display($viewPath, $vars, true), $vars);
 	}
+
+    private function _displayLayout($viewContents, $vars)
+    {
+        $layoutHtml = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
+
+        $layoutHtml = $this->_include($layoutHtml, $vars);
+
+        if (false!==$dirPos = strpos($layoutHtml, '@extends')) {
+            $start = $dirPos + strlen('@extends') + 2;
+            $end = strpos($layoutHtml, "'", $start);
+            // устанавливаем родительский лэйаут
+            $this->layout = substr($layoutHtml, $start, $end - $start);
+            // убираем тег '@extends'
+            $layoutHtml = substr($layoutHtml, $end + 2);
+            // отрисовываем родительский лэйаут
+            $layoutHtml = $this->_displayLayout($layoutHtml, $vars);
+        }
+        $layoutHtml = $this->_replaceTag($layoutHtml, $viewContents, '@contents');
+
+        return $layoutHtml;
+    }
+
+    /**
+     * Заменяет все тэги '@include' в тексте $textToReplace на содержимое файлов
+     * 
+     * @param string $textToReplace
+     * @param array $vars
+     * @return void
+     */
+    private function _include($text, $vars)
+    {
+        $directive = '@include';
+        while (false!==$dirPos = strpos($text, $directive)) {
+            $start = $dirPos + strlen($directive) + 2;
+            $fileNameLen = strpos($text, "'", $start) - $start;
+            $fileName = substr($text, $start, $fileNameLen);
+            $text = substr($text, 0, $dirPos) . $this->_view("{$this->layoutPath}/$fileName", $vars, true) . substr($text, $start + $fileNameLen + 2);
+        }
+        return $text;
+    }
+
+    /**
+     * Заменяет текст тэга $tag в тексте $textToReplace на $text
+     * 
+     * @param string $textToReplace
+     * @param string $text
+     * @param string $tag
+     * @return void
+     */
+    private function _replaceTag($textToReplace, $text, $tag)
+    {
+        $tagPos = strpos($textToReplace, $tag);
+        return substr($textToReplace, 0, $tagPos) . $text . substr($textToReplace, $tagPos + strlen($tag) + 1);
+    }
 
     private function _view($filePath, array $vars=array())
     {
+        $filePath = "$filePath.php";
         if (!file_exists($filePath)) {
             $error = "{$this->msg->i18n('No view file found')}: \"$filePath\"\n";
             echo "<div class='error'>$error</div>";
