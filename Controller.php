@@ -74,6 +74,8 @@ class Controller extends Component
     public function start($actionName, array $requestVars = array())
     {
         // переменные запроса
+        $requestVars['get'] = array_filter($requestVars['get']);
+        $requestVars['post'] = array_filter($requestVars['post']);
         $this->_setRequestVar($requestVars, 'get');
         $this->_setRequestVar($requestVars, 'post');
         $this->_setRequestVar($requestVars, 'files');
@@ -213,15 +215,42 @@ class Controller extends Component
      * Шорткат
      * 
      * @param $queryType string
-     * @return string
-     * @throws HttpException
+     * @return array
      */
-    public function getQuery(string $queryType): array
+    public function getQuery(string $queryType = null): array
     {
-        if (!in_array($queryType, array('get', 'post', 'files'))) {
-            throw new HttpException($this->msg->i18n('Invalid request type.', array('action' => $this->action)), HttpException::BAD_REQUEST);
+        if (is_null($queryType)) {
+            $queryType = 'get';
         }
         return $this->$queryType;
+    }
+
+    /**
+     * Шорткат для $_GET
+     * 
+     * @param $index string
+     * @return mixed
+     */
+    public function getGet(string $index = null)
+    {
+        if (!is_null($index)) {
+            return $this->get[$index] ?? '';
+        }
+        return $this->get;
+    }
+
+    /**
+     * Шорткат для $_POST
+     * 
+     * @param $index string
+     * @return mixed
+     */
+    public function getPost(string $index = null)
+    {
+        if (!is_null($index)) {
+            return $this->post[$index] ?? '';
+        }
+        return $this->post;
     }
 
     /**

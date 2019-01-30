@@ -102,7 +102,7 @@ abstract class Db extends \tachyon\Component
      * @param string $tblName имя таблицы
      * @param array $where условие поиска
      * @param array $fields имена полей
-     * 
+     * @return array
      */
     public function select(string $tblName, array $where=array(), array $fields=array()): array
     {
@@ -114,10 +114,10 @@ abstract class Db extends \tachyon\Component
         $fields = $this->prepareFields($fields);
 
         $query =
-                  "SELECT $fields FROM $tblName {$this->join} {$conditions['clause']}"
-                . $this->groupByString()
-                . $this->orderByString()
-                . $this->limit;
+              "SELECT $fields FROM $tblName {$this->join} {$conditions['clause']}"
+            . $this->groupByString()
+            . $this->orderByString()
+            . $this->limit;
 
         // очищаем переменные
         $this->clearOrderBy();
@@ -132,6 +132,42 @@ abstract class Db extends \tachyon\Component
         }
         $stmt = $this->connection->prepare($query);
         return $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : array();
+    }
+
+    /**
+     * Извлекает поля $fields записи из таблицы $tblName по условию $where
+     * 
+     * @param string $tblName имя таблицы
+     * @param array $where условие поиска
+     * @param array $fields имена полей
+     * @return array
+     */
+    public function selectOne(string $tblName, array $where=array(), array $fields=array())
+    {
+        $rows = $this->select($tblName, $where, $fields);
+        return $this->getOneRow($rows);
+    }
+        
+    public function query(string $query)
+    {
+        $this->connect();
+
+        $stmt = $this->connection->prepare($query);
+        if (!$this->execute($stmt)) {
+            return false;
+        }
+        return $stmt;
+    }
+    
+    public function queryAll(string $query)
+    {
+        $this->connect();
+
+        $stmt = $this->connection->prepare($query);
+        if ($stmt->execute()) {
+            return $this->prepareRows($stmt->fetchAll());
+        }
+        return array();
     }
 
     /**
@@ -225,34 +261,6 @@ abstract class Db extends \tachyon\Component
     {
         $this->connection->commit();
     }
-
-	public function selectOne($tblName, $where=array(), $fields=array())
-	{
-		$rows = $this->select($tblName, $where, $fields);
-		return $this->getOneRow($rows);
-	}
-		
-    public function query($query)
-    {
-        $this->connect();
-
-        $stmt = $this->connection->prepare($query);
-        if (!$this->execute($stmt)) {
-            return false;
-        }
-        return $stmt;
-    }
-    
-    public function queryAll($query)
-    {
-        $this->connect();
-
-        $stmt = $this->connection->prepare($query);
-        if ($stmt->execute()) {
-            return $this->prepareRows($stmt->fetchAll());
-        }
-        return array();
-    }
     
     # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
     
@@ -261,7 +269,9 @@ abstract class Db extends \tachyon\Component
      */
     public function addWhere($where)
     {
-        $this->where = array_merge($this->where, $where);
+        if (!empty($where)) {
+            $this->where = array_merge($this->where, $where);
+        }
     }
 
     /**
@@ -444,7 +454,7 @@ abstract class Db extends \tachyon\Component
         $vals = array();
         if (count($conditions)!==0) {
             $clauseArr = array();
-			foreach ($conditions as $field=> $val) {
+			foreach ($conditions as $field => $val) {
                 if (preg_match('/ IN/', $field, $matches)!==0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = '(' . implode(',', $val) . ')';
