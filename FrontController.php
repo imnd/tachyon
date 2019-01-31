@@ -1,6 +1,8 @@
 <?php
 namespace tachyon;
 
+use ErrorException;
+use tachyon\exceptions\ContainerException;
 use tachyon\exceptions\HttpException;
 use tachyon\helpers\ArrayHelper;
 
@@ -15,6 +17,12 @@ final class FrontController extends Component
     # сеттеры сервисов, которые внедряются в компонент
     use \tachyon\dic\OutputCache;
     use \tachyon\dic\Message;
+    use \tachyon\dic\View;
+
+    /**
+     * @var string контроллер по умолчанию
+     */
+    private $defaultController;
 
 	/**
 	 * Обработка входящего запроса
@@ -22,9 +30,6 @@ final class FrontController extends Component
 	 */
 	public function dispatch()
 	{
-        // Защита от XSS. HTTP Only
-        ini_set('session.cookie_httponly', 1);
-
         $requestUri = $_SERVER['REQUEST_URI'];
 
         // кеширование
@@ -39,14 +44,15 @@ final class FrontController extends Component
         $urlInfo = parse_url($requestUri);
 		$requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
+        $this->defaultController = $this->config->getOption('defaultController') ?: 'Index';
         // Извлекаем имя контроллера
-		$controllerName = $this->_getNameFromRequest($requestArr, 'Index');
+		$controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController) . 'Controller';
         // Извлекаем имя экшна
         $actionName = $this->_getNameFromRequest($requestArr, 'index');
         // разбираем массив параметров
         $requestVars = array_merge_recursive($requestVars, $this->_parseRequest($requestArr));
         foreach (['get', 'post', 'inline'] as $key) {
-            $this->_filterVars($requestVars[$key]);
+            $requestVars[$key] = $this->_filterVars($requestVars, $key);
         }
         // запускаем соотв. контроллер
 		$this->_startController($controllerName, $actionName, $requestVars);
@@ -64,14 +70,11 @@ final class FrontController extends Component
      */
     private function _getNameFromRequest(array &$requestArr, $default): string
     {
-        if (count($requestArr)===0) {
-            return $default;
-        }
-        if (is_numeric($requestArr[0])) {
-            return $default;
-        }
-        $name = array_shift($requestArr);
-        if ($name==='') {
+        if (
+                count($requestArr)===0
+            || is_numeric($requestArr[0])
+            or '' === $name = array_shift($requestArr)
+        ) {
             return $default;
         }
         return $name;
@@ -103,18 +106,20 @@ final class FrontController extends Component
      * @param array $vars
      * @return void
      */
-    private function _filterVars(&$vars)
+    private function _filterVars($vars, $key)
     {
-        if (empty($vars)) {
+        if (!isset($vars[$key])) {
             return;
         }
-        if (is_string($vars)) {
-            $vars = ArrayHelper::filterText($vars);
-        } elseif (is_array($vars)) {
-            foreach ($vars as &$value) {
+        $arr = $vars[$key];
+        if (is_string($arr)) {
+            $arr = ArrayHelper::filterText($arr);
+        } elseif (is_array($arr)) {
+            foreach ($arr as &$value) {
                 $value = ArrayHelper::filterText($value);
             }
         }
+        return array_filter($arr);
     }
 
     /**
@@ -122,35 +127,55 @@ final class FrontController extends Component
      */
     private function _startController($controllerName, $actionName, $requestVars)
     {
-        $controllerName = ucfirst($controllerName) . 'Controller';
-        $error = 'Путь не найден';
-        if (!file_exists($this->config->getOption('base_path') . "/../app/controllers/$controllerName.php")) {
-            $this->_error(404, $error);
-        }
-        $controller = $this->get($controllerName);
-        if (!method_exists($controller, $actionName)) {
-            $this->_error(404, $error);
-        }
-        // инициализация
         try {
-            $controller->start($actionName, $requestVars);
+            // инициализация
+            $controller = $this->_getController($controllerName, $actionName);
+            $controller->start($requestVars);
             // запускаем
             $controller->beforeAction();
             $inlineVars = isset($requestVars['inline']) ? $requestVars['inline'] : null;
             $controller->$actionName($inlineVars);
             $controller->afterAction();
+            // всё в порядке, отдаём страницу
+            header('HTTP/1.1 200 OK');
+            // защита от кликджекинга
+            header('X-Frame-Options:sameorigin');
+            // Защита от XSS. HTTP Only
+            ini_set('session.cookie_httponly', 1);
+        } catch (ContainerException $e) {
+            $this->_error(404, 'Путь не найден');
+        } catch (ErrorException $e) {
+            $this->_error(404, 'Путь не найден');
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
         }
     }
-    
+
+    /**
+     * Инициализация
+     * 
+     * @param string $controllerName
+     * @return Controller
+     */
+    private function _getController(string $controllerName, $actionName)
+    {
+        $controller = $this->get($controllerName);
+        $controller
+            ->setAction($actionName)
+            ->setId(str_replace('Controller', '', lcfirst($controller->getClassName())));
+
+        return $controller;
+    }
+
     /**
      * обработчик неправильного запроса
      */
     private function _error($code, $error)
     {
         http_response_code($code);
-        echo $error;
+        $controller = $this->_getController($this->defaultController . 'Controller', 'error');
+        $controller->start();
+        $controller->layout('error', compact('code', 'error'));
         die;
     }
 }

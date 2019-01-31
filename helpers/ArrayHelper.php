@@ -18,7 +18,6 @@ class ArrayHelper
     {
         $value = htmlentities($value);
         //$value = str_replace(['|', '&', ';', '$', '%', '@', "\\'", "'", '\\"', '"', '\\', '<', '>', '(', ')', ',', "\x27", "\x22", "\x60", "\t", "\n", "\r"], '', $value);
-        //$value = str_replace("+", "\\+", $value);
         return $value;
     }
 

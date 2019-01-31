@@ -18,7 +18,6 @@ class Controller extends Component
     use \tachyon\dic\Message;
     use \tachyon\dic\Lang;
     use \tachyon\dic\View;
-    use \tachyon\dic\DbFactory;
         
     /**
      * Язык сайта
@@ -71,33 +70,22 @@ class Controller extends Component
      * @return void
      * @throws HttpException
      */
-    public function start($actionName, array $requestVars = array())
+    public function start(array $requestVars = array())
     {
         // переменные запроса
-        $requestVars['get'] = array_filter($requestVars['get']);
-        $requestVars['post'] = array_filter($requestVars['post']);
-        $this->_setRequestVar($requestVars, 'get');
-        $this->_setRequestVar($requestVars, 'post');
-        $this->_setRequestVar($requestVars, 'files');
-
-        // проверка на isRequestPost по списку экшнов
-        if (in_array($actionName, $this->postActions) && !$this->isRequestPost()) {
-            throw new HttpException($this->msg->i18n('Action %action allowed only through post request.', array('action' => $actionName)), HttpException::BAD_REQUEST);
+        foreach (['get', 'post', 'files'] as $key) {
+            $this->_setRequestVar($requestVars, $key);
         }
-        $this->action = $actionName;
-
-        $this->id = str_replace('Controller', '', lcfirst($this->getClassName()));
+        // проверка на isRequestPost по списку экшнов
+        if (in_array($this->action, $this->postActions) && !$this->isRequestPost()) {
+            throw new HttpException($this->msg->i18n('Action %action allowed only through post request.', array('action' => $this->action)), HttpException::BAD_REQUEST);
+        }
 
         $this->view->setController($this);
         // путь к отображениям
         $this->view->setViewsPath("{$this->view->getViewsPath()}/{$this->id}");
         // текущий язык сайта
         $this->language = $this->lang->getLanguage();
-
-        // всё в порядке, отдаём страницу
-        header('HTTP/1.1 200 OK');
-        // защита от кликджекинга
-        header('X-Frame-Options:sameorigin');
 
         $this->init();
     }
@@ -206,7 +194,7 @@ class Controller extends Component
     /**
      * @return boolean
      */
-    public function isRequestPost(): boolean
+    public function isRequestPost(): bool
     {
         return $_SERVER['REQUEST_METHOD']==='POST';
     }
@@ -278,11 +266,30 @@ class Controller extends Component
     }
 
     /**
+     * @return string
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function setAction($action)
+    {
+        $this->action = $action;
+        return $this;
+    }
+
+    /**
      * @return void
      */
     public function setLayout(string $layout)
     {
         $this->layout = $layout;
+        return $this;
     }
 
     /**
@@ -296,7 +303,7 @@ class Controller extends Component
     /**
      * @return string
      */
-    public function getLanguage(): string
+    public function getLanguage()//: ?string
     {
         return $this->language;
     }

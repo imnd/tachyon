@@ -40,8 +40,7 @@ class View extends Component
      */
     public function __construct()
     {
-        // путь к отображениям
-        $this->rootViewsPath = $this->viewsPath = $this->get('config')->getOption('base_path') . '/../app/views';
+        $this->appViewsPath = $this->viewsPath = $this->get('config')->getOption('base_path') . '/../app/views';
     }
 
 	/**
@@ -73,7 +72,7 @@ class View extends Component
      */
     public function layout($viewPath, array $vars=array())
 	{
-        $this->layoutPath = "{$this->rootViewsPath}/layouts";
+        $this->layoutPath = "{$this->appViewsPath}/layouts";
 
         echo $this->_displayLayout($this->display($viewPath, $vars, true), $vars);
 	}
@@ -278,6 +277,6 @@ class View extends Component
      */
     public function escape($text)
     {
-        return htmlspecialchars( $text );
+        return htmlspecialchars($text);
     }
 }

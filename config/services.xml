@@ -9,6 +9,9 @@
         <property name="config">
             <ref id="Config"/>
         </property>
+        <property name="view">
+            <ref id="View"/>
+        </property>
     </service>
 
     <service id="DOMDocument" class="\DOMDocument"></service>
@@ -98,6 +101,9 @@
         </property>
     </service>
     <service id="Controller" class="\tachyon\Controller">
+        <property name="view">
+            <ref id="View"/>
+        </property>
         <property name="msg">
             <ref id="Message"/>
         </property>
@@ -106,12 +112,6 @@
         </property>
         <property name="lang">
             <ref id="Lang"/>
-        </property>
-        <property name="dbFactory">
-            <ref id="DbFactory"/>
-        </property>
-        <property name="view">
-            <ref id="View"/>
         </property>
     </service>
 

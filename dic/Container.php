@@ -88,6 +88,9 @@ class Container
             self::$_initialised = true;
         }
 
+        if (!isset(self::$_config[$name])) {
+            throw new ContainerException('Класс не найден в конфигурации');
+        }
         $config = self::$_config[$name];
 
         $config['variables']['domain'] = $domain;
@@ -102,7 +105,9 @@ class Container
 
     private static function _createService($config, array $params = array())
     {
-        $className = self::_getConfigParam($config, 'class');
+        if (!$className = self::_getConfigParam($config, 'class')) {
+            throw new ContainerException('Класс не найден в конфигурации');
+        }
         $service = new $className($params);
 
         self::_setProperties($service, $config);
@@ -176,8 +181,9 @@ class Container
 
     private static function _getConfigParam($config, $param)
     {
-        if (isset($config[$param]))
+        if (isset($config[$param])) {
             return $config[$param];
+        }
     }
 
     private static function _setConfigParam(&$config, $param, $val)
