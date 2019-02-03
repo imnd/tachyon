@@ -11,7 +11,7 @@ trait Authentication
 {
     /**
      * Имя переменной куки
-     * @var string $duration
+     * @var string $cookieKey
      */
     private $cookieKey = 'userid';
     /**
@@ -28,6 +28,7 @@ trait Authentication
      */
     public function accessDenied()
     {
+        $this->setReferer();
         $this->redirect($this->loginUrl);
     }
 

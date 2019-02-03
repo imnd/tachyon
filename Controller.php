@@ -42,7 +42,7 @@ class Controller extends Component
 
     # Переменные запроса
 
-	/**
+    /**
      * @var array $get
      */
     protected $get;
@@ -129,7 +129,7 @@ class Controller extends Component
         }
     }
 
-	/**
+    /**
      * Отображает файл представления $view
      * передавая ему параметры $vars в виде массива
      * 
@@ -139,14 +139,14 @@ class Controller extends Component
      * @return string
      */
     public function display($view=null, array $vars=array(), $return=false)
-	{
-		if (empty($view)) {
+    {
+        if (empty($view)) {
             $view = lcfirst($this->action);
         }
         return $this->view->display($view, $vars, $return);
-	}
+    }
 
-	/**
+    /**
      * Отображает файл представления, передавая ему параметры
      * в виде массива в заданном лэйауте
      * 
@@ -155,26 +155,26 @@ class Controller extends Component
      * @return string
      */
     public function layout($view=null, array $vars=array())
-	{
+    {
         $this->view->setLayout($this->layout);
 
         if (empty($view)) {
             $view = lcfirst($this->action);
         }
         $this->view->layout($view, $vars);
-	}
+    }
 
-	/**
+    /**
      * Перенаправляет пользователя на адрес: $path
      * 
      * @param $path string
      * @return void
      */
     public function redirect($path)
-	{
-		header("Location: $path");
+    {
+        header("Location: $path");
         die;
-	}
+    }
 
     /**
      * Вывод сообщения об ошибке
@@ -190,6 +190,26 @@ class Controller extends Component
     }
 
     # Getters and setters
+
+    /**
+     * Страница, с которой редиректились
+     * 
+     * @return string
+     */
+    public function getReferer()
+    {
+        return $_COOKIE['referer'] ?? '/';
+    }
+
+    /**
+     * Запоминаем страницу, с которой редиректимся
+     * 
+     * @return void
+     */
+    public function setReferer()
+    {
+        setcookie('referer', $_SERVER['REQUEST_URI'], 0, '/');
+    }
 
     /**
      * @return boolean
