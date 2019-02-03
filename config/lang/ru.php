@@ -8,7 +8,7 @@
     'No view file found' => 'Не найден файл отображения.',
     'fieldsRequired' => 'Поля с <span class="error">*</span> обязательны к заполнению.',
     // подписи к кнопкам
-	'entrance' => 'вход',
+    'entrance' => 'вход',
     'login' => 'войти',
     'logout' => 'выйти',
     'search' => 'поиск',

@@ -9,11 +9,11 @@
     'fieldsRequired' => 'Fields with <span class="error">*</span> are required.',
     // buttons captions
     'search' => 'Search',
-	'entrance' => 'Entrance',
-	'login' => 'login',
-	'logout' => 'logout',
-	'register' => 'register',
-	'registration' => 'Registration',
+    'entrance' => 'Entrance',
+    'login' => 'login',
+    'logout' => 'logout',
+    'register' => 'register',
+    'registration' => 'Registration',
     'userProfile' => 'Profile of user',
     // validation
     'errorsToCorrect' => 'There are some errors to correct.',

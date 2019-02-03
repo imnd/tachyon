@@ -75,9 +75,9 @@ class FormBuilder extends \tachyon\Component
         $this->_csrfCheck = $this->get('config')->getOption('csrf_check');
         // текстовые
         $this->_options['text'] = $this->_options['text'][$this->get('config')->getOption('lang')];
-	}
+    }
 
-	/**
+    /**
      * build
      * Отрисовка формы
      * 
@@ -105,7 +105,7 @@ class FormBuilder extends \tachyon\Component
         $requiredFields = false;
         $elements = array();
         $controls = array();
-		// если поля формы определяются ч/з модель
+        // если поля формы определяются ч/з модель
         if (!empty($params['model']) && !empty($params['fields'])) {
             $fieldValues = key_exists('fieldValues', $params) ? $params['fieldValues'] : array();
             $model = $params['model'];
@@ -173,10 +173,10 @@ class FormBuilder extends \tachyon\Component
                 
             $controls = array_merge($controls, $params['controls']);
         }
-		$elements = array();
+        $elements = array();
         // напоминание об обязательных полях
-		if ($requiredFields && !empty($this->_options['notice']))
-			$elements[] = array(
+        if ($requiredFields && !empty($this->_options['notice']))
+            $elements[] = array(
                 'tag' => 'div',
                 'attrs' => array('class' => 'msg clear'),
                 'contents' => $this->_options['text']['required']
@@ -243,7 +243,7 @@ class FormBuilder extends \tachyon\Component
                 return false;
             };");
         }
-	}
+    }
 
     /**
      * Выводим скрипты и стили формы

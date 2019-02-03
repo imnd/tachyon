@@ -12,7 +12,7 @@ class XsltView extends View
     use \tachyon\dic\DomDocument;
     use \tachyon\dic\XSLTProcessor;
 
-	/**
+    /**
      * Отображает файл представления 
      * передавая ему параметря в виде массива
      * в заданном лэйауте
@@ -22,12 +22,12 @@ class XsltView extends View
      * @return
      */
     public function layout($view, array $vars=array())
-	{
+    {
         require $this->getLayoutPath() . '/head.php';
         $xml = $this->arrayToXML($vars, 'root');
         echo $this->_xsltTransform($xml, $view);
         require $this->getLayoutPath() . '/foot.php';
-	}
+    }
 
     /**
      * Отображает файл представления 

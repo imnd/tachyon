@@ -9,7 +9,7 @@ namespace tachyon\components;
  */
 class Encrypt extends \tachyon\Component
 {
-	/**
+    /**
      * алгоритм для шифровки пароля
      * @var integer $salt
      */
