@@ -11,30 +11,26 @@ use tachyon\exceptions\ModelException;
  */
 abstract class ActiveRecord extends \tachyon\Model
 {
+    use \tachyon\dic\Alias;
     use \tachyon\dic\DbCache;
-    use \tachyon\dic\Message;
     use \tachyon\dic\DbFactory;
     use \tachyon\dic\Join;
-    use \tachyon\dic\Alias;
+    use \tachyon\dic\Message;
     use \tachyon\dic\Terms;
 
     /**
      * Имя таблицы в БД или алиаса
      */
-    public static $tableName;
+    protected static $tableName;
     /**
      * Имя поля первичного ключа
      */
     protected $pkName;
     /**
-     * маркер: новая это несохраненная модель или извлеченная из БД
+     * Поля таблицы
+     * @var array
      */
-    protected $isNew = true;
-    /**
-     * маркер: изменившаяся несохраненная модель
-     * пока не используется
-     */
-    protected $isDirty = false;
+    protected $fields = array();
     /**
      * Поля выборки
      */
@@ -101,6 +97,16 @@ abstract class ActiveRecord extends \tachyon\Model
      * связанные модели, по которым происходит выборка
      */
     protected $with = array();
+
+    /**
+     * маркер: новая это несохраненная модель или извлеченная из БД
+     */
+    protected $isNew = true;
+    /**
+     * маркер: изменившаяся несохраненная модель
+     * пока не используется
+     */
+    protected $isDirty = false;
 
     protected $relationClasses = array();
 
@@ -585,7 +591,7 @@ abstract class ActiveRecord extends \tachyon\Model
     public function setAttributes(array $attributes)
     {
         foreach ($attributes as $name => $value) {
-            if (in_array($name, static::$fields)) {
+            if (in_array($name, $this->fields)) {
                 $this->attributes[$name] = $value;
             }
         }
@@ -793,7 +799,7 @@ abstract class ActiveRecord extends \tachyon\Model
             }
         }
         if ($all) {
-            foreach (static::$fields as $field) {
+            foreach ($this->fields as $field) {
                 $fieldNames[] = $field;
             }
         }
@@ -807,9 +813,9 @@ abstract class ActiveRecord extends \tachyon\Model
     public function setSelect()
     {
         // если он пуст 
-        if (empty($this->getSelect()))
-            $this->select(static::getTableFields());
-
+        if (empty($this->getSelect())) {
+            $this->select($this->getTableFields());
+        }
         return $this;
     }
 
@@ -887,7 +893,7 @@ abstract class ActiveRecord extends \tachyon\Model
         $relation = $this->relations[$relationName];
         if (in_array($relation[1], array('has_many', 'has_one'))) {
             $joinModel = $this->get($relation[0]);
-            return array($joinModel::$tableName => $join[$relationName]);
+            return array($joinModel::getTableName() => $join[$relationName]);
         }
         throw new ModelException($this->msg->i18n('Determine the join condition of the table %table', array('table' => $join)));
     }
@@ -1010,7 +1016,7 @@ abstract class ActiveRecord extends \tachyon\Model
     public function getAttributeName($key)
     {
         if (!$this->attributeNames) {
-            $this->attributeNames = static::$fields;
+            $this->attributeNames = $this->fields;
         }
         return parent::getAttributeName($key);
     }
@@ -1036,7 +1042,7 @@ abstract class ActiveRecord extends \tachyon\Model
      */
     protected function getFieldsList()
     {
-        $fields = $this->alias->aliasFields(static::$fields, static::$tableName);
+        $fields = $this->alias->aliasFields($this->fields, static::$tableName);
         return implode(',', $fields);
     }
 
@@ -1059,9 +1065,9 @@ abstract class ActiveRecord extends \tachyon\Model
     /**
      * возвращает список полей таблицы
      */
-    public static function getTableFields()
+    public function getTableFields()
     {
-        return static::$fields;
+        return $this->fields;
     }
 
     /**

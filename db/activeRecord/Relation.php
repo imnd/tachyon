@@ -29,7 +29,7 @@ abstract class Relation extends \tachyon\Component
     {
         $this->modelName = $params['modelName'];
         $model = $this->get($this->modelName);
-        $this->tableName = $model::$tableName;
+        $this->tableName = $model::getTableName();
         $this->pkName = $model->getPkName();
         $this->linkKey = $params['linkKey'];
         $this->aliasSuffix = "_{$params['type']}";
