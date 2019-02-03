@@ -18,7 +18,7 @@ abstract class Relation extends \tachyon\Component
     protected $values;
     protected $tableAlias;
     protected $params;
-    protected $primKey;
+    protected $pkName;
     protected $modelName;
     protected $model;
     protected $aliasSuffix;
@@ -30,7 +30,7 @@ abstract class Relation extends \tachyon\Component
         $this->modelName = $params['modelName'];
         $model = $this->get($this->modelName);
         $this->tableName = $model::$tableName;
-        $this->primKey = $model::$primKey;
+        $this->pkName = $model->getPkName();
         $this->linkKey = $params['linkKey'];
         $this->aliasSuffix = "_{$params['type']}";
         $this->tableAlias = $this->tableName . $this->aliasSuffix;

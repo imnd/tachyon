@@ -16,7 +16,7 @@ class HasoneRelation extends Relation
             $thisTableLinkKey = $this->linkKey[0];
             $joinTableLinkKey = $this->linkKey[1];
         } else {
-            $thisTableLinkKey = $this->primKey;
+            $thisTableLinkKey = $this->pkName;
             $joinTableLinkKey = $this->linkKey;
         }
         $this->get('join')->leftJoin("{$this->tableName} AS {$this->tableAlias}", "{$this->tableAlias}.$thisTableLinkKey={$owner->getTableName()}.$joinTableLinkKey", $this->getTableAlias(), $owner);

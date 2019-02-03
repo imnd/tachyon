@@ -147,7 +147,7 @@ abstract class Db extends \tachyon\Component
         $rows = $this->select($tblName, $where, $fields);
         return $this->getOneRow($rows);
     }
-        
+
     public function query(string $query)
     {
         $this->connect();
@@ -158,16 +158,20 @@ abstract class Db extends \tachyon\Component
         }
         return $stmt;
     }
-    
+
     public function queryAll(string $query)
     {
-        $this->connect();
-
-        $stmt = $this->connection->prepare($query);
-        if ($stmt->execute()) {
+        if ($stmt = $this->query($query)) {
             return $this->prepareRows($stmt->fetchAll());
         }
         return array();
+    }
+
+    public function queryOne(string $query)
+    {
+        if ($stmt = $this->query($query)) {
+            return $this->prepareRows($stmt->fetch());
+        }
     }
 
     /**
@@ -261,9 +265,9 @@ abstract class Db extends \tachyon\Component
     {
         $this->connection->commit();
     }
-    
+
     # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
-    
+
     /**
      * Добавляет условие
      */
@@ -281,7 +285,7 @@ abstract class Db extends \tachyon\Component
     {
         $this->where = $where;
     }
-    
+
     /**
      * возвращает условие
      */
@@ -305,7 +309,7 @@ abstract class Db extends \tachyon\Component
     {
         return $this->fields;
     }
-    
+
     public function setJoin($tblName, $onCond, $joinMode='INNER')
     {
         $this->join .= " $joinMode JOIN $tblName ON $onCond ";
@@ -356,12 +360,12 @@ abstract class Db extends \tachyon\Component
     {
         $this->limit = $limit;
         
-        if (!is_null($offset))
+        if (!is_null($offset)) {
             $this->limit = " $offset, {$this->limit}";
-            
+        }
         $this->limit = " LIMIT {$this->limit} ";
     }
-    
+
     public function getLimit()
     {
         return $this->limit;
@@ -400,14 +404,14 @@ abstract class Db extends \tachyon\Component
     {
         $this->where = array();
     }
-    
+
     /**
      * очищает поля выборки
      */
     protected function clearFields()
     {
         $this->fields = array();
-    }    
+    }
 
     /**
      * очищает join
@@ -416,7 +420,7 @@ abstract class Db extends \tachyon\Component
     {
         $this->join = '';
     }
-    
+
     /**
      * очищает limit
      */
@@ -424,7 +428,7 @@ abstract class Db extends \tachyon\Component
     {
         $this->limit = '';
     }
-    
+
     /**
      * очищает GroupBy
      */
@@ -433,28 +437,28 @@ abstract class Db extends \tachyon\Component
         $this->groupBy = '';
     }
 
-	protected function prepareConditions($conditions, $type, $operator='=')
-	{
-		switch ($type) {
-		    case 'where':
-			    return $this->createConditions($conditions, 'WHERE', "$operator ?", 'AND');
+    protected function prepareConditions($conditions, $type, $operator='=')
+    {
+        switch ($type) {
+            case 'where':
+                return $this->createConditions($conditions, 'WHERE', "$operator ?", 'AND');
             case 'update':
                 return $this->createConditions($conditions, 'SET', "$operator ?", ',');
-		    // TODO: перенести
+            // TODO: перенести
             case 'insert':
-			    return $this->createConditions($conditions, '', '', ',');
-		    default:
-			    return null;
-		}
-	}
+                return $this->createConditions($conditions, '', '', ',');
+            default:
+                return null;
+        }
+    }
 
-	protected function createConditions($conditions, $keyword, $operator, $glue)
-	{
-		$clause = '';
+    protected function createConditions($conditions, $keyword, $operator, $glue)
+    {
+        $clause = '';
         $vals = array();
         if (count($conditions)!==0) {
             $clauseArr = array();
-			foreach ($conditions as $field => $val) {
+            foreach ($conditions as $field => $val) {
                 if (preg_match('/ IN/', $field, $matches)!==0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = '(' . implode(',', $val) . ')';
@@ -464,14 +468,14 @@ abstract class Db extends \tachyon\Component
                 } elseif (preg_match('/<=|<|>=|>/', $field, $matches)!==0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . ' ?';
                 } else {
-				    $clauseArr[] = $this->quoteField($field) . $operator;
+                    $clauseArr[] = $this->quoteField($field) . $operator;
                 }
-				$vals[] = $val;
-			}
-			$clause = "$keyword " . implode(" $glue ", $clauseArr);
-		}
-		return compact('clause', 'vals');
-	}
+                $vals[] = $val;
+            }
+            $clause = "$keyword " . implode(" $glue ", $clauseArr);
+        }
+        return compact('clause', 'vals');
+    }
 
     protected function clearifyField($field, $text)
     {
@@ -491,29 +495,29 @@ abstract class Db extends \tachyon\Component
         return implode(',', $fields);
     }
 
-	protected function quoteField($field)
-	{
+    protected function quoteField($field)
+    {
         if (preg_match('/[.( ]/', $field)===0) {
-			$field = "`" . trim($field) . "`";
+            $field = "`" . trim($field) . "`";
         }
-		return $field;
-	}
+        return $field;
+    }
 
-	protected function getPlaceholder($fields)
-	{
-		$plholdArr = array_fill(0, count($fields), '?');
+    protected function getPlaceholder($fields)
+    {
+        $plholdArr = array_fill(0, count($fields), '?');
 
-		return implode(',', $plholdArr);
-	}	
-	
-	protected function getOneRow($rows)
-	{
-		if (count($rows)>0) {
-			$rows =  $this->prepareRows($rows);
-			return $rows[0];
-		}
-	}
+        return implode(',', $plholdArr);
+    }
     
+    protected function getOneRow($rows)
+    {
+        if (count($rows)>0) {
+            $rows =  $this->prepareRows($rows);
+            return $rows[0];
+        }
+    }
+
     protected function prepareRows($rows=array())
     {
         foreach ($rows as &$row) {

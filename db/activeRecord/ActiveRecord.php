@@ -19,13 +19,13 @@ abstract class ActiveRecord extends \tachyon\Model
     use \tachyon\dic\Terms;
 
     /**
-     * Название таблицы в БД или алиаса
+     * Имя таблицы в БД или алиаса
      */
     public static $tableName;
     /**
-     * первичный ключ
+     * Имя поля первичного ключа
      */
-    public static $primKey;
+    protected $pkName;
     /**
      * маркер: новая это несохраненная модель или извлеченная из БД
      */
@@ -42,7 +42,7 @@ abstract class ActiveRecord extends \tachyon\Model
     /**
      * SQL-типы полей таблицы
      */
-    protected static $fieldTypes = array();
+    protected $fieldTypes = array();
     /**
      * Алиас текущей (главной) таблицы запроса
      */
@@ -101,7 +101,7 @@ abstract class ActiveRecord extends \tachyon\Model
      * связанные модели, по которым происходит выборка
      */
     protected $with = array();
-    
+
     protected $relationClasses = array();
 
     /**
@@ -122,7 +122,7 @@ abstract class ActiveRecord extends \tachyon\Model
                 $relationParams[3] = $relationModel->getTableFields();
 
             // приделываем первичные ключи связанной таблицы
-            $relationParams[3] = array_merge($relationParams[3], $relationModel->getPrimKeyArr());
+            $relationParams[3] = array_merge($relationParams[3], $relationModel->getPkArr());
             if (get_parent_class($relationModel)==='\tachyon\db\activeRecord\ActiveRecord') {
                 // приделываем алиасы первичных ключей связанной таблицы
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->alias->getPrimKeyAliasArr($with));
@@ -144,7 +144,7 @@ abstract class ActiveRecord extends \tachyon\Model
             $relModel = $this->get($relationArr[0]);
             $type = $relationArr[1];
             // первичный ключ внешней таблицы
-            $relPk = $relModel->getPrimKey();
+            $relPk = $relModel->getPkName();
             switch ($type) {
                 case 'has_one':
                     $fk = $relationArr[2];
@@ -156,7 +156,7 @@ abstract class ActiveRecord extends \tachyon\Model
 
                 case 'has_many':
                     // первичный ключ этой таблицы
-                    $thisPk = static::$primKey;
+                    $thisPk = $this->pkName;
                     // внешний ключ связанной таблицы, указывающий на первичный ключ этой таблицы
                     $fk = $relationArr[2];
                     return $relModel
@@ -328,7 +328,7 @@ abstract class ActiveRecord extends \tachyon\Model
             // преобразование полей (в т.ч. timestamp) // TODO: убрать отсюда!!!
             $item = $this->_convVals($item, $this->selectFields);
             */
-            $itemPk = $item[static::$primKey];
+            $itemPk = $item[$this->pkName];
             // чтобы не перезаписывать данные основной записи в случае JOIN
             if (!array_key_exists($itemPk, $retItems)) {
                 // берём только поля данной модели (без присоединенных ч/з JOIN)
@@ -425,7 +425,7 @@ abstract class ActiveRecord extends \tachyon\Model
      */
     public function findByPk($pk)
     {
-        $primKey = static::$primKey;
+        $primKey = $this->pkName;
         if (is_array($primKey)) {
             $conditions = array_combine($primKey, $pk);
         } elseif (is_string($primKey)) {
@@ -458,7 +458,6 @@ abstract class ActiveRecord extends \tachyon\Model
     ###################################
 
     /**
-     * save
      * Сохраняет модель в БД. При вставке строки возвращает $pk модели
      * 
      * @param $validate boolean производить ли валидацию
@@ -504,17 +503,16 @@ abstract class ActiveRecord extends \tachyon\Model
     }
 
     /**
-     * вставляет строку в БД
-     * возвращает $pk модели
+     * вставляет модель в БД возвращает $pk модели
      * 
-     * @return integer
+     * @return mixed
      */
     public function insert()
     {
         if (!$lastInsertId = $this->getDb()->insert(static::$tableName, $this->fieldAttributes())) {
             return false;
         }
-        return $this->{static::$primKey} = $lastInsertId;
+        return $this->{$this->pkName} = $lastInsertId;
     }
 
     /**
@@ -525,7 +523,7 @@ abstract class ActiveRecord extends \tachyon\Model
     public function update()
     {
         $condition = array();
-        $pk = static::$primKey;
+        $pk = $this->pkName;
         if (is_array($pk))
             foreach ($pk as $key)
                 $condition[$key] = $this->$key;
@@ -540,7 +538,7 @@ abstract class ActiveRecord extends \tachyon\Model
      */
     public function delete(): bool
     {
-        $pk = static::$primKey;
+        $pk = $this->pkName;
         if ($this->$pk)
             if ($this->getDb()->delete(static::$tableName, array($pk => $this->$pk))) {
                 unset($this);
@@ -580,14 +578,6 @@ abstract class ActiveRecord extends \tachyon\Model
         $this->getDb()->truncate(static::$tableName);
     }
 
-    ############################################
-    #                                          #
-    # ЗДЕСЬ ЗАДАЮТСЯ РАЗЛИЧНЫЕ УСЛОВИЯ ВЫБОРКИ #
-    #                                          #
-    ############################################
-
-    # WHERE
-
     /**
      * Присваивание значений аттрибутам модели
      * @param $arr array 
@@ -601,6 +591,14 @@ abstract class ActiveRecord extends \tachyon\Model
         }
         return $this;
     }
+
+    ############################################
+    #                                          #
+    # ЗДЕСЬ ЗАДАЮТСЯ РАЗЛИЧНЫЕ УСЛОВИЯ ВЫБОРКИ #
+    #                                          #
+    ############################################
+
+    # WHERE
 
     public function getWhere()
     {
@@ -626,10 +624,10 @@ abstract class ActiveRecord extends \tachyon\Model
     private function _prepareWhere(array $where)
     {
         foreach ($where as $field => &$value) {
-            if (!isset(static::$fieldTypes[$field])) {
+            if (!isset($this->fieldTypes[$field])) {
                 continue;
             }
-            $type = static::$fieldTypes[$field];
+            $type = $this->fieldTypes[$field];
             if (strpos($type, 'text')!==false) {
                 $value = "'$value'";
             }
@@ -909,7 +907,7 @@ abstract class ActiveRecord extends \tachyon\Model
             $tableName .= " AS {$this->tableAlias}";
 
         if (in_array($relation[1], array('has_many', 'has_one'))) {
-            $on = $tableName . "." . static::$primKey . "=" . $join[$relationName] . "." . $relation[2];
+            $on = $tableName . "." . $this->pkName . "=" . $join[$relationName] . "." . $relation[2];
             return $on;
         }
         throw new ModelException($this->msg->i18n('Determine the join condition of the table %table', array('table' => $join)));
@@ -922,7 +920,7 @@ abstract class ActiveRecord extends \tachyon\Model
         return $this->leftJoin($join, $on); 
     }
 
-    # join шорткаты
+    # JOIN шорткаты
 
     public function join($join, $on=array(), $tblName=null)
     {
@@ -990,7 +988,7 @@ abstract class ActiveRecord extends \tachyon\Model
     {
         // берем массив полей для выборки, заданный $this->select()
         $modelFields = $this->getSelect();
-        $pk = static::$primKey;
+        $pk = $this->pkName;
         if (is_array($pk)) {
             foreach ($pk as $key)
                 if (!in_array($key, $modelFields)) 
@@ -1002,6 +1000,20 @@ abstract class ActiveRecord extends \tachyon\Model
     }
 
     # ГЕТТЕРЫ И СЕТТЕРЫ
+
+    /**
+     * Возвращает название аттрибута модели
+     * 
+     * @param $key string 
+     * @return array
+     */
+    public function getAttributeName($key)
+    {
+        if (!$this->attributeNames) {
+            $this->attributeNames = static::$fields;
+        }
+        return parent::getAttributeName($key);
+    }
 
     public function getRelations()
     {
@@ -1053,33 +1065,34 @@ abstract class ActiveRecord extends \tachyon\Model
     }
 
     /**
-     * возвращает первичный ключ
+     * возвращает имя первичного ключа
+     * @return string
      */
-    public static function getPrimKey()
+    public function getPkName()
     {
-        return static::$primKey;
+        return $this->pkName;
     }
 
     /**
      * возвращает первичный ключ, приведенный в одну форму
      */
-    public static function getPrimKeyArr()
+    public function getPkArr()
     {
-        if (!$primKey = static::$primKey) {
-            throw new ModelException($this->msg->i18n('The primary key of the related table is not declared.'));
+        if (!$pkName = $this->pkName) {
+            throw new ModelException($this->get('msg')->i18n('The primary key of the related table is not declared.'));
         }
-        if (is_array($primKey)) {
-            return $primKey;
+        if (is_array($pkName)) {
+            return $pkName;
         }
-        return array($primKey);
+        return array($pkName);
     }
 
     /**
      * возвращает значение первичного ключа
      */
-    public function getPrimKeyVal()
+    public function getPk()
     {
-        return $this->{static::$primKey};
+        return $this->{$this->pkName};
     }
 
     public function getIsNew()

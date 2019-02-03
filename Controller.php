@@ -87,6 +87,13 @@ class Controller extends Component
         // текущий язык сайта
         $this->language = $this->lang->getLanguage();
 
+        // всё в порядке, отдаём страницу
+        header('HTTP/1.1 200 OK');
+        // защита от кликджекинга
+        header('X-Frame-Options:sameorigin');
+        // Защита от XSS. HTTP Only
+        ini_set('session.cookie_httponly', 1);
+
         $this->init();
     }
 
@@ -184,7 +191,7 @@ class Controller extends Component
     public function error($code, $msg)
     {
         $codes = array(404 => 'Not Found');
-        header("HTTP/1.0 $code {$codes[$code]}");
+        header("HTTP/1.1 $code {$codes[$code]}");
         $this->layout('/../error', compact('code', 'msg'));
         die;
     }

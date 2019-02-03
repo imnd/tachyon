@@ -24,8 +24,8 @@ class ManytomanyRelation extends Relation
         $tableAliases[$linkTableName] = $linkTableAlias;
         $linkRelativeKey = $linkParams[1];
         $linkThisKey = $linkParams[2];
-        $this->join->leftJoin("$linkTableName AS $linkTableAlias", " $linkTableAlias.$linkRelativeKey={$owner->getTableName()}.{$owner->getPrimKey()}", $this->getTableAlias(), $owner);
-        $this->join->leftJoin("{$this->tableName} AS {$this->tableAlias}", " $linkTableAlias.$linkThisKey={$this->tableAlias}.{$this->primKey}", $this->getTableAlias(), $owner);
+        $this->join->leftJoin("$linkTableName AS $linkTableAlias", " $linkTableAlias.$linkRelativeKey={$owner->getTableName()}.{$owner->getPkName()}", $this->getTableAlias(), $owner);
+        $this->join->leftJoin("{$this->tableName} AS {$this->tableAlias}", " $linkTableAlias.$linkThisKey={$this->tableAlias}.{$this->pkName}", $this->getTableAlias(), $owner);
         if (isset($linkParams[3])) {
             $owner->setSelectFields(array_merge($owner->getSelectFields(), $this->get('alias')->aliasFields($linkParams[3], $linkTableName, self::LINK_TBL_SUFF)));
         }

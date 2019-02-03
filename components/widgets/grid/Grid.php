@@ -80,7 +80,7 @@ class Grid extends \tachyon\components\widgets\Widget
         } else {
             $this->modelName = $this->model->getClassName();
         }
-        $this->pkName = $this->model->getPrimKey();
+        $this->pkName = $this->model->getPkName();
 
         $sumArr = array();
         foreach ($this->sumFields as $sumField)

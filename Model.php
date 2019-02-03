@@ -24,14 +24,14 @@ abstract class Model extends \tachyon\Component
      * 
      * @return array
      */
-    protected static $attributeTypes = array();
+    protected $attributeTypes = array();
     /**
      * список названий аттрибутов модели
      * 
      * @return array
      */
-    protected static $attributeNames = array();
-    
+    protected $attributeNames = array();
+
     /**
      * сценарий валидации
      */
@@ -113,14 +113,11 @@ abstract class Model extends \tachyon\Component
      */
     public function getAttributeName($key)
     {
-        if (!$attributeNames = static::$attributeNames) {
-            $attributeNames = array_combine(static::$fields, static::$fields);
-        }
-        if (array_key_exists($key, $attributeNames)) {
-            $attributeName = $attributeNames[$key];
-            if (is_array($attributeName))
+        if (array_key_exists($key, $this->attributeNames)) {
+            $attributeName = $this->attributeNames[$key];
+            if (is_array($attributeName)) {
                 return $attributeName[$this->lang->getLanguage()];
-
+            }
             return $attributeName;
         } 
         return ucfirst($key);
@@ -133,7 +130,7 @@ abstract class Model extends \tachyon\Component
      */
     public static function getAttributeTypes()
     {
-        return static::$attributeTypes;
+        return $this->attributeTypes;
     }
 
     /**
@@ -144,8 +141,9 @@ abstract class Model extends \tachyon\Component
      */
     public function getAttributeType($key)
     {
-        if (array_key_exists($key, static::$attributeTypes))
-            return static::$attributeTypes[$key];
+        if (array_key_exists($key, $this->attributeTypes)) {
+            return $this->attributeTypes[$key];
+        }
     }
 
     /************

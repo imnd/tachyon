@@ -15,7 +15,7 @@ class JoinRelation extends Relation
         $model = $this->get($this->modelName);
         $this->get('join')->leftJoin(array(
             $this->tableAlias => $model::getSource()
-        ), array($owner->getPrimKey(), $this->linkKey), $this->getTableAlias(), $owner);
+        ), array($owner->getPkName(), $this->linkKey), $this->getTableAlias(), $owner);
     }
 
     public function attachWithObject($retItem, $with)

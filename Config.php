@@ -10,7 +10,7 @@ namespace tachyon;
 class Config
 {
     private $_options;
-	private $_fileName = '../app/config/main.php';
+    private $_fileName = '../app/config/main.php';
 
     /**
      * извлечение опции

@@ -15,23 +15,35 @@ class View extends Component
     use \tachyon\dic\Message;
     use \tachyon\dic\Html;
 
+    /**
+     * Контроллер, вызывающий вью
+     * @var Controller $controller
+     */
     protected $controller;
     /**
-     * путь к отображениям
+     * Путь к отображениям
      * @var string $rootViewsPath
      */
     protected $rootViewsPath;
     /**
-     * путь к отображениям
+     * Путь к отображениям
      * @var string $rootViewsPath
      */
     protected $viewsPath;
     /**
-     * путь к папке layout
+     * Путь к папке лэйаута
      * @var string $layoutPath
      */
     protected $layoutPath;
+    /**
+     * Имя лэйаута
+     * @var string $layoutPath
+     */
     protected $layout;
+    /**
+     * Заголовок страницы
+     * @var string $pageTitle
+     */
     protected $pageTitle;
 
     /**
@@ -43,7 +55,7 @@ class View extends Component
         $this->appViewsPath = $this->viewsPath = $this->get('config')->getOption('base_path') . '/../app/views';
     }
 
-	/**
+    /**
      * Отображает файл представления $view
      * передавая ему параметры $vars в виде массива
      * 
@@ -53,15 +65,15 @@ class View extends Component
      * @return mixed
      */
     public function display($viewName, array $vars=array(), $return=false)
-	{
+    {
         $contents = $this->_view("{$this->viewsPath}/$viewName", $vars);
         if ($return) {
             return $contents;
         }
         echo $contents;
-	}
+    }
 
-	/**
+    /**
      * Отображает файл представления 
      * передавая ему параметря в виде массива
      * в заданном лэйауте
@@ -71,11 +83,11 @@ class View extends Component
      * @return void
      */
     public function layout($viewPath, array $vars=array())
-	{
+    {
         $this->layoutPath = "{$this->appViewsPath}/layouts";
 
         echo $this->_displayLayout($this->display($viewPath, $vars, true), $vars);
-	}
+    }
 
     private function _displayLayout($viewContents, $vars)
     {
@@ -195,6 +207,17 @@ class View extends Component
         return $this->msg->i18n($msg);
     }
 
+    /**
+     * Экранирование вывода
+     * 
+     * @param string $text
+     * @return string
+     */
+    public function escape($text)
+    {
+        return htmlspecialchars($text);
+    }
+
     # Геттеры и сеттеры
 
     /**
@@ -267,16 +290,5 @@ class View extends Component
     public function getController(): Controller
     {
         return $this->controller;
-    }
-
-    /**
-     * Экранирование вывода
-     * 
-     * @param string $text
-     * @return string
-     */
-    public function escape($text)
-    {
-        return htmlspecialchars($text);
     }
 }

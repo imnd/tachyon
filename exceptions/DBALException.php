@@ -7,4 +7,5 @@ namespace tachyon\exceptions;
  */
 class DBALException extends \Exception
 {
+    public $message = "Ошибка БД";
 }

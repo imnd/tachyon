@@ -1,7 +1,9 @@
 <?php
 namespace tachyon;
 
+use Exception;
 use ErrorException;
+use BadMethodCallException;
 use tachyon\exceptions\ContainerException;
 use tachyon\exceptions\HttpException;
 use tachyon\helpers\ArrayHelper;
@@ -24,12 +26,12 @@ final class FrontController extends Component
      */
     private $defaultController;
 
-	/**
-	 * Обработка входящего запроса
-	 * и передача управления соотв. контроллеру
-	 */
-	public function dispatch()
-	{
+    /**
+     * Обработка входящего запроса
+     * и передача управления соотв. контроллеру
+     */
+    public function dispatch()
+    {
         $requestUri = $_SERVER['REQUEST_URI'];
 
         // кеширование
@@ -42,11 +44,11 @@ final class FrontController extends Component
             'files' => $_FILES,
         ];
         $urlInfo = parse_url($requestUri);
-		$requestArr = explode('/', $urlInfo['path']);
+        $requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
         $this->defaultController = $this->config->getOption('defaultController') ?: 'Index';
         // Извлекаем имя контроллера
-		$controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController) . 'Controller';
+        $controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController) . 'Controller';
         // Извлекаем имя экшна
         $actionName = $this->_getNameFromRequest($requestArr, 'index');
         // разбираем массив параметров
@@ -55,10 +57,10 @@ final class FrontController extends Component
             $requestVars[$key] = $this->_filterVars($requestVars, $key);
         }
         // запускаем соотв. контроллер
-		$this->_startController($controllerName, $actionName, $requestVars);
+        $this->_startController($controllerName, $actionName, $requestVars);
         // кеширование
         $this->cache->end();
-	}
+    }
 
     /**
      * Извлечение имени контроллера или экшна
@@ -118,8 +120,9 @@ final class FrontController extends Component
             foreach ($arr as &$value) {
                 $value = ArrayHelper::filterText($value);
             }
+            $arr = array_filter($arr);
         }
-        return array_filter($arr);
+        return $arr;
     }
 
     /**
@@ -134,20 +137,21 @@ final class FrontController extends Component
             // запускаем
             $controller->beforeAction();
             $inlineVars = isset($requestVars['inline']) ? $requestVars['inline'] : null;
+            if (!method_exists($controller, $actionName)) {
+                throw new BadMethodCallException;
+            }
             $controller->$actionName($inlineVars);
             $controller->afterAction();
-            // всё в порядке, отдаём страницу
-            header('HTTP/1.1 200 OK');
-            // защита от кликджекинга
-            header('X-Frame-Options:sameorigin');
-            // Защита от XSS. HTTP Only
-            ini_set('session.cookie_httponly', 1);
+        } catch (BadMethodCallException $e) {
+            $this->_error(404, "Экшн \"$actionName\" нет в контроллере \"$controllerName\" не найден");
         } catch (ContainerException $e) {
-            $this->_error(404, 'Путь не найден');
+            $this->_error(404, "Контроллер \"$controllerName\" не найден");
         } catch (ErrorException $e) {
             $this->_error(404, 'Путь не найден');
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
+        } catch (\Exception $e) {
+            $this->_error(404, $e->getMessage());
         }
     }
 
