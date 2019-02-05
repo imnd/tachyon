@@ -65,9 +65,9 @@ class Alias extends \tachyon\Component
     {
         $whereRet = array();
         foreach ($where as $field => $value) {
-            if (preg_match('/[.( ]/', $field)===0)
+            if (preg_match('/[.( ]/', $field)===0) {
                 $field = "$alias.$field";
-
+            }
             $whereRet[$field] = $value;
         }
         $this->owner->where($whereRet);
@@ -141,20 +141,20 @@ class Alias extends \tachyon\Component
     /**
      * алиас первичного ключа
      */
-    public function getPrimKeyAliasArr($with, $primKey=null)
+    public function getPrimKeyAliasArr($with, $pkName=null)
     {
-        if (!$primKey) {
+        if (!$pkName) {
             throw new ModelException($this->msg->i18n('The primary key of the related table is not declared.'));
         }
         $primKeyAlias = array();
         // ключ может быть составным
-        if (is_array($primKey)) {
+        if (is_array($pkName)) {
             $i = 0;
-            foreach ($primKey as $primKeyItem)
-                $primKeyAlias[$primKeyItem] = $with . self::PK_MARKER . self::PK_GLUE . $i++;
-        } else
-            $primKeyAlias[$primKey] = $with . self::PK_MARKER;
-
+            foreach ($pkName as $pkItem)
+                $primKeyAlias[$pkItem] = $with . self::PK_MARKER . self::PK_GLUE . $i++;
+        } else {
+            $primKeyAlias[$pkName] = $with . self::PK_MARKER;
+        }
         return $primKeyAlias;
     }
 

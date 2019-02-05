@@ -171,17 +171,18 @@ abstract class ActiveRecord extends \tachyon\Model
                 break;
 
                 case 'many_to_many':
-                    $pk = static::$primKey;
+                    $pk = $this->pkName;
                     $lnkModel = $this->get($relationArr[2][0]);
                     $linkTableName = $lnkModel->getTableName();
                     $relFk1 = $relationArr[2][1];
                     $relFk2 = $relationArr[2][2];
                     $relTableName = $relModel->getTableName();
                     $thisTableName = $this->getTableName();
-                    if (isset($relationArr[2][3]))
-                        foreach ($relationArr[2][3] as $fieldName)
+                    if (isset($relationArr[2][3])) {
+                        foreach ($relationArr[2][3] as $fieldName) {
                             $relModel->select("$linkTableName.$fieldName");
-
+                        }
+                    }
                     return $relModel
                         ->join($linkTableName, "$linkTableName.$relFk2=$relTableName.$relPk")
                         ->join($thisTableName, "$linkTableName.$relFk1=$thisTableName.$pk")
@@ -200,7 +201,7 @@ abstract class ActiveRecord extends \tachyon\Model
                 case 'join':
                     $linkKey = $relationArr[2];
                     $relTableName = $relModel->getTableName();
-                    $pk = static::$primKey;
+                    $pk = $this->pkName;
                     $thisTableName = $this->getTableName();
                     $this->getDb()->setJoin("{$relModel->getSource()} AS $relTableName", "$relTableName.$linkKey=$thisTableName.$pk");
                     $this->getDb()->setFields($relationArr[3]);
@@ -341,7 +342,7 @@ abstract class ActiveRecord extends \tachyon\Model
                 $model = $this->get($modelName);
                 $model->with($this->with);
                 $model->setAttributes(array_intersect_key($item, $modelFieldsKeys));
-                $model->setAttribute(static::$primKey, $itemPk);
+                $model->setAttribute($this->pkName, $itemPk);
                 $retItems[$itemPk] = $model;
             }
             // приделываем внешние объекты
@@ -431,13 +432,13 @@ abstract class ActiveRecord extends \tachyon\Model
      */
     public function findByPk($pk)
     {
-        $primKey = $this->pkName;
-        if (is_array($primKey)) {
-            $conditions = array_combine($primKey, $pk);
-        } elseif (is_string($primKey)) {
-            $primKeyArr = $this->alias->aliasFields(array($primKey), static::$tableName);
-            $primKey = $primKeyArr[0];
-            $conditions = array($primKey => $pk);
+        $pkName = $this->pkName;
+        if (is_array($pkName)) {
+            $conditions = array_combine($pkName, $pk);
+        } elseif (is_string($pkName)) {
+            $primKeyArr = $this->alias->aliasFields(array($pkName), static::$tableName);
+            $pkName = $primKeyArr[0];
+            $conditions = array($pkName => $pk);
         }
         return $this->findOne($conditions);
     }
