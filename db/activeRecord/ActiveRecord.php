@@ -545,10 +545,8 @@ abstract class ActiveRecord extends \tachyon\Model
      */
     public function delete(): bool
     {
-        $pk = $this->pkName;
-        if ($this->$pk)
-            if ($this->getDb()->delete(static::$tableName, array($pk => $this->$pk))) {
-                unset($this);
+        if (null!==$pk = $this->{$this->pkName})
+            if ($this->getDb()->delete(static::$tableName, array($this->pkName => $pk))) {
                 return true;
             }
 
@@ -574,6 +572,7 @@ abstract class ActiveRecord extends \tachyon\Model
     {
         foreach ($this->$relName as $relModel) {
             $relModel->delete();
+            unset($relModel);
         }
     }
 
