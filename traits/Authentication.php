@@ -13,7 +13,7 @@ trait Authentication
      * Имя переменной куки
      * @var string $cookieKey
      */
-    private $cookieKey = 'userid';
+    private $cookieKey = 'authorized';
     /**
      * Время жизни куки дней
      * @var integer $duration
@@ -33,23 +33,16 @@ trait Authentication
     }
 
     /**
-     * ID авторизованного юзера
-     * 
-     * @return integer
-     */
-    public function getUserId()
-    {
-        return $this->cookie->getCookie($this->cookieKey);
-    }
-
-    /**
      * Авторизован ли юзер
      * 
      * @return boolean
      */
     public function isAuthorised()
     {
-        return !empty($this->getUserId());
+        if (empty($cookie = $this->cookie->getCookie($this->cookieKey))) {
+            return false;
+        }
+        return $cookie===$this->_getCookieValue();
     }
 
     /**
@@ -75,7 +68,18 @@ trait Authentication
             $duration *= 7;
         }
         $this->cookie->setDuration($duration);
-        $this->cookie->setCookie($this->cookieKey, 1);
+        $this->cookie->setCookie($this->cookieKey, $this->_getCookieValue());
+    }
+
+    /**
+     * Защита от воровства куки авторизации
+     * берется набор уникальных данных о пользователе (айпи, порт, строка юзер-агента браузера) и хэшируется
+     * 
+     * @return string
+     */
+    private function _getCookieValue()
+    {
+        return md5($_SERVER['REMOTE_ADDR'] . $_SERVER['SERVER_PORT'] . $_SERVER['HTTP_USER_AGENT']);
     }
 
     /**
