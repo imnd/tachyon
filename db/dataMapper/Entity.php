@@ -34,7 +34,7 @@ abstract class Entity extends \tachyon\Component
      */
     public function getRepository()
     {
-        return $this->getDomain();
+        return $this->getOwner();
     }
 
     abstract public function fromState(array $state): Entity;

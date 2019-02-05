@@ -8,15 +8,15 @@ namespace tachyon\dic;
 trait Join
 {
     /**
-     * @var \tachyon\db\Join $join
+     * @var \tachyon\db\activeRecord\Join $join
      */
     protected $join;
 
     /**
-     * @param \tachyon\db\Join $service
+     * @param \tachyon\db\activeRecord\Join $service
      * @return void
      */
-    public function setJoin(\tachyon\db\Join $service)
+    public function setJoin(\tachyon\db\activeRecord\Join $service)
     {
         $this->join = $service;
     }

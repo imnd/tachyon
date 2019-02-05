@@ -81,7 +81,7 @@ class Container
      * @param array $params динамически назначаемые параметры
      * @return mixed
      */
-    public static function getInstanceOf($name, $domain = null, array $params = array())
+    public static function getInstanceOf($name, $owner = null, array $params = array())
     {
         if (!self::$_initialised) {
             self::_loadConfig();
@@ -93,7 +93,7 @@ class Container
         }
         $config = self::$_config[$name];
 
-        $config['variables']['domain'] = $domain;
+        $config['variables']['owner'] = $owner;
         if (!empty($config['singleton'])) {
             if (!isset(self::$_services[$name])) {
                 self::$_services[$name] = self::_createService($config, $params);
@@ -119,8 +119,8 @@ class Container
                 continue;
 
             $parentConfig = self::$_config[$id];
-            if (isset($config['domain'])) {
-                $parentConfig['variables']['domain'] = $config['domain'];
+            if (isset($config['owner'])) {
+                $parentConfig['variables']['owner'] = $config['owner'];
             }
             self::_setProperties($service, $parentConfig);
         }
@@ -147,7 +147,7 @@ class Container
             foreach ($subServices as $name => $subServiceConf) {
                 $subServConfig = self::$_config[$subServiceConf['id']];
                 $subServConfig['variables'] = array_merge($subServConfig['variables'], $subServiceConf['variables']);
-                $subServConfig['variables']['domain'] = $service;
+                $subServConfig['variables']['owner'] = $service;
                 $subService = self::_createService($subServConfig);
                 self::_setProperty($service, $name, $subService);
             }
@@ -174,7 +174,7 @@ class Container
             $service->$setterMethod($val);
             return;
         }
-        if ($name!=='domain') {
+        if ($name!=='owner') {
             throw new ContainerException("Unable to set property $name to service " . get_class($service));
         }
     }

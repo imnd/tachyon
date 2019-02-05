@@ -115,6 +115,6 @@ abstract class Relation extends \tachyon\Component
 
     public function getDb()
     {
-        return $this->domain->getDb();
+        return $this->owner->getDb();
     }
 }

@@ -70,7 +70,7 @@ class Alias extends \tachyon\Component
 
             $whereRet[$field] = $value;
         }
-        $this->domain->where($whereRet);
+        $this->owner->where($whereRet);
     }
     
     /**
@@ -78,7 +78,7 @@ class Alias extends \tachyon\Component
      */
     public function aliasGroupByTableName($tableAliases)
     {
-        $groupBy = $this->domain->getGroupBy();
+        $groupBy = $this->owner->getGroupBy();
         $groupByArr = explode('.', $groupBy);
         // если есть имя таблицы
         if (count($groupByArr)>1) {
@@ -89,7 +89,7 @@ class Alias extends \tachyon\Component
                 $tableAlias = $tableAliases[$tableName];
                 $groupByAlias = $tableAlias . '.' . $groupByArr[1];
                 // засовываем
-                $this->domain->groupBy($groupByAlias);
+                $this->owner->groupBy($groupByAlias);
             }
         }
     }
@@ -99,9 +99,9 @@ class Alias extends \tachyon\Component
      */
     public function aliasSelectTableNames($tableAliases)
     {
-        $modelFields = $this->domain->getSelect();
+        $modelFields = $this->owner->getSelect();
         $modelFields = $this->_aliasArrayValues($modelFields, array_keys($tableAliases), array_values($tableAliases));
-        $this->domain->select($modelFields);
+        $this->owner->select($modelFields);
     }
 
     /**
@@ -109,9 +109,9 @@ class Alias extends \tachyon\Component
      */
     public function aliasWhereTableNames($tableAliases)
     {
-        $where = $this->domain->getWhere();
+        $where = $this->owner->getWhere();
         $where = $this->_aliasArrayKeys($where, array_keys($tableAliases), array_values($tableAliases));
-        $this->domain->where($where);
+        $this->owner->where($where);
     }
 
     /**
@@ -119,9 +119,9 @@ class Alias extends \tachyon\Component
      */
     public function aliasSortByTableName($tableAliases)
     {
-        $sortBy = $this->domain->getSortBy();
+        $sortBy = $this->owner->getSortBy();
         $sortBy = $this->_aliasArrayKeys($sortBy, array_keys($tableAliases), array_values($tableAliases));
-        $this->domain->setSortBy($sortBy);
+        $this->owner->setSortBy($sortBy);
     }
 
     /**

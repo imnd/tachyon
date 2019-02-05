@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\db;
+namespace tachyon\db\activeRecord;
 
 /**
  * @author Андрей Сердюк
@@ -46,15 +46,12 @@ class Join extends \tachyon\Component
             $joinVals = array_values($join);
             $tblName = $joinVals[0];
             $expr = " {$joinKeys[0]} AS $tblName ";
-        } else
+        } else {
             $tblName = $expr = $join;
+        }
+        $onCond = is_array($on) ? " $alias.{$on[0]}=$tblName.{$on[1]} " : " $on ";
 
-        if (is_array($on))
-            $onCond = " $alias.{$on[0]}=$tblName.{$on[1]} ";
-        else
-            $onCond = " $on ";
-
-        $this->domain->getDb()->setJoin($expr, $onCond, $mode);
+        $this->owner->getDb()->setJoin($expr, $onCond, $mode);
 
         return $this;
     }

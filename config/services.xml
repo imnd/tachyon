@@ -121,8 +121,8 @@
         </property>
     </service>
 
-    <service id="Join" class="\tachyon\db\Join"></service>
     <service id="Alias" class="\tachyon\db\Alias"></service>
+    <service id="Join" class="\tachyon\db\activeRecord\Join"></service>
     <service id="Relation" class="\tachyon\db\activeRecord\Relation"></service>
     <service id="JoinRelation" class="\tachyon\db\activeRecord\JoinRelation"></service>
     <service id="HasoneRelation" class="\tachyon\db\activeRecord\HasoneRelation"></service>

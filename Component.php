@@ -20,25 +20,25 @@ abstract class Component
     protected $properties = array();
     /**
      * Объект, вызывающий сервис
-     * @var mixed $domain
+     * @var mixed $owner
      */
-    protected $domain;
+    protected $owner;
 
     /**
      * @return mixed
      */
-    public function getDomain()
+    public function getOwner()
     {
-        return $this->domain;
+        return $this->owner;
     }
 
     /**
-     * @param mixed $domain
+     * @param mixed $owner
      * @return void
      */
-    public function setDomain($domain = null)
+    public function setOwner($owner = null)
     {
-        $this->domain = $domain;
+        $this->owner = $owner;
     }
 
     public function setProperty($var, $val)
@@ -62,7 +62,7 @@ abstract class Component
      */
     public function getService($serviceName, array $params = array())
     {
-        $params['domain'] = $this;
+        $params['owner'] = $this;
         $serviceName = ucfirst($serviceName);
         $varName = lcfirst($serviceName);
         if (property_exists($this, $varName)) {

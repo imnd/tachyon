@@ -16,6 +16,11 @@ class Cookie extends \tachyon\Component
      * @var integer $duration
      */
     private $duration;
+    /**
+     * Защищенные куки могут быть переданы только через шифрованное соединение
+     * @var boolean $secure
+     */
+    private $secure = false;
 
     public function getCookie($key)
     {
@@ -24,12 +29,12 @@ class Cookie extends \tachyon\Component
     
     public function setCookie($key, $val, $path = '/')
     {
-        setcookie($key, ArrayHelper::filterText($val), time() + 30 * 24 * 60 * $this->duration, $path);
+        setcookie($key, ArrayHelper::filterText($val), time() + 30 * 24 * 60 * $this->duration, $path, $this->config->getOption('domain') ?? "", $this->secure, true);
     }
 
     public function deleteCookie($key, $path = '/')
     {
-        setcookie($key, null, -1, $path, $this->config->getOption('domain'));
+        setcookie($key, null, -1, $path);
     }
 
     /**
@@ -39,5 +44,14 @@ class Cookie extends \tachyon\Component
     public function setDuration($val)
     {
         $this->duration = $val;
+    }
+
+    /**
+     * @param boolean $val
+     * @return void
+     */
+    public function setSecure(bool $val)
+    {
+        $this->secure = $val;
     }
 }

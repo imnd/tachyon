@@ -16,7 +16,7 @@ class Persistence extends \tachyon\Component
                 $db->orderBy($fieldName, $order);
             }
         }
-        return $db->select($this->domain->getTableName(), $condition);
+        return $db->select($this->owner->getTableName(), $condition);
     }
 
     /**
@@ -26,7 +26,7 @@ class Persistence extends \tachyon\Component
      */
     public function findByPk($pk)
     {
-        return $this->dbFactory->getDb()->selectOne($this->domain->getTableName(), ['id' => $pk]);
+        return $this->dbFactory->getDb()->selectOne($this->owner->getTableName(), ['id' => $pk]);
     }
 
     /**
@@ -36,7 +36,7 @@ class Persistence extends \tachyon\Component
      */
     public function updateByPk($pk, array $fieldValues)
     {
-        return $this->dbFactory->getDb()->update($this->domain->getTableName(), $fieldValues, ['id' => $pk]);
+        return $this->dbFactory->getDb()->update($this->owner->getTableName(), $fieldValues, ['id' => $pk]);
     }
 
     /**
@@ -46,7 +46,7 @@ class Persistence extends \tachyon\Component
      */
     public function insert(array $fieldValues)
     {
-        return $this->dbFactory->getDb()->insert($this->domain->getTableName(), $fieldValues);
+        return $this->dbFactory->getDb()->insert($this->owner->getTableName(), $fieldValues);
     }
 
     /**
@@ -57,6 +57,6 @@ class Persistence extends \tachyon\Component
      */
     public function deleteByPk($pk)
     {
-        return $this->dbFactory->getDb()->delete($this->domain->getTableName(), ['id' => $pk]);
+        return $this->dbFactory->getDb()->delete($this->owner->getTableName(), ['id' => $pk]);
     }
 }

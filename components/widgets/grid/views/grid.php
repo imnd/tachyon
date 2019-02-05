@@ -87,8 +87,8 @@ if (empty($items)) {?>
 
 <?=
 $this->assetManager->coreJs('ajax'),
-$this->domain->js('sort'),
-$this->domain->css('style')
+$this->owner->js('sort'),
+$this->owner->css('style')
 ?>
 
 <script>
