@@ -87,7 +87,6 @@ class Container
             self::_loadConfig();
             self::$_initialised = true;
         }
-
         if (!isset(self::$_config[$name])) {
             throw new ContainerException('Класс не найден в конфигурации');
         }
@@ -165,17 +164,22 @@ class Container
      */
     private static function _setProperty($service, $name, $val)
     {
-        if (array_key_exists($name, get_object_vars($service))) {
-            $service->$name = $val;
-            return;
-        }
-        $setterMethod = 'set' . ucfirst($name);
-        if (method_exists($service, $setterMethod)) {
-            $service->$setterMethod($val);
-            return;
-        }
-        if ($name!=='owner') {
-            throw new ContainerException("Unable to set property $name to service " . get_class($service));
+        try {
+            if (array_key_exists($name, get_object_vars($service))) {
+                $service->$name = $val;
+                return;
+            }
+            $setterMethod = 'set' . ucfirst($name);
+            if (method_exists($service, $setterMethod)) {
+                $service->$setterMethod($val);
+                return;
+            }
+            if ($name!=='owner') {
+                throw new ContainerException("Невозможно установить свойство $name для сервиса " . get_class($service));
+            }
+        } catch (ContainerException $e) {
+            echo $e->getMessage();
+            die;
         }
     }
 
