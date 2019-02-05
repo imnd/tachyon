@@ -12,10 +12,14 @@ class Csrf extends \tachyon\Component
     # сеттеры DIC
     use \tachyon\dic\Encrypt;
 
-    public function __construct()
+    private $_started = false;
+
+    private function start()
     {
-        if (!isset($_SESSION))
+        if (!isset($_SESSION) && !$this->_started) {
             session_start();
+        }
+        return $this;
     }
 
     /**
@@ -26,9 +30,10 @@ class Csrf extends \tachyon\Component
      */
     public function getTokenId()
     {
-        if (!isset($_SESSION['token_id']))
+        $this->start();
+        if (!isset($_SESSION['token_id'])) {
             $_SESSION['token_id'] = 'csrf_' . $this->encrypt->randString(10);
-
+        }
         return $_SESSION['token_id'];
     }
 
@@ -40,9 +45,10 @@ class Csrf extends \tachyon\Component
      */
     public function getTokenVal()
     {
-        if (!isset($_SESSION['token_value']))
+        $this->start();
+        if (!isset($_SESSION['token_value'])) {
             $_SESSION['token_value'] = $this->encrypt->randString();
-
+        }
         return $_SESSION['token_value']; 
     }
     
