@@ -23,7 +23,7 @@ class FormBuilder extends \tachyon\Component
      * Настройки формы
      * @var $_options array
      */
-    private $_options = array(
+    private $_options = [
         // сабмитить или посылать ajax-запрос
         'ajax' => false,
         // путь к шаблону
@@ -35,24 +35,24 @@ class FormBuilder extends \tachyon\Component
         // форма последняя (если несколько на странице)
         'final' => true,
         // аттрибуты тэга form
-        'attrs' => array(
+        'attrs' => [
             'method' => 'GET',
             'enctype' => 'multipart/form-data',
-        ),
+        ],
         // тэг по умолчанию
         'tagDef' => 'input',
         // текстовые подписи
-        'text' => array(
-            'ru' => array(
+        'text' => [
+            'ru' => [
                 'submitCaption' => 'Отправить',
                 'required' => 'Поля отмеченные * обязательны для заполнения',
-            ),
-            'en' => array(
+            ],
+            'en' => [
                 'submitCaption' => 'Submit',
                 'required' => '* required fields',
-            )
-        )
-    );
+            ]
+        ]
+    ];
     /**
      * Счетчик формы
      * @var integer $_formCnt
@@ -121,29 +121,29 @@ class FormBuilder extends \tachyon\Component
                     else
                         $fieldTag = 'input';
                 }
-                $attrs = array(
+                $attrs = [
                     'name' => $field,
                     'value' => isset($fieldValues[$field]) ? $fieldValues[$field] : (!is_null($model->$field) ? $model->$field : ''),
-                );
-                if ($required = $model->isRequired($field))
+                ];
+                if ($required = $model->isRequired($field)) {
                     $attrs['class'] = 'required';
-
-                $control = array(
+                }
+                $control = [
                     'label' => $model->getAttributeName($field),
                     'tag' => $fieldTag,
                     'type' =>is_array($options) && isset($options['type']) ? $options['type'] : '',
                     'model' => $model,
                     'required' => $required,
                     'attrs' => $attrs,
-                );
-                if ($fieldTag==='input')
+                ];
+                if ($fieldTag==='input') {
                     $control['attrs']['type'] = 'text';
-                elseif ($fieldTag==='select')
+                } elseif ($fieldTag==='select') {
                     $control['options'] = (!empty($options['listData'])) ? $options['listData'] : array();
-
-                if ($control['type']==='date')
+                }
+                if ($control['type']==='date') {
                     $this->_dateFieldNames[] = $control['attrs']['name'];
-
+                }
                 $controls[] = $control;
                 $requiredFields = $requiredFields || $required;
             }
@@ -176,56 +176,56 @@ class FormBuilder extends \tachyon\Component
         $elements = array();
         // напоминание об обязательных полях
         if ($requiredFields && !empty($this->_options['notice']))
-            $elements[] = array(
+            $elements[] = [
                 'tag' => 'div',
                 'attrs' => array('class' => 'msg clear'),
                 'contents' => $this->_options['text']['required']
-            );
+            ];
 
         $elements = array_merge($elements, compact('controls'));
         // кнопка submit
-        $elements['submit'] = array(
-            'attrs' => array(
+        $elements['submit'] = [
+            'attrs' => [
                 'type' => $this->_options['ajax'] ? 'button' : 'submit',
                 'class' => 'button',
                 'id' => "submit_$formId",
                 'value' => $this->_options['submitCaption'],
-            )
-        );
-        $elements['errors'] = array(
+            ]
+        ];
+        $elements['errors'] = [
             'tag' => 'div',
-            'attrs' => array(
+            'attrs' => [
                 'class' => 'error',
                 'id' => 'errors_list'
-            ),
-        );
+            ],
+        ];
         // csrf token
-        if ($this->_csrfCheck)
-            $elements['csrf'] = array(
-                'attrs' => array(
+        if ($this->_csrfCheck) {
+            $elements['csrf'] = [
+                'attrs' => [
                     'type' => 'hidden',
                     'id' => 'csrf',
                     'name' => $this->csrf->getTokenId(),
                     'value' => $this->csrf->getTokenVal(),
-                ),
-            );
-
-        if ($this->_options['final'])
+                ],
+            ];
+        }
+        if ($this->_options['final']) {
             $this->_renderScripts();
-
-        $this->view->display($this->_options['view'], array(
+        }
+        $this->view->display($this->_options['view'], [
             'form' => $this,
             'model' => isset($model) ? $model : null,
             'elements' => $elements,
             'attrs' => $this->_options['attrs']
-        ));
+        ]);
         // включаем дэйтпикеры
         if (!empty($this->_dateFieldNames)) {
-            $this->view->widget(array(
+            $this->view->widget([
                 'class' => 'Datepicker',
                 'controller' => $this,
                 'fieldNames' => $this->_dateFieldNames,
-            ));
+            ]);
         }
         // включаем скрипт валидации
         if (

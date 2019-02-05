@@ -6,6 +6,7 @@ use ErrorException;
 use BadMethodCallException;
 use tachyon\exceptions\ContainerException;
 use tachyon\exceptions\HttpException;
+
 use tachyon\helpers\ArrayHelper;
 
 /**
@@ -145,12 +146,12 @@ final class FrontController extends Component
         } catch (BadMethodCallException $e) {
             $this->_error(404, "Экшн \"$actionName\" нет в контроллере \"$controllerName\" не найден");
         } catch (ContainerException $e) {
-            $this->_error(404, "Контроллер \"$controllerName\" не найден");
+            $this->_error(404, "Контроллер \"$controllerName\" не найден. {$e->getMessage()}");
         } catch (ErrorException $e) {
             $this->_error(404, 'Путь не найден');
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_error(404, $e->getMessage());
         }
     }
