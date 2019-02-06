@@ -105,14 +105,9 @@ class Validator extends \tachyon\Component
 
     public function csrfValidate()
     {
-        if ($this->config->getOption('csrf_check')===false) {
-            return false;
+        if (!$this->csrf->isTokenValid()) {
+            $this->_addError('csrf', 'Неверный CSRF токен.');
         }
-        $result = $this->csrf->isTokenValid();
-        if (!$result) {
-            $this->_addError('csrf', 'Неверный csrf token');
-        }
-        return $result;
     }
 
     /**
@@ -155,14 +150,16 @@ class Validator extends \tachyon\Component
      */
     public function validate($object, array $attrs = null)
     {
-        $this->csrfValidate();
-        $methodNotExist = 'Валидатора с таким именем нет.';
+        if ($this->config->getOption('csrf_check')===true) {
+            $this->csrfValidate();
+        }
 
         // перебираем все поля
         $attrsArray = $object->getAttributes();
         if (!is_null($attrs)) {
             $attrsArray = array_intersect_key($attrsArray, array_flip($attrs));
         }
+        $methodNotExist = 'Валидатора с таким именем нет.';
         foreach ($attrsArray as $fieldName => $fieldValue) {
             // если существует правило валидации для данного поля
             if ($fieldRules = $this->getRules($object, $fieldName)) {

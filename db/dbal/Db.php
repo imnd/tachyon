@@ -271,7 +271,7 @@ abstract class Db extends \tachyon\Component
     /**
      * Добавляет условие
      */
-    public function addWhere($where)
+    public function addWhere($where = null)
     {
         if (!empty($where)) {
             $this->where = array_merge($this->where, $where);

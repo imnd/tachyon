@@ -18,6 +18,7 @@ class Csrf extends \tachyon\Component
     {
         if (!isset($_SESSION) && !$this->_started) {
             session_start();
+            $this->_started = true;
         }
         return $this;
     }
@@ -51,7 +52,7 @@ class Csrf extends \tachyon\Component
         }
         return $_SESSION['token_value']; 
     }
-    
+
     /**
      * проверка token`ов, передаваемых ч/з запросы
      * 
