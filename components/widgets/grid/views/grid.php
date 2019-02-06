@@ -34,7 +34,7 @@ if (empty($items)) {?>
             <th id="<?=$fieldName?>"<?php if ($sortable) {?> class="sortable-column"<?php }?>><?=$model->getAttributeName($fieldName)?></th>
             <?php }
             if (!empty($buttons)) {?>
-                <th class="buttons" colspan="<?=count($buttons)?>">Операции</th>
+                <th class="buttons" colspan="<?=count($buttons)?>">операции</th>
             <?php }?>
         </tr>
     </thead>

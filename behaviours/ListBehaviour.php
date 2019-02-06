@@ -40,16 +40,16 @@ class ListBehaviour extends \tachyon\Component
     {
         $retArr = array();
         if ($this->emptyVal!==false) {
-            $retArr[] = array(
+            $retArr[] = [
                 'value' => '',
                 'contents' => $this->emptyVal
-            );
+            ];
         }
         foreach ($items as $item) {
-            $retArr[] = array(
+            $retArr[] = [
                 'value' => $item[$this->pkField],
                 'contents' => $this->_getItemValue($item)
-            );
+            ];
         }
         return $retArr;
     }
@@ -70,10 +70,10 @@ class ListBehaviour extends \tachyon\Component
         }
         $items = array();
         foreach ($array as $key => $value) {
-            $items[] = array(
+            $items[] = [
                 $this->pkField => $keyIndexed ? $key : $value,
                 $this->valueField => $value,
-            );
+            ];
         }
         $this->emptyVal = $emptyVal;
         return $this->getSelectList($items);
@@ -86,16 +86,16 @@ class ListBehaviour extends \tachyon\Component
      */
     public function getYesNoListData()
     {
-        return $this->getSelectList(array(
-            array(
+        return $this->getSelectList([
+            [
                 $this->pkField => true,
                 $this->valueField => 'да',
-            ),
-            array(
+            ],
+            [
                 $this->pkField => false,
                 $this->valueField => 'нет',
-            ),
-        ));
+            ],
+        ]);
     }
 
     /**
@@ -109,9 +109,9 @@ class ListBehaviour extends \tachyon\Component
     public function getValsList($items, $fieldName)
     {
         $retArr = array();
-        foreach ($items as $item)
+        foreach ($items as $item) {
             $retArr[] = $item[$fieldName];
-
+        }
         return $retArr;
     }
 
@@ -123,9 +123,9 @@ class ListBehaviour extends \tachyon\Component
     {
         if (is_array($this->valueField)) {
             $retArr = array();
-            foreach ($this->valueField as $fieldName)
+            foreach ($this->valueField as $fieldName) {
                 $retArr[] = $item[$fieldName];
-
+            }
             return implode($this->valsGlue, $retArr);
         } else {
             return $item[$this->valueField];
