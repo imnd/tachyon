@@ -33,9 +33,13 @@
     'Relation "%relation" not declared in class: ' => 'Связь "%relationship" не объявлена в классе: ',
     'Determine the join condition of the table %table' => 'Определите условие присоединения таблицы %table',
     'The primary key of the related table is not declared.' => 'Не объявлен первичный ключ связанной таблицы.',
-    // http
+    // HTTP
     'Action %action allowed only through post request.' => 'Действие %action разрешено только через POST запрос.',
+    'There is no action "%actionName" in controller "%controllerName".' => 'Экшн "%actionName" нет в контроллере "%controllerName" не найден.',
+    'Controller "%controllerName" is not found.' => 'Контроллер "%controllerName" не найден.',
     'Invalid request type.' => 'Недопустимый тип запроса.',
+    'Wrong CSRF token.' => 'Неверный CSRF токен.',
+    'Method "beforeAction" returned false' => 'Не соблюдены условия в методе beforeAction',
     // misc
     'The getSelectListFromArr method of the ListBehaviour class does not work if valueField is an array.' => 'Метод getSelectListFromArr класса ListBehaviour не работает в случае, если valueField - массив.',
     'Undefined field name' => 'Не определено имя поля',

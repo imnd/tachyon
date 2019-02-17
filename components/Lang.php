@@ -24,7 +24,7 @@ class Lang extends \tachyon\Component
         $cookieService = $this->get('cookie');
         // установка и текущего языка из cookie
         if (!$lang = $cookieService->getCookie('lang')) {
-            $lang = $this->get('config')->getOption('lang');
+            $lang = $this->get('config')->get('lang');
             $cookieService->setCookie('lang', $lang);
         }
         $this->_lang = $lang;

@@ -1,5 +1,5 @@
 <services>
-    <service id="FrontController" class="\tachyon\FrontController">
+    <service id="Router" class="\tachyon\Router">
         <property name="cache">
             <ref id="OutputCache"/>
         </property>
@@ -113,6 +113,9 @@
         <property name="lang">
             <ref id="Lang"/>
         </property>
+        <property name="csrf">
+            <ref id="Csrf"/>
+        </property>
     </service>
 
     <service id="DbFactory" class="\tachyon\db\dbal\DbFactory" singleton="true">
@@ -158,9 +161,6 @@
     <service id="Validator" class="\tachyon\components\Validator">
         <property name="msg">
             <ref id="Message"/>
-        </property>
-        <property name="csrf">
-            <ref id="Csrf"/>
         </property>
     </service>
 

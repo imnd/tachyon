@@ -523,7 +523,7 @@ abstract class ActiveRecord extends \tachyon\Model
     }
 
     /**
-     * сохраняет модель в БД
+     * Сохраняет модель в БД
      * 
      * @return integer
      */
@@ -531,12 +531,12 @@ abstract class ActiveRecord extends \tachyon\Model
     {
         $condition = array();
         $pk = $this->pkName;
-        if (is_array($pk))
+        if (is_array($pk)) {
             foreach ($pk as $key)
                 $condition[$key] = $this->$key;
-        else
+        } else {
             $condition[$pk] = $this->$pk;
-
+        }
         return $this->getDb()->update(static::$tableName, $this->fieldAttributes(), $condition);
     }
     
@@ -647,9 +647,9 @@ abstract class ActiveRecord extends \tachyon\Model
      * @param $where array 
      * @return ActiveRecord
      */
-    public function setSearchConditions(array $where=array())
+    public function setSearchConditions(array $conditions=array())
     {
-        $this->where($where);
+        $this->addWhere($conditions);
         return $this;
     }
 

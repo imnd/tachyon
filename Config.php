@@ -15,7 +15,7 @@ class Config
     /**
      * извлечение опции
      */
-    public function getOption($optionName)
+    public function get($optionName)
     {
         if (is_null($this->_options)) {
             $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));

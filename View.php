@@ -52,7 +52,7 @@ class View extends Component
      */
     public function __construct()
     {
-        $this->appViewsPath = $this->viewsPath = $this->get('config')->getOption('base_path') . '/../app/views';
+        $this->appViewsPath = $this->viewsPath = $this->get('config')->get('base_path') . '/../app/views';
     }
 
     /**

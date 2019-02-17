@@ -1,6 +1,7 @@
 <?php
 namespace tachyon;
 
+use BadMethodCallException;
 use tachyon\exceptions\HttpException;
 
 /**
@@ -11,14 +12,13 @@ use tachyon\exceptions\HttpException;
  */
 class Controller extends Component
 {
-    use \tachyon\traits\Authentication;
-
     # сеттеры DIC
     use \tachyon\dic\Cookie;
     use \tachyon\dic\Message;
     use \tachyon\dic\Lang;
     use \tachyon\dic\View;
-        
+    use \tachyon\dic\Csrf;
+
     /**
      * Язык сайта
      * @var $language string
@@ -78,7 +78,11 @@ class Controller extends Component
         }
         // проверка на isRequestPost по списку экшнов
         if (in_array($this->action, $this->postActions) && !$this->isRequestPost()) {
-            throw new HttpException($this->msg->i18n('Action %action allowed only through post request.', array('action' => $this->action)), HttpException::BAD_REQUEST);
+            throw new HttpException($this->msg->i18n('Action %action allowed only through post request.', ['action' => $this->action]), HttpException::BAD_REQUEST);
+        }
+        // проверка CSRF токена
+        if (!$this->csrf->isTokenValid()) {
+            throw new HttpException($this->msg->i18n('Wrong CSRF token.', HttpException::BAD_REQUEST));
         }
 
         $this->view->setController($this);
@@ -87,14 +91,14 @@ class Controller extends Component
         // текущий язык сайта
         $this->language = $this->lang->getLanguage();
 
-        // всё в порядке, отдаём страницу
-        header('HTTP/1.1 200 OK');
-        // защита от кликджекинга
-        header('X-Frame-Options:sameorigin');
-        // Защита от XSS. HTTP Only
-        ini_set('session.cookie_httponly', 1);
+        return $this;
+    }
 
-        $this->init();
+    /**
+     * Инициализация
+     */
+    public function init()
+    {
     }
 
     /**
@@ -103,9 +107,6 @@ class Controller extends Component
      */
     public function beforeAction()
     {
-        if ($this->protectedActions==='*' || in_array($this->action, $this->protectedActions)) {
-            $this->checkAccess();
-        }
         return true;
     }
 
@@ -113,13 +114,6 @@ class Controller extends Component
      * Хук, срабатывающий после запуска экшна
      */
     public function afterAction()
-    {
-    }
-
-    /**
-     * Инициализация
-     */
-    public function init()
     {
     }
 
@@ -180,19 +174,6 @@ class Controller extends Component
     public function redirect($path)
     {
         header("Location: $path");
-        die;
-    }
-
-    /**
-     * Вывод сообщения об ошибке
-     * @param string $msg
-     * @return void
-     */
-    public function error($code, $msg)
-    {
-        $codes = array(404 => 'Not Found');
-        header("HTTP/1.1 $code {$codes[$code]}");
-        $this->layout('/../error', compact('code', 'msg'));
         die;
     }
 
@@ -304,9 +285,9 @@ class Controller extends Component
     /**
      * @return string
      */
-    public function setAction($action)
+    public function setAction($actionName)
     {
-        $this->action = $action;
+        $this->action = $actionName;
         return $this;
     }
 

@@ -14,7 +14,6 @@ class Validator extends \tachyon\Component
 {
     # сеттеры DIC
     use \tachyon\dic\Message;
-    use \tachyon\dic\Csrf;
 
     private $_errors = array();
 
@@ -103,13 +102,6 @@ class Validator extends \tachyon\Component
         return true;
     }
 
-    public function csrfValidate()
-    {
-        if (!$this->csrf->isTokenValid()) {
-            $this->_addError('csrf', 'Неверный CSRF токен.');
-        }
-    }
-
     /**
      * @param $fieldName string
      * @param $message string
@@ -150,10 +142,6 @@ class Validator extends \tachyon\Component
      */
     public function validate($object, array $attrs = null)
     {
-        if ($this->config->getOption('csrf_check')===true) {
-            $this->csrfValidate();
-        }
-
         // перебираем все поля
         $attrsArray = $object->getAttributes();
         if (!is_null($attrs)) {

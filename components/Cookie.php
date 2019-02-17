@@ -29,7 +29,7 @@ class Cookie extends \tachyon\Component
     
     public function setCookie($key, $val, $path = '/')
     {
-        setcookie($key, ArrayHelper::filterText($val), time() + 30 * 24 * 60 * $this->duration, $path, $this->config->getOption('domain') ?? "", $this->secure, true);
+        setcookie($key, ArrayHelper::filterText($val), time() + 30 * 24 * 60 * $this->duration, $path, $this->config->get('domain') ?? "", $this->secure, true);
     }
 
     public function deleteCookie($key, $path = '/')

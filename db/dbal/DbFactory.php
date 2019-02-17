@@ -24,13 +24,13 @@ class DbFactory extends \tachyon\Component
     public function getDb(): Db
     {
         if (is_null($this->db)) {
-            if (!$config = $this->config->getOption('db')) {
+            if (!$config = $this->config->get('db')) {
                 throw new \tachyon\exceptions\DBALException('Не задан параметр конфигурации "db"');
             }
             if (!isset($config['engine'])) {
                 throw new \tachyon\exceptions\DBALException('Не задан параметр конфигурации "engine"');
             }
-            $config['mode'] = $this->get('config')->getOption('mode');
+            $config['mode'] = $this->get('config')->get('mode');
             $className = [
                 'mysql' => 'MySql',
                 'pgsql' => 'PgSql',

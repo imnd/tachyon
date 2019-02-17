@@ -2,7 +2,7 @@
 namespace tachyon\components;
 
 /**
- * Компонент защиты от csrf-атак
+ * Компонент защиты от CSRF-атак
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
@@ -60,7 +60,10 @@ class Csrf extends \tachyon\Component
      */
     public function isTokenValid()
     {
-        return $this->_isValid($_GET) || $this->_isValid($_POST);
+        return
+               $this->config->get('csrf_check')!==true
+            || $this->_isValid($_GET)
+            || $this->_isValid($_POST);
     }
 
     /**

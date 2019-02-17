@@ -23,8 +23,8 @@ abstract class Cache extends \tachyon\Component
     public function __construct()
     {
         $type = strtolower($this->getClassName());
-        $cache = $this->get('config')->getOption('cache');
-        if ($this->get('config')->getOption('mode')!=='production' || !isset($cache[$type]))
+        $cache = $this->get('config')->get('cache');
+        if ($this->get('config')->get('mode')!=='production' || !isset($cache[$type]))
             return;
 
         $options = $cache[$type];

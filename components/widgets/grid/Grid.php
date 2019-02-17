@@ -71,7 +71,7 @@ class Grid extends \tachyon\components\widgets\Widget
     {
         $this->assetManager->publishFolder('images', 'assets' . $this->getAssetsPublicPath(), $this->getAssetsSourcePath());
 
-        if (true===$this->config->getOption('csrf_check')) {
+        if (true===$this->config->get('csrf_check')) {
             // компонент защиты от csrf-атак
             $this->csrfJson = '"' . $this->csrf->getTokenId() . '":"' . $this->csrf->getTokenVal() . '",';
         }

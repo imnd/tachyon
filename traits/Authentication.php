@@ -15,10 +15,10 @@ trait Authentication
      */
     private $cookieKey = 'authorized';
     /**
-     * Время жизни куки дней
-     * @var integer $duration
+     * Время жизни куки дней при нажатой кнопке "remember me"
+     * @var integer $remember
      */
-    private $duration = 1;
+    private $remember = 7;
     private $loginUrl = '/index/login';
 
     /**
@@ -39,7 +39,7 @@ trait Authentication
      */
     public function isAuthorised()
     {
-        if (empty($cookie = $this->cookie->getCookie($this->cookieKey))) {
+        if (!$cookie = $this->cookie->getCookie($this->cookieKey)) {
             return false;
         }
         return $cookie===$this->_getCookieValue();
@@ -63,9 +63,9 @@ trait Authentication
      */
     protected function _login($remember=false)
     {
-        $duration = $this->duration;
+        $duration = 1;
         if ($remember) {
-            $duration *= 7;
+            $duration = $this->config->get('remember') ?: $this->remember;
         }
         $this->cookie->setDuration($duration);
         $this->cookie->setCookie($this->cookieKey, $this->_getCookieValue());

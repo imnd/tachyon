@@ -15,7 +15,7 @@ use tachyon\helpers\ArrayHelper;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-final class FrontController extends Component
+final class Router extends Component
 {
     # сеттеры сервисов, которые внедряются в компонент
     use \tachyon\dic\OutputCache;
@@ -34,26 +34,25 @@ final class FrontController extends Component
     public function dispatch()
     {
         $requestUri = $_SERVER['REQUEST_URI'];
-
         // кеширование
         $this->cache->start($requestUri);
-
         // разбираем запрос
-        $requestVars = [
-            'get' => $_GET,
-            'post' => $_POST,
-            'files' => $_FILES,
-        ];
         $urlInfo = parse_url($requestUri);
         $requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
-        $this->defaultController = $this->config->getOption('defaultController') ?: 'Index';
+        $this->defaultController = $this->config->get('defaultController') ?: 'Index';
         // Извлекаем имя контроллера
-        $controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController) . 'Controller';
+        $controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController);
+        $controllerName .= 'Controller';
         // Извлекаем имя экшна
         $actionName = $this->_getNameFromRequest($requestArr, 'index');
         // разбираем массив параметров
-        $requestVars = array_merge_recursive($requestVars, $this->_parseRequest($requestArr));
+        $requestVars = array_merge_recursive([
+            'get' => $_GET,
+            'post' => $_POST,
+            'files' => $_FILES,
+        ], $this->_parseRequest($requestArr));
+        // фильтруем
         foreach (['get', 'post', 'inline'] as $key) {
             $requestVars[$key] = $this->_filterVars($requestVars, $key);
         }
@@ -90,7 +89,7 @@ final class FrontController extends Component
      */
     private function _parseRequest(array $requestArr)
     {
-        $requestVars = ['get' => array()];
+        $requestVars = array('get' => array());
         if (!empty($requestArr)) {
             $requestArr = array_chunk($requestArr, 2);
             foreach ($requestArr as $pair) {
@@ -132,55 +131,62 @@ final class FrontController extends Component
     private function _startController($controllerName, $actionName, $requestVars)
     {
         try {
-            // инициализация
-            $controller = $this->_getController($controllerName, $actionName);
-            $controller->start($requestVars);
-            // запускаем
-            $controller->beforeAction();
-            $inlineVars = isset($requestVars['inline']) ? $requestVars['inline'] : null;
+            $controller = $this->get($controllerName);
+
             if (!method_exists($controller, $actionName)) {
-                throw new BadMethodCallException;
+                throw new BadMethodCallException($this->msg->i18n('There is no action "%actionName" in controller "%controllerName"', compact('controllerName', 'actionName')), HttpException::NOT_FOUND);
             }
-            $controller->$actionName($inlineVars);
+            $controller
+                ->setAction($actionName)
+                ->setId(lcfirst(str_replace('Controller', '', $controllerName)))
+                // запускаем
+                ->start($requestVars)
+                // инициализация
+                ->init();
+
+            if (!$controller->beforeAction()) {
+                throw new HttpException($this->msg->i18n('Method "beforeAction" returned false'), HttpException::BAD_REQUEST);
+            }
+            // всё в порядке, отдаём страницу
+            header('HTTP/1.1 200 OK');
+            // защита от кликджекинга
+            header('X-Frame-Options:sameorigin');
+            // Защита от XSS. HTTP Only
+            ini_set('session.cookie_httponly', 1);
+
+            $controller->$actionName($requestVars['inline'] ?? null);
             $controller->afterAction();
-        } catch (BadMethodCallException $e) {
-            $this->_error(404, "Экшн \"$actionName\" нет в контроллере \"$controllerName\" не найден");
         } catch (ContainerException $e) {
-            $this->_error(404, "Контроллер \"$controllerName\" не найден. {$e->getMessage()}");
-        } catch (ErrorException $e) {
-            $this->_error(404, 'Путь не найден');
+            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));
+        } catch (BadMethodCallException $e) {
+            $this->_error($e->getCode(), $e->getMessage());
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
+        } catch (ErrorException $e) {
+            $this->_error($e->getCode(), $e->getMessage());
         } catch (Exception $e) {
-            $this->_error(404, $e->getMessage());
+            $this->_error(HttpException::NOT_FOUND, $e->getMessage());
         }
     }
 
     /**
-     * Инициализация
+     * Обработчик неправильного запроса
+     * Вывод сообщения об ошибке
      * 
-     * @param string $controllerName
-     * @return Controller
+     * @param integer $code код ошибки
+     * @param string $error текст сообщения
+     * @return void
      */
-    private function _getController(string $controllerName, $actionName)
-    {
-        $controller = $this->get($controllerName);
-        $controller
-            ->setAction($actionName)
-            ->setId(str_replace('Controller', '', lcfirst($controller->getClassName())));
-
-        return $controller;
-    }
-
-    /**
-     * обработчик неправильного запроса
-     */
-    private function _error($code, $error)
+    private function _error($code, $msg)
     {
         http_response_code($code);
-        $controller = $this->_getController($this->defaultController . 'Controller', 'error');
-        $controller->start();
-        $controller->layout('error', compact('code', 'error'));
+
+        $this->get($this->defaultController . 'Controller')
+            ->setAction('error')
+            ->setId(lcfirst($this->defaultController))
+            ->start()
+            ->layout('error', compact('code', 'msg'));
+
         die;
     }
 }

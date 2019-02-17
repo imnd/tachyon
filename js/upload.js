@@ -143,7 +143,7 @@ var upload = (function() {
          * @param {array} options параметры
          * @return {void} 
          */
-        defaults: function(options) {
+        defaults : function(options) {
             var varNames = ["file-id", "chunk-size", "upload-url", "complete-callback"];
             for (var key in varNames) {
                 setValue(varNames[key], options);

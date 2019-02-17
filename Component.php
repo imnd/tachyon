@@ -48,9 +48,7 @@ abstract class Component
 
     public function getProperty($var)
     {
-        if (isset($this->properties[$var])) {
-            return $this->properties[$var];
-        }
+        return $this->properties[$var] ?? null;
     }
 
     /**

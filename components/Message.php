@@ -22,8 +22,8 @@ class Message extends \tachyon\Component
      */
     public function __construct()
     {
-        $this->loadMessages("{$this->get('config')->getOption('base_path')}/tachyon/config/lang/{$this->get('lang')->getLanguage()}.php");
-        $this->loadMessages("{$this->get('config')->getOption('base_path')}/../app/config/lang/{$this->get('lang')->getLanguage()}.php");
+        $this->loadMessages("{$this->get('config')->get('base_path')}/tachyon/config/lang/{$this->get('lang')->getLanguage()}.php");
+        $this->loadMessages("{$this->get('config')->get('base_path')}/../app/config/lang/{$this->get('lang')->getLanguage()}.php");
     }
 
     /**

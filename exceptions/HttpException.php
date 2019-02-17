@@ -17,7 +17,7 @@ class HttpException extends \Exception
     const INTERNAL_SERVER_ERROR = 500; 
 
     /** @const Коды и их сообщения */
-    const HTTP_STATUS_CODES = array(
+    const HTTP_STATUS_CODES = [
         self::OK => 'OK', 
         self::MOVED_PERMANENTLY => 'Moved Permanently', 
         self::BAD_REQUEST => 'Bad Request',
@@ -25,5 +25,5 @@ class HttpException extends \Exception
         self::FORBIDDEN => 'Forbidden',
         self::NOT_FOUND => 'Not Found',
         self::INTERNAL_SERVER_ERROR => 'Internal Server Error',
-    );
+    ];
 }

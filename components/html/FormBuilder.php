@@ -72,9 +72,9 @@ class FormBuilder extends \tachyon\Component
      */
     public function __construct($options=array())
     {
-        $this->_csrfCheck = $this->get('config')->getOption('csrf_check');
+        $this->_csrfCheck = $this->get('config')->get('csrf_check');
         // текстовые
-        $this->_options['text'] = $this->_options['text'][$this->get('config')->getOption('lang')];
+        $this->_options['text'] = $this->_options['text'][$this->get('config')->get('lang')];
     }
 
     /**
