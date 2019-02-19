@@ -5,7 +5,7 @@ use tachyon\helpers\StringHelper;
 use tachyon\exceptions\ContainerException;
 
 /**
- * DI Container
+ * Dependency Injection Container
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
@@ -23,61 +23,11 @@ class Container
      */
     private static $_config = array();
 
-    private static function _loadConfig()
-    {
-        // Загружаем компоненты и параметры компонентов
-        $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-        $coreConfText = file_get_contents("$basePath/config/services.xml");
-        $appConfPath = "$basePath/../../app/config/services.xml";
-        if (file_exists($appConfPath)) {
-            $appConfText = file_get_contents($appConfPath);
-            $appConfText = str_replace('<services>', '', $appConfText);
-            $coreConfText = str_replace('</services>', '', $coreConfText);
-            $coreConfText .= $appConfText;
-        }
-        $elements = new \SimpleXMLElement($coreConfText);
-        foreach ($elements as $element) {
-            self::_setConfig($element);
-        }
-    }
-
-    private static function _setConfig($element)
-    {
-        $id = (string)$element['id'];
-        if (isset(self::$_config[$id]))
-            return;
-
-        $service = array(
-            'class' => (string)$element['class'],
-            'services' => array(),
-            'variables' => array(),
-            'singleton' => ('true' === (string)$element['singleton']),
-        );
-        foreach ($element->property as $property) {
-            $propName = (string)$property['name'];
-            if ($ref = $property->ref) {
-                $subService = array(
-                    'id' => (string)$ref['id'],
-                    'variables' => array(),
-                );
-                foreach ($property->property as $subProperty) {
-                    $value = (string)$subProperty->value;
-                    if (strpos($value, '[')!==false) {
-                        $value = str_replace(array('[', ']'), '', $value);
-                        $value = explode(',', $value);
-                    }
-                    $subService['variables'][(string)$subProperty['name']] = $value;
-                }
-                $service['services'][$propName] = $subService;
-            } elseif ($val = $property->value) {
-                $service['variables'][$propName] = (string)$val;
-            }
-        }
-        self::$_config[$id] = $service;
-    }
-
     /**
+     * Создает экземпляр сервиса
+     * 
      * @param string $name
+     * @param mixed $owner объект "хозяин" сервиса
      * @param array $params динамически назначаемые параметры
      * @return mixed
      */
@@ -88,7 +38,7 @@ class Container
             self::$_initialised = true;
         }
         if (!isset(self::$_config[$name])) {
-            throw new ContainerException('Класс не найден в конфигурации');
+            throw new ContainerException($this->msg->i18n('Class did not found in config file.'));
         }
         $config = self::$_config[$name];
 
@@ -102,10 +52,72 @@ class Container
         return self::_createService($config, $params);
     }
 
-    private static function _createService($config, array $params = array())
+    /**
+     * Загружаем компоненты и параметры компонентов в массив $_config
+     */
+    private static function _loadConfig()
+    {
+        $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
+        $coreConfText = file_get_contents("$basePath/config/services.json");
+        $elements = json_decode($coreConfText, true);
+        if (
+                file_exists($appConfPath = "$basePath/../../app/config/services.json")
+            and $appConfText = file_get_contents($appConfPath)
+            and $appElements = json_decode($appConfText, true)
+        ) {
+            $elements = array_merge($elements, $appElements);
+        }
+        foreach ($elements as $element) {
+            $id = $element['id'];
+            if (isset(self::$_config[$id])) {
+                continue;
+            }
+            $service = [
+                'class' => $element['class'],
+                'services' => array(),
+                'variables' => array(),
+                'singleton' => (isset($element['singleton']) && 'true' === $element['singleton']),
+            ];
+            if (isset($element['properties'])) {
+                foreach ($element['properties'] as $property) {
+                    $propName = $property['name'];
+                    if (isset($property['ref'])) {
+                        $subService = [
+                            'id' => $property['ref'],
+                            'variables' => array(),
+                        ];
+                        if (isset($property['properties'])) {
+                            foreach ($property['properties'] as $subProperty) {
+                                $value = $subProperty['value'];
+                                if (strpos($value, '[')!==false) {
+                                    $value = str_replace(array('[', ']'), '', $value);
+                                    $value = explode(',', $value);
+                                }
+                                $subService['variables'][$subProperty['name']] = $value;
+                            }
+                        }
+                        $service['services'][$propName] = $subService;
+                    } elseif ($val = $property['value']) {
+                        $service['variables'][$propName] = $val;
+                    }
+                }
+            }
+            self::$_config[$id] = $service;
+        }
+    }
+
+    /**
+     * Создает экземпляр сервиса
+     * 
+     * @param array $config
+     * @param array $params
+     * @return void
+     * @throws ContainerException
+     */
+    private static function _createService(array $config, array $params = array())
     {
         if (!$className = self::_getConfigParam($config, 'class')) {
-            throw new ContainerException('Класс не найден в конфигурации');
+            throw new ContainerException($this->msg->i18n('Class did not found in config file.'));
         }
         $service = new $className($params);
 
@@ -114,9 +126,9 @@ class Container
         $parents = class_parents($service);
         foreach ($parents as $parentClassName) {
             $id = StringHelper::getShortClassName($parentClassName);
-            if (!isset(self::$_config[$id]))
+            if (!isset(self::$_config[$id])) {
                 continue;
-
+            }
             $parentConfig = self::$_config[$id];
             if (isset($config['owner'])) {
                 $parentConfig['variables']['owner'] = $config['owner'];
@@ -160,7 +172,7 @@ class Container
      * @param string $name
      * @param mixed $val
      * @return void
-     * @throws \ErrorException
+     * @throws ContainerException
      */
     private static function _setProperty($service, $name, $val)
     {
@@ -175,7 +187,10 @@ class Container
                 return;
             }
             if ($name!=='owner') {
-                throw new ContainerException("Невозможно установить свойство $name для сервиса " . get_class($service));
+                throw new ContainerException($this->msg->i18n('Unable to set property %property to service %service.', [
+                    'property' => $name,
+                    'service' => get_class($service),
+                ]));
             }
         } catch (ContainerException $e) {
             echo $e->getMessage();

@@ -49,9 +49,9 @@ class StringHelper
      */
     public static function getShortClassName($className)
     {
-        if (!$a = strrchr($className, '\\'))
+        if (!$a = strrchr($className, '\\')) {
             return $className;
-        
+        }
         return substr($a, 1);
     }
 }

@@ -60,7 +60,6 @@ abstract class Component
      */
     public function getService($serviceName, array $params = array())
     {
-        $params['owner'] = $this;
         $serviceName = ucfirst($serviceName);
         $varName = lcfirst($serviceName);
         if (property_exists($this, $varName)) {

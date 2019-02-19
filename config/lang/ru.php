@@ -26,7 +26,8 @@
     'unique' => 'Поле не уникально.',
 
     // Container
-    'Unable to set property %property to service ' => 'Невозможно установить свойство %property в сервис ',
+    'Unable to set property %property to service %service.' => 'Невозможно установить свойство %property в сервис %service.',
+    'Class did not found in config file.' => 'Класс не найден в файле конфигурации.',
     // DB
     'The primary key of the related table is not declared.' => 'Не объявлен первичный ключ связанной таблицы.',
     'Property "tableName" is not set' => 'Не задано свойство "tableName"',

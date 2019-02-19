@@ -63,10 +63,7 @@ trait Authentication
      */
     protected function _login($remember=false)
     {
-        $duration = 1;
-        if ($remember) {
-            $duration = $this->config->get('remember') ?: $this->remember;
-        }
+        $duration = $remember ? ($this->config->get('remember') ?: $this->remember) : 1;
         $this->cookie->setDuration($duration);
         $this->cookie->setCookie($this->cookieKey, $this->_getCookieValue());
     }
