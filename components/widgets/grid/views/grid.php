@@ -1,6 +1,7 @@
 <?php
 /**
  * @var \tachyon\components\widgets\Widget $widget
+ * @throws ErrorException
  */
 
 // search form
@@ -21,7 +22,7 @@ if (empty($items)) {?>
                         if (isset($options['name']))
                             $fieldName = $options['name'];
                         else
-                            throw new \Exception($this->msg->i18n('Undefined field name'));
+                            throw new \ErrorException($this->msg->i18n('Undefined field name'));
                     } else
                         $fieldName = $options;
                 } else

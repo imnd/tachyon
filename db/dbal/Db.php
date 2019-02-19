@@ -1,7 +1,8 @@
 <?php
 namespace tachyon\db\dbal;
 
-use tachyon\exceptions\DBALException;
+use PDOException,
+    tachyon\exceptions\DBALException;
 
 /**
  * DBAL (на PDO)
@@ -84,8 +85,8 @@ abstract class Db extends \tachyon\Component
                 $this->config['password']
             );
             $this->connection->exec("SET NAMES {$this->config['charset']}");
-        } catch (\PDOException $e) {
-            throw new DBALException($this->msg->i18n('conn_err') . "\n{$e->getMessage()}");
+        } catch (PDOException $e) {
+            throw new DBALException($this->msg->i18n('Unable to connect to database.') . "\n{$e->getMessage()}");
         }
     }
 
@@ -536,7 +537,7 @@ abstract class Db extends \tachyon\Component
             //if ('00000' == $this->connection->errorCode())
                 //return false;
 
-            throw new DBALException($this->msg->i18n('db_err'));
+            throw new DBALException($this->msg->i18n('Database error.'));
         }
         return true;
     }

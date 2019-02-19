@@ -1,8 +1,5 @@
 <?php array (
     // system
-    'db_err' => 'Database error.',
-    'unknown_table' => 'table not exist',
-    'conn_err' => 'Unable to connect to database.',
     'Wrong address.' => 'Wrong address.',
     'No controller file found.' => 'No controller file found.',
     'No view file found' => 'No view file found',

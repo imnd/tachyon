@@ -1,7 +1,7 @@
 <?php
 namespace tachyon;
 
-use Exception,
+use Error,
     ErrorException,
     BadMethodCallException,
     tachyon\exceptions\ContainerException,
@@ -43,7 +43,6 @@ final class Router extends Component
         $this->defaultController = $this->config->get('defaultController') ?: 'Index';
         // Извлекаем имя контроллера
         $controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController);
-        $controllerName .= 'Controller';
         // Извлекаем имя экшна
         $actionName = $this->_getNameFromRequest($requestArr, 'index');
         // разбираем массив параметров
@@ -131,14 +130,14 @@ final class Router extends Component
     private function _startController($controllerName, $actionName, $requestVars)
     {
         try {
-            $controller = $this->get($controllerName);
+            $controller = $this->get($controllerName . 'Controller');
 
             if (!method_exists($controller, $actionName)) {
-                throw new BadMethodCallException($this->msg->i18n('There is no action "%actionName" in controller "%controllerName"', compact('controllerName', 'actionName')), HttpException::NOT_FOUND);
+                throw new BadMethodCallException;
             }
             $controller
                 ->setAction($actionName)
-                ->setId(lcfirst(str_replace('Controller', '', $controllerName)))
+                ->setId(lcfirst($controllerName))
                 // запускаем
                 ->start($requestVars)
                 // инициализация
@@ -157,15 +156,15 @@ final class Router extends Component
             $controller->$actionName($requestVars['inline'] ?? null);
             $controller->afterAction();
         } catch (ContainerException $e) {
-            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));
+            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', ['controllerName' => lcfirst($controllerName)]));
         } catch (BadMethodCallException $e) {
-            $this->_error($e->getCode(), $e->getMessage());
+            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName"', compact('controllerName', 'actionName')));
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
         } catch (ErrorException $e) {
             $this->_error($e->getCode(), $e->getMessage());
-        } catch (Exception $e) {
-            $this->_error(HttpException::NOT_FOUND, $e->getMessage());
+        } catch (Error $e) {
+            $this->_error($e->getCode(), $e->getMessage());
         }
     }
 
@@ -181,7 +180,8 @@ final class Router extends Component
     {
         http_response_code($code);
 
-        $this->get($this->defaultController . 'Controller')
+        $this
+            ->get($this->defaultController . 'Controller')
             ->setAction('error')
             ->setId(lcfirst($this->defaultController))
             ->start()

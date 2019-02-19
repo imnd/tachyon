@@ -38,7 +38,7 @@ class Container
             self::$_initialised = true;
         }
         if (!isset(self::$_config[$name])) {
-            throw new ContainerException($this->msg->i18n('Class did not found in config file.'));
+            throw new ContainerException(self::getInstanceOf('Message')->i18n('Class did not found in config file.'));
         }
         $config = self::$_config[$name];
 
@@ -117,7 +117,7 @@ class Container
     private static function _createService(array $config, array $params = array())
     {
         if (!$className = self::_getConfigParam($config, 'class')) {
-            throw new ContainerException($this->msg->i18n('Class did not found in config file.'));
+            throw new ContainerException(self::getInstanceOf('Message')->i18n('Class did not found in config file.'));
         }
         $service = new $className($params);
 
@@ -187,7 +187,7 @@ class Container
                 return;
             }
             if ($name!=='owner') {
-                throw new ContainerException($this->msg->i18n('Unable to set property %property to service %service.', [
+                throw new ContainerException(self::getInstanceOf('Message')->i18n('Unable to set property %property to service %service.', [
                     'property' => $name,
                     'service' => get_class($service),
                 ]));

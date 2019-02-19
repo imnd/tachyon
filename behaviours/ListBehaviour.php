@@ -61,12 +61,12 @@ class ListBehaviour extends \tachyon\Component
      * @param $keyIndexed boolean индексировать ключами или значениями массива
      * 
      * @return array
-     * @throws Exception
+     * @throws ErrorException
      */
     public function getSelectListFromArr($array, $keyIndexed=false, $emptyVal='...')
     {
         if (is_array($this->valueField)) {
-            throw new \Exception($this->msg->i18n('The getSelectListFromArr method of the ListBehaviour class does not work if valueField is an array.'));
+            throw new \ErrorException($this->msg->i18n('Method ListBehaviour::getSelectListFromArr is not work if valueField is an array.'));
         }
         $items = array();
         foreach ($array as $key => $value) {
