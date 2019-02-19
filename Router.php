@@ -131,13 +131,13 @@ final class Router extends Component
     {
         try {
             $controller = $this->get($controllerName . 'Controller');
-
             if (!method_exists($controller, $actionName)) {
                 throw new BadMethodCallException;
             }
+            $controllerName = lcfirst($controllerName);
             $controller
                 ->setAction($actionName)
-                ->setId(lcfirst($controllerName))
+                ->setId($controllerName)
                 // запускаем
                 ->start($requestVars)
                 // инициализация
@@ -156,9 +156,9 @@ final class Router extends Component
             $controller->$actionName($requestVars['inline'] ?? null);
             $controller->afterAction();
         } catch (ContainerException $e) {
-            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', ['controllerName' => lcfirst($controllerName)]));
+            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));
         } catch (BadMethodCallException $e) {
-            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName"', compact('controllerName', 'actionName')));
+            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
         } catch (ErrorException $e) {

@@ -39,7 +39,7 @@
 
     // HTTP
     'Action %action allowed only through post request.' => 'Действие %action разрешено только через POST запрос.',
-    'There is no action "%actionName" in controller "%controllerName".' => 'Экшн "%actionName" нет в контроллере "%controllerName" не найден.',
+    'There is no action "%actionName" in controller "%controllerName".' => 'В контроллере "%controllerName" не найден экшн "%actionName".',
     'Controller "%controllerName" is not found.' => 'Контроллер "%controllerName" не найден.',
     'Invalid request type.' => 'Недопустимый тип запроса.',
     'Wrong CSRF token.' => 'Неверный CSRF токен.',
