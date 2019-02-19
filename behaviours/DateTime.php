@@ -9,18 +9,16 @@ namespace tachyon\behaviours;
  */
 class DateTime extends \tachyon\Component
 {
-    use \tachyon\dic\Lang;
-
-    private $_months = array('ru' => array(
-        'short' => array(
+    private $_months = ['ru' => [
+        'short' => [
             'nom' => array('янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'),
             'gen' => array('янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'),
-        ),
-        'long' => array(
+        ],
+        'long' => [
             'nom' => array('январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'),
             'gen' => array('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря')
-        )
-    ));
+        ]
+    ]];
 
     /**
      * @param $glue string
@@ -29,9 +27,9 @@ class DateTime extends \tachyon\Component
      */
     public function convDateToReadable($date, $glue=' ', $mode='long'): string
     {
-        if (empty($date))
+        if (empty($date)) {
             return '';
-
+        }
         $dateArr = explode('-', $date);
         $dateArr = array_reverse($dateArr);
 

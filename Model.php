@@ -10,8 +10,8 @@ namespace tachyon;
 abstract class Model extends \tachyon\Component
 {
     # сеттеры DIC
-    use \tachyon\dic\Validator;
-    use \tachyon\dic\Lang;
+    use \tachyon\dic\Validator,
+        \tachyon\dic\Lang;
 
     /**
      * массив [поле => значение]

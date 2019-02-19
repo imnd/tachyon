@@ -10,8 +10,8 @@ namespace tachyon\db\activeRecord;
  */
 abstract class Relation extends \tachyon\Component
 {
-    use \tachyon\dic\Join;
-    use \tachyon\dic\Alias;
+    use \tachyon\dic\Join,
+        \tachyon\dic\Alias;
 
     protected $tableName;
     protected $fields;

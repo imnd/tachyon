@@ -1,8 +1,8 @@
 <?php
 namespace tachyon\dic;
 
-use tachyon\helpers\StringHelper;
-use tachyon\exceptions\ContainerException;
+use tachyon\helpers\StringHelper,
+    tachyon\exceptions\ContainerException;
 
 /**
  * Dependency Injection Container
@@ -58,10 +58,10 @@ class Container
     private static function _loadConfig()
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-        $coreConfText = file_get_contents("$basePath/config/services.json");
+        $coreConfText = file_get_contents("$basePath/dic/services.json");
         $elements = json_decode($coreConfText, true);
         if (
-                file_exists($appConfPath = "$basePath/../../app/config/services.json")
+                file_exists($appConfPath = "$basePath/../../app/dic/services.json")
             and $appConfText = file_get_contents($appConfPath)
             and $appElements = json_decode($appConfText, true)
         ) {

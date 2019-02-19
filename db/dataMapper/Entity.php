@@ -3,8 +3,8 @@ namespace tachyon\db\dataMapper;
 
 abstract class Entity extends \tachyon\Component
 {
-    use \tachyon\dic\Validator;
-    use \tachyon\dic\DbContext;
+    use \tachyon\dic\Validator,
+        \tachyon\dic\DbContext;
 
     /**
      * @var array Подписи для поля сущностей

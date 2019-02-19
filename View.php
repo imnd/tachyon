@@ -11,9 +11,9 @@ namespace tachyon;
 class View extends Component
 {
     # сеттеры DIC
-    use \tachyon\dic\AssetManager;
-    use \tachyon\dic\Message;
-    use \tachyon\dic\Html;
+    use \tachyon\dic\AssetManager,
+        \tachyon\dic\Message,
+        \tachyon\dic\Html;
 
     /**
      * Контроллер, вызывающий вью

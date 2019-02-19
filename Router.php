@@ -1,13 +1,13 @@
 <?php
 namespace tachyon;
 
-use Exception;
-use ErrorException;
-use BadMethodCallException;
-use tachyon\exceptions\ContainerException;
-use tachyon\exceptions\HttpException;
+use Exception,
+    ErrorException,
+    BadMethodCallException,
+    tachyon\exceptions\ContainerException,
+    tachyon\exceptions\HttpException,
 
-use tachyon\helpers\ArrayHelper;
+    tachyon\helpers\ArrayHelper;
 
 /**
  * Front Controller приложения
@@ -18,9 +18,9 @@ use tachyon\helpers\ArrayHelper;
 final class Router extends Component
 {
     # сеттеры сервисов, которые внедряются в компонент
-    use \tachyon\dic\OutputCache;
-    use \tachyon\dic\Message;
-    use \tachyon\dic\View;
+    use \tachyon\dic\OutputCache,
+        \tachyon\dic\Message,
+        \tachyon\dic\View;
 
     /**
      * @var string контроллер по умолчанию

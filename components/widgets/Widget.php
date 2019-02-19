@@ -10,10 +10,9 @@ namespace tachyon\components\widgets;
  */
 abstract class Widget extends \tachyon\Component
 {
-    use \tachyon\dic\AssetManager;
-    use \tachyon\dic\Message;
-
-    use \tachyon\traits\Configurable;
+    use \tachyon\dic\AssetManager,
+        \tachyon\dic\Message,
+        \tachyon\traits\Configurable;
 
     /**
      * id виджета

@@ -10,9 +10,6 @@ namespace tachyon\components;
  */
 class Message extends \tachyon\Component
 {
-    # сеттеры DIC
-    use \tachyon\dic\Lang;
-
     private $_messages = array();
 
     /**
@@ -22,8 +19,10 @@ class Message extends \tachyon\Component
      */
     public function __construct()
     {
-        $this->loadMessages("{$this->get('config')->get('base_path')}/tachyon/config/lang/{$this->get('lang')->getLanguage()}.php");
-        $this->loadMessages("{$this->get('config')->get('base_path')}/../app/config/lang/{$this->get('lang')->getLanguage()}.php");
+        $basePath = $this->get('config')->get('base_path');
+        $lang = $this->get('lang')->getLanguage();
+        $this->loadMessages("$basePath/tachyon/lang/$lang.php");
+        $this->loadMessages("$basePath/../app/config/lang/$lang.php");
     }
 
     /**

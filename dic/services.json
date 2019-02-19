@@ -82,24 +82,12 @@
     {
         "id" : "Message",
         "class" : "\\tachyon\\components\\Message",
-        "singleton" : "true",
-        "properties" : [
-            {
-                "name" : "lang",
-                "ref" : "Lang"
-            }
-        ]
+        "singleton" : "true"
     },
     {
         "id" : "Lang",
         "class" : "\\tachyon\\components\\Lang",
-        "singleton" : "true",
-        "properties" : [
-            {
-                "name" : "cookie",
-                "ref" : "Cookie"
-            }
-        ]
+        "singleton" : "true"
     },
     {
         "id" : "DateTime",

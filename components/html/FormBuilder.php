@@ -10,10 +10,10 @@ namespace tachyon\components\html;
 class FormBuilder extends \tachyon\Component
 {
     # сеттеры DIC
-    use \tachyon\dic\AssetManager;
-    use \tachyon\dic\Html;
-    use \tachyon\dic\Csrf;
-    use \tachyon\dic\View;
+    use \tachyon\dic\AssetManager,
+        \tachyon\dic\Html,
+        \tachyon\dic\Csrf,
+        \tachyon\dic\View;
 
     /**
      * включать ли компонент защиты от csrf-атак

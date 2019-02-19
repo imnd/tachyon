@@ -11,12 +11,12 @@ use tachyon\exceptions\ModelException;
  */
 abstract class ActiveRecord extends \tachyon\Model
 {
-    use \tachyon\dic\Alias;
-    use \tachyon\dic\DbCache;
-    use \tachyon\dic\DbFactory;
-    use \tachyon\dic\Join;
-    use \tachyon\dic\Message;
-    use \tachyon\dic\Terms;
+    use \tachyon\dic\Alias,
+        \tachyon\dic\DbCache,
+        \tachyon\dic\DbFactory,
+        \tachyon\dic\Join,
+        \tachyon\dic\Message,
+        \tachyon\dic\Terms;
 
     /**
      * Имя таблицы в БД или алиаса

@@ -1,9 +1,9 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-use Iterator;
-use tachyon\db\dataMapper\Entity;
-use tachyon\helpers\StringHelper;
+use Iterator,
+    tachyon\db\dataMapper\Entity,
+    tachyon\helpers\StringHelper;
 
 /**
  * EntityManager является центральной точкой доступа к функциональности DataMapper ORM.
@@ -13,8 +13,8 @@ use tachyon\helpers\StringHelper;
  */
 abstract class Repository extends \tachyon\Component
 {
-    use \tachyon\dic\Persistence;
-    use \tachyon\dic\Terms;
+    use \tachyon\dic\Persistence,
+        \tachyon\dic\Terms;
 
     /** @var string */
     protected $tableName;

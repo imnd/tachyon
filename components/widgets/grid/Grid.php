@@ -10,8 +10,8 @@ namespace tachyon\components\widgets\grid;
  */
 class Grid extends \tachyon\components\widgets\Widget
 {
-    use \tachyon\dic\Message;
-    use \tachyon\dic\Csrf;
+    use \tachyon\dic\Message,
+        \tachyon\dic\Csrf;
 
     /**
      * @var \tachyon\db\activeRecord\ActiveRecord $model

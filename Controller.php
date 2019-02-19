@@ -1,8 +1,8 @@
 <?php
 namespace tachyon;
 
-use BadMethodCallException;
-use tachyon\exceptions\HttpException;
+use BadMethodCallException,
+    tachyon\exceptions\HttpException;
 
 /**
  * Базовый класс для всех контроллеров
@@ -13,11 +13,11 @@ use tachyon\exceptions\HttpException;
 class Controller extends Component
 {
     # сеттеры DIC
-    use \tachyon\dic\Cookie;
-    use \tachyon\dic\Message;
-    use \tachyon\dic\Lang;
-    use \tachyon\dic\View;
-    use \tachyon\dic\Csrf;
+    use \tachyon\dic\Cookie,
+        \tachyon\dic\Message,
+        \tachyon\dic\Lang,
+        \tachyon\dic\View,
+        \tachyon\dic\Csrf;
 
     /**
      * Язык сайта

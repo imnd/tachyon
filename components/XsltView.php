@@ -9,8 +9,8 @@ namespace tachyon\components;
  */
 class XsltView extends View
 {
-    use \tachyon\dic\DomDocument;
-    use \tachyon\dic\XSLTProcessor;
+    use \tachyon\dic\DomDocument,
+        \tachyon\dic\XSLTProcessor;
 
     /**
      * Отображает файл представления 
