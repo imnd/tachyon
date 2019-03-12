@@ -74,9 +74,8 @@ class View extends Component
     }
 
     /**
-     * Отображает файл представления 
-     * передавая ему параметря в виде массива
-     * в заданном лэйауте
+     * Отображает файл представления, передавая ему параметры
+     * в виде массива в заданном лэйауте
      * 
      * @param $view string
      * @param $vars array 
@@ -151,11 +150,33 @@ class View extends Component
             echo "<div class='error'>$error</div>";
             die;
         }
+        
         extract($vars);
         ob_start();
-        require($filePath);
+
+        $buffer = file_get_contents($filePath);
+        if (false!==strpos($buffer, '{{')) {
+            $tempViewFilePath = "{$_SERVER["DOCUMENT_ROOT"]}/../runtime/templates/" . md5($filePath) . ".php";
+            if (
+                   // в debug mode скомпиленные шаблоны переписываются всегда
+                   $this->config->get('mode')!=='production'
+                || !file_exists($tempViewFilePath)
+            ) {
+                while (false!==$echoPos = strpos($buffer, '{{')) {
+                    $start = $echoPos + 2;
+                    $end = strpos($buffer, '}}', $start);
+                    $text = substr($buffer, $start, $end - $start);
+                    $buffer = substr($buffer, 0, $echoPos) . '<?=$this->escape(' . $text . ')?>' . substr($buffer, $end + 2);
+                }
+                file_put_contents($tempViewFilePath, $buffer);
+            }
+            require($tempViewFilePath);
+        } else {
+            require($filePath);
+        }
         $contents = ob_get_contents();
         ob_end_clean();
+        
         return $contents;
     }
 
