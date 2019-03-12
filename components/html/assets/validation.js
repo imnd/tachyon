@@ -139,8 +139,9 @@
                 var fieldName = field.name;
                 this.metadata[fieldName] = field;
                 var data = dom.val(fieldName);
-                if (data!=='undefined')
+                if (data!==undefined) {
                     this.data[fieldName] = data;
+                }
             }
         },
 

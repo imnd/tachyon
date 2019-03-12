@@ -2,7 +2,7 @@
  * Набор методов для работы с DOM
  * 
  * @constructor
- * @this  {dom}
+ * @this {dom}
  */
 var dom = (function() {
     return {
@@ -31,20 +31,21 @@ var dom = (function() {
             return typeof(obj)==="object" ? obj : this.findById(obj, doc) || this.findByName(obj, doc);
         },
         findById : function(id, doc) {
-            if (doc===undefined)
+            if (doc===undefined) {
                 doc = document;
-
+            }
             return doc.getElementById ? doc.getElementById(id) : doc.all ? doc.all[id][1] : doc.layers[id];
         },
         findByTag : function(name, doc) {
             return this.findAllByTag(name, doc)[0];
         },
         findAllByTag : function(name, doc) {
-            if (doc===undefined)
+            if (doc===undefined) {
                 doc = document;
-
-            if (doc.getElementsByTagName)
+            }
+            if (doc.getElementsByTagName) {
                 return doc.getElementsByTagName(name);
+            }
         },
         findByName : function(name, doc) {
             if (doc===undefined)
@@ -77,89 +78,99 @@ var dom = (function() {
         },
 
         val : function(obj, value) {
-            obj = this.findObj(obj);
-            if (obj===null || typeof obj==="undefined")
+            var obj = this.findObj(obj);
+            if (obj===null || obj===undefined) {
                 return "";
-
-            var objType = obj.type;
+            }
+            const objType = obj.type;
             if (objType==="checkbox") {
-                if (value===undefined)
+                if (value===undefined) {
                     return obj.checked;
-                else
+                } else {
                     obj.checked = value;
-            } else if (objType==="select-one" || objType==="select-multiple") {
-                if (value===undefined)
+                }
+            } else if (
+                   objType==="select-one"
+                || objType==="select-multiple"
+            ) {
+                if (value===undefined) {
                     return obj.options[obj.selectedIndex].value ? obj.options[obj.selectedIndex].value : obj.options[obj.selectedIndex].text;
-                else {
+                } else {
                     var options = obj.options;
                     for (var key in options)
                         if (options[key].value===value)
                             obj.selectedIndex = key;
                 }
             } else if (obj.value!==undefined) {
-                if (objType=="text" 
+                if (
+                       objType=="text" 
                     || objType==="password" 
                     || objType==="hidden" 
                     || objType==="textarea"
                     || objType==="select-one"
-                    ) {
-                        if (value===undefined)
-                            return obj.value;
-                        else
-                            obj.value = value;
+                ) {
+                    if (value===undefined) {
+                        return obj.value;
+                    } else {
+                        obj.value = value;
                     }
+                }
             } else if (obj.innerHTML!==undefined) {
-                if (value===undefined)
+                if (value===undefined) {
                     return obj.innerHTML;
-                else {
+                } else {
                     obj.innerHTML = value;
                 }
             }
         },
         attr : function(obj, attr, value) {
             obj = this.findObj(obj);
-
-            if (value===undefined)
+            if (value===undefined) {
                 return this.getAttr(obj, attr);
-            else
+            } else {
                 this.setAttr(obj, attr, value);
+            }
         },
         getAttr : function(obj, attr) {
-            if (obj.getAttribute)
+            if (obj.getAttribute) {
                 return obj.getAttribute(attr);
+            }
         },
         setAttr : function(obj, attr, value) {
-            if (obj.setAttribute)
-                obj.setAttribute(attr, value)
+            if (obj.setAttribute) {
+                obj.setAttribute(attr, value);
+            }
         },
-
         clearForm : function() {
-            var frm = this.findObj(arguments[0]);
-            var ctrls = frm.childNodes;
-            for (var i in ctrls)
+            const frm = this.findObj(arguments[0]);
+            const ctrls = frm.childNodes;
+            for (var i in ctrls) {
                 this.clear(ctrls[i]);
+            }
         },
         clear : function(obj) {
-            obj = this.findObj(obj);
-
-            if (typeof obj==="undefined")
+            var obj = this.findObj(obj);
+            if (obj===undefined) {
                 return;
-
-            var objType = obj.type;
-            if (objType==="checkbox")
+            }
+            const objType = obj.type;
+            if (objType==="checkbox") {
                 obj.checked = "";  
-            else if (objType==="select-one" || objType==="select-multiple")
+            } else if (objType==="select-one" || objType==="select-multiple") {
                 obj.selectedIndex = 0;
-            else if (obj.value!==undefined) {
-                if (objType=="text" 
+            } else if (obj.value!==undefined) {
+                if (
+                       objType=="text" 
                     || objType==="password" 
                     || objType==="hidden" 
                     || objType==="textarea"
                     || objType==="select-one"
-                    ) 
+                ) {
                     obj.value = "";
-            } else if (obj.innerHTML)
+                }
+            } else if (obj.innerHTML) {
                 obj.innerHTML = "";
+            }
         },        
         hide : function(objID) {
             var obj = this.findById(objID);     

@@ -46,7 +46,6 @@ var upload = (function() {
                 alert("Готово");
             }
         },
-
         /**
          * Считывание и загрузки фрагмента файла
          * 
@@ -95,7 +94,6 @@ var upload = (function() {
             }
             reader.readAsDataURL(blob);
         },
-
         /**
          * Установка значения параметра
          *

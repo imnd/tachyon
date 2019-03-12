@@ -2,36 +2,45 @@
  * Компонент для отправки AJAX запросов
  * 
  * @constructor
- * @this  {ajax}
+ * @this {ajax}
  */
 var ajax = (function() {
-    return {
-        get : function (path, data, callback, respType, contentType) {
-            if (typeof data === "function") {
-                respType = callback;
-                callback = data;
-                data = {};
+    var 
+        appendPath = function(path, data) {
+            for (var key in data) {
+                path += "&" + key + "=" + data[key];
             }
-            this.sendRequest({
-                path : path,
-                data : data,
-                callback : callback,
-                respType : respType,
-                type : "GET",
-                contentType : contentType,
-            });
+            return path;
         },
-        post : function (path, data, callback, respType, contentType) {
-            this.sendRequest({
-                path : path,
-                data : data,
-                callback : callback,
-                respType : respType,
-                type : "POST",
-                contentType : contentType,
-            });
+        /**
+         * Создание запроса
+         *
+         * @return {void} 
+         */
+        createRequest = function() {
+            if (window.XMLHttpRequest) {
+                return new XMLHttpRequest();
+            } else if (window.ActiveXObject) {
+                var xhr;
+                try {
+                    xhr = new ActiveXObject("Msxml2.XMLHTTP"); 
+                } catch (e){}
+                try {
+                    xhr = new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (e){
+                    return false;
+                }
+                return xhr;
+            }
+            return false;
         },
-        sendRequest : function(options) {
+        /**
+         * Посылка запроса
+         *
+         * @param {array} options параметры запроса
+         * @return {void} 
+         */
+        sendRequest = function(options) {
             var xhr = this.createRequest();
             if (!xhr) {
                 alert("Браузер не поддерживает AJAX");
@@ -88,29 +97,53 @@ var ajax = (function() {
             };
             // Тело запроса готово, отправляем
             xhr.send(sendData);
-        },
-        appendPath : function(path, data) {
-            for (var key in data) {
-                path += "&" + key + "=" + data[key];
+        }
+    ;
+    return {
+        /**
+         * Посылка get запроса
+         *
+         * @param {string} path
+         * @param {mixed} data параметры запроса
+         * @param {function} callback
+         * @param {string} respType
+         * @param {string} contentType
+         * @return {void} 
+         */
+        get : function (path, data, callback, respType, contentType) {
+            if (typeof data === "function") {
+                respType = callback;
+                callback = data;
+                data = {};
             }
-            return path;
+            this.sendRequest({
+                path : path,
+                data : data,
+                callback : callback,
+                respType : respType,
+                type : "GET",
+                contentType : contentType,
+            });
         },
-        createRequest : function() {
-            if (window.XMLHttpRequest) {
-                return new XMLHttpRequest();
-            } else if (window.ActiveXObject) {
-                var xhr;
-                try {
-                    xhr = new ActiveXObject("Msxml2.XMLHTTP"); 
-                } catch (e){}
-                try {
-                    xhr = new ActiveXObject("Microsoft.XMLHTTP");
-                } catch (e){
-                    return false;
-                }
-                return xhr;
-            }
-            return false;
+        /**
+         * Посылка post запроса
+         *
+         * @param {string} path
+         * @param {mixed} data параметры запроса
+         * @param {function} callback
+         * @param {string} respType
+         * @param {string} contentType
+         * @return {void} 
+         */
+        post : function (path, data, callback, respType, contentType) {
+            this.sendRequest({
+                path : path,
+                data : data,
+                callback : callback,
+                respType : respType,
+                type : "POST",
+                contentType : contentType,
+            });
         },
     };
 })();
