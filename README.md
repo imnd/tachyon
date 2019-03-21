@@ -3,7 +3,7 @@
 Tiny MVC php framework.
 
 Features:
-- Dependency Injection Container. It uses setter methods and xml configuration files;
+- Dependency Injection Container. At initial realisation it used setter methods and xml configuration files, now I changed it for using __constructor() methods and json configuration files;
 - Front Controller with a simple (file system) routing;
 - PDO based DBAL. It works on both MySql and PgSql. Instantiation of the corresponding class occurs using the Factory Method pattern;
 - ORM 
@@ -13,7 +13,7 @@ Features:
 - protection against XSS, CSRF assaults and SQL injections;
 - very simple i18n;
 - view layout: 
-    - plain PHP template with inheritance (3 template instructions: @include, @contents, @extends);
+    - plain PHP template with inheritance (4 template instructions: @include, @contents, @extends and {{ }});
     - XSLT template.
 
 Components:
@@ -37,7 +37,7 @@ MVC микро-PHP-фреймворк.
 
 Это Front Controller с простым (физическим) роутингом.
 Компоненты ядра:
-- Dependency Injection Container, который реализован с использованием сеттеров и файлов конфигурации xml;
+- Dependency Injection Container, который первоначально был реализован с использованием сеттеров и файлов конфигурации xml, в котором были прописаны зависимости. Сейчас я переписал его на использование методов __constructor() и файлов конфигурации json в которых прописаны только значения переменных подключаемых объектов;
 - DBAL на основе PDO. DBAL работает как на MySql так и на PgSql. Инстанциирование соответствующего класса DBAL происходит с помощью паттерна Factory Method.;
 - 2 типа ORM, которые взаимодействует с БД через DBAL используя паттерн Bridge: 
   - Active Record с поддержкой внешних ключей + особый вид моделей для подзапросов. Связанные записи могут загружаться как одним запросом в основной записью так и по требованию.
@@ -47,7 +47,7 @@ MVC микро-PHP-фреймворк.
 - защита от XSS, CSRF атак и SQL инъекций;
 - многоязычность;
 - несложный layout 2-х видов:
-    - PHP шаблонизация c возможностью наследования шаблонов (поддерживаются инструкции: @include, @contents, @extends);
+    - PHP шаблонизация c возможностью наследования шаблонов (поддерживаются инструкции: @include, @contents, @extends и {{ }});
     - XSLT шаблонизация;
 
 Вспомогательные компоненты:
