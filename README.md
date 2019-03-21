@@ -13,7 +13,7 @@ Features:
 - protection against XSS, CSRF assaults and SQL injections;
 - very simple i18n;
 - view layout: 
-    - plain PHP template with inheritance (3 template instructions: @include, @contents, @extends);
+    - plain PHP template with inheritance (4 template instructions: @include, @contents, @extends and {{ }});
     - XSLT template.
 
 Components:
@@ -47,7 +47,7 @@ MVC микро-PHP-фреймворк.
 - защита от XSS, CSRF атак и SQL инъекций;
 - многоязычность;
 - несложный layout 2-х видов:
-    - PHP шаблонизация c возможностью наследования шаблонов (поддерживаются инструкции: @include, @contents, @extends);
+    - PHP шаблонизация c возможностью наследования шаблонов (поддерживаются инструкции: @include, @contents, @extends и {{ }});
     - XSLT шаблонизация;
 
 Вспомогательные компоненты:
