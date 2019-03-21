@@ -106,11 +106,10 @@ class Container implements ContainerInterface
             throw new ContainerException("Class $className is not instantiable.");
         }
         $variables = $this->_getVariables($className);
-        $dependencies = $this->_getDependencies($reflection);
+        $dependencies = $this->getDependencies($className);
         $parents = class_parents($className);
         foreach ($parents as $parentClassName) {
-            $parentReflection = new ReflectionClass($parentClassName);
-            $parentDependencies = $this->_getDependencies($parentReflection);
+            $parentDependencies = $this->getDependencies($parentClassName);
             $dependencies = array_merge($dependencies, $parentDependencies);
             $parentVariables = $this->_getVariables($parentClassName);
             $variables = array_merge($variables, $parentVariables);
@@ -129,35 +128,37 @@ class Container implements ContainerInterface
      * @return array
      * @throws ContainerException
      */
-    private function _getDependencies($reflection)
+    public function getDependencies($className, $methodName = null)
     {
-        if (
-               !$constructor = $reflection->getConstructor()
-            or $constructor->getDeclaringClass()==$reflection->getParentClass()
-        ) {
-            return array();
+        $dependencies = array();
+        $reflection = new ReflectionClass($className);
+        if (is_null($methodName)) {
+            if (
+                   !$constructor = $reflection->getConstructor()
+                or $constructor->getDeclaringClass()==$reflection->getParentClass()
+            ) {
+                return $dependencies;
+            }
+            $params = $constructor->getParameters();
+        } else {
+            if (!$method = $reflection->getMethod($methodName)) {
+                return $dependencies;
+            }
+            $params = $method->getParameters();
         }
-        $params = $constructor->getParameters();
-        $dependencies = [];
         foreach ($params as $param) {
             if ('params'==$param->getName()) {
                 continue;
             }
             // get the type hinted class
-            if (is_null($dependency = $param->getClass())) {
-                // check if default value for a parameter is available
-                if ($param->isDefaultValueAvailable()) {
-                    // get default value of parameter
-                    $dependencies[] = $param->getDefaultValue();
-                } else {
-                    throw new ContainerException("Can not resolve class dependency {$param->name}");
-                }
-            } else {
+            if (!is_null($dependency = $param->getClass())) {
                 // get dependency resolved
-                $dependencies[] = $this->get($dependency->name);
+                if ($instance = $this->get($dependency->name)) {
+                    $dependencies[] = $instance;
+                }
             }
         }
-        return $dependencies;
+        return array_filter($dependencies);
     }
 
     /**

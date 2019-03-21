@@ -72,11 +72,11 @@ final class Router
         $urlInfo = parse_url($requestUri);
         $requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
-        $this->defaultController = $this->config->get('defaultController') ?: 'app\controllers\IndexController';
+        $this->defaultController = '\app\controllers\\' . ($this->config->get('defaultController') ?: 'Index') . 'Controller';
         // Извлекаем имя контроллера
         $controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController);
         // Извлекаем имя экшна
-        $actionName = $this->_getNameFromRequest($requestArr, 'index');
+        $actionName = $this->_getNameFromRequest($requestArr);
         // разбираем массив параметров
         $requestVars = array_merge_recursive([
             'get' => $_GET,
@@ -101,7 +101,7 @@ final class Router
      * 
      * @return string
      */
-    private function _getNameFromRequest(array &$requestArr, $default): string
+    private function _getNameFromRequest(array &$requestArr, $default = null)
     {
         if (
                 count($requestArr)===0
@@ -161,8 +161,13 @@ final class Router
      */
     private function _startController($controllerName, $actionName, $requestVars)
     {
+        $container = new Container;
         try {
-            $controller = (new Container)->get('\app\controllers\\' . ucfirst($controllerName) . 'Controller');
+            $controllerClassName = '\app\controllers\\' . ucfirst($controllerName) . 'Controller';
+            $controller = $container->get($controllerClassName);
+            if (is_null($actionName) && is_null($actionName = $controller->getDefaultAction())) {
+                $actionName = 'index';
+            }
             if (!method_exists($controller, $actionName)) {
                 throw new BadMethodCallException;
             }
@@ -184,7 +189,11 @@ final class Router
             // Защита от XSS. HTTP Only
             ini_set('session.cookie_httponly', 1);
 
-            $controller->$actionName($requestVars['inline'] ?? null);
+            $actionVars = $container->getDependencies($controllerClassName, $actionName);
+            if (!is_null($requestVars['inline'])) {
+                $actionVars[] = $requestVars['inline'];
+            }
+            $controller->$actionName(...$actionVars);
             $controller->afterAction();
         } catch (ContainerException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));
@@ -193,8 +202,8 @@ final class Router
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
         /*} catch (ErrorException $e) {
-            $this->_error($e->getCode(), $e->getMessage());*/
-        /*} catch (Error $e) {
+            $this->_error($e->getCode(), $e->getMessage());
+        } catch (Error $e) {
             $this->_error($e->getCode(), $e->getMessage());*/
         }
     }

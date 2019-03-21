@@ -12,9 +12,11 @@ use Iterator;
 class Flash
 {
     /** @const Типы сообщений */
+    const FLASH_TYPE_ANY = 'any';
     const FLASH_TYPE_ERROR = 'error';
     const FLASH_TYPE_SUCCESS = 'success';
     const FLASH_TYPES = [
+        self::FLASH_TYPE_ANY,
         self::FLASH_TYPE_ERROR,
         self::FLASH_TYPE_SUCCESS,
     ];
@@ -25,7 +27,7 @@ class Flash
      * @param string $message
      * @param string $type
      */
-    public function setFlash($message, $type)
+    public function setFlash($message, $type = self::FLASH_TYPE_ANY)
     {
         $_SESSION["message_$type"] = $message;
     }
@@ -35,7 +37,7 @@ class Flash
      * 
      * @param string $type
      */
-    public function getFlash($type)
+    public function getFlash($type = self::FLASH_TYPE_ANY)
     {
         if ($message = $_SESSION["message_$type"] ?? null) {
             unset($_SESSION["message_$type"]);

@@ -122,7 +122,7 @@ abstract class Repository
     public function findAll(array $conditions = array(), array $sort = array()): Iterator
     {
         $arrayData = $this->persistence->findAll(array_merge($this->where, $conditions), $sort);
-        $this->where = $this->sortBy = array();
+        //$this->where = $this->sortBy = array();
         foreach ($arrayData as $data) {
             $entity = $this->{$this->entityName}->fromState($data);
             yield $this->collection[$entity->getPk()] = $entity;

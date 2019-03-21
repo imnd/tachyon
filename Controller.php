@@ -36,9 +36,13 @@ class Controller
     protected $id;
     /**
      * id экшна
-     * @var $action string
+     * @var string $action
      */
     protected $action;
+    /**
+     * @var string $defaultAction
+     */
+    protected $defaultAction = 'index';
 
     # Переменные запроса
 
@@ -322,6 +326,14 @@ class Controller
     {
         $this->action = $actionName;
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDefaultAction()
+    {
+        return $this->defaultAction;
     }
 
     /**
