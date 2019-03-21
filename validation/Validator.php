@@ -141,7 +141,6 @@ class Validator
 
     /**
      * Валидация полей модели/сущности
-     * TODO: убрать копипаст
      * 
      * @param mixed $object
      * @param array $attrs массив полей
@@ -160,23 +159,13 @@ class Validator
         foreach ($attrsArray as $fieldName => $fieldValue) {
             // если существует правило валидации для данного поля
             if ($fieldRules = $this->getRules($object, $fieldName)) {
-                if (isset($fieldRules['on'])) {
-                    // если правило не применимо к сценарию
-                    if ($fieldRules['on'] !== $object->scenario) {
-                        continue;
-                    }
-                    // убираем, чтобы не мешалось дальше
-                    unset($fieldRules['on']);
+                if (!$this->_on($fieldRules, $object)) {
+                    continue;
                 }
                 foreach ($fieldRules as $key => $rule) {
                     if (is_array($rule)) {
-                        if (isset($rule['on'])) {
-                            // если правило не применимо к сценарию
-                            if ($rule['on'] !== $object->scenario) {
-                                continue;
-                            }
-                            // убираем, чтобы не мешалось дальше
-                            unset($rule['on']);
+                        if (!$this->_on($rule, $object)) {
+                            continue;
                         }
                         foreach ($rule as $subKey => $subRule) {
                             if ($subRule=='equals') {
@@ -211,9 +200,26 @@ class Validator
     }
 
     /**
+     * @param array $rule
+     * @return boolean
+     */
+    private function _on(&$rule, $object)
+    {
+        if (isset($rule['on'])) {
+            // если правило не применимо к сценарию
+            if ($rule['on'] !== $object->scenario) {
+                return false;
+            }
+            // убираем, чтобы не мешалось дальше
+            unset($rule['on']);
+        }
+        return true;
+    }
+
+    /**
      * @return array
      */
-    public function getErrors($object)
+    public function getErrors()
     {
         return $this->_errors;
     }

@@ -368,7 +368,6 @@ abstract class ActiveRecord extends \tachyon\Model
 
         $retItems = array();
 
-        $modelName = $this->getClassName();
         $modelFieldsKeys = array_flip($this->alias->getAliases($modelFields));
         foreach ($items as $item) {
             /*
@@ -379,7 +378,7 @@ abstract class ActiveRecord extends \tachyon\Model
             // чтобы не перезаписывать данные основной записи в случае JOIN
             if (!array_key_exists($itemPk, $retItems)) {
                 // берём только поля данной модели (без присоединенных ч/з JOIN)
-                $model = (new \tachyon\dic\Container)->get($modelName);
+                $model = (new \tachyon\dic\Container)->get(get_called_class());
                 $model->with($this->with);
                 $model->setAttributes(array_intersect_key($item, $modelFieldsKeys));
                 $model->setAttribute($this->pkName, $itemPk);

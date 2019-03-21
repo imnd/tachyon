@@ -1,6 +1,6 @@
 <?php 
 /** @var tachyon\components\html\FormBuilder $form */
-$html = $form->get('html');
+$html = $form->getHtml();
 ?>
 <?php $this->display('errors', compact('model'))?>
 <div class="form">

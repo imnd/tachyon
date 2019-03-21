@@ -446,7 +446,6 @@ abstract class Db
                 return $this->createConditions($conditions, 'WHERE', "$operator ?", 'AND');
             case 'update':
                 return $this->createConditions($conditions, 'SET', "$operator ?", ',');
-            // TODO: перенести
             case 'insert':
                 return $this->createConditions($conditions, '', '', ',');
             default:
