@@ -1,7 +1,8 @@
 <?php
 namespace tachyon\dic;
 
-use tachyon\helpers\StringHelper,
+use ReflectionClass,
+    tachyon\exceptions\NotFoundException,
     tachyon\exceptions\ContainerException;
 
 /**
@@ -10,18 +11,58 @@ use tachyon\helpers\StringHelper,
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Container
+class Container implements ContainerInterface
 {
-    private static $_initialised = false;
     /**
      * массив инстанциированных компонентов
      */
-    private static $_services = array();
+    private $_services = array();
     /**
      * конфигурация компонентов и их параметров
      * @var $parameters array
      */
-    private static $_config = array();
+    private $_config = array();
+
+    public function __construct()
+    {
+        $this->_loadConfig();
+    }
+
+    /**
+     * Загружаем компоненты и параметры компонентов в массив $_config
+     */
+    private function _loadConfig()
+    {
+        $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
+        $coreConfText = file_get_contents("$basePath/dic/services.json");
+        $elements = json_decode($coreConfText, true);
+        if (
+                file_exists($appConfPath = "$basePath/../../app/config/services.json")
+            and $appConfText = file_get_contents($appConfPath)
+            and $appElements = json_decode($appConfText, true)
+        ) {
+            $elements = array_merge($elements, $appElements);
+        }
+        foreach ($elements as $element) {
+            $class = $element['class'];
+            if (isset($this->_config[$class])) {
+                continue;
+            }
+            $service = [
+                'variables' => array(),
+                'singleton' => !empty($element['singleton']),
+            ];
+            if (isset($element['properties'])) {
+                foreach ($element['properties'] as $property) {
+                    $propName = $property['name'];
+                    if (!empty($property['value'])) {
+                        $service['variables'][$propName] = $property['value'];
+                    }
+                }
+            }
+            $this->_config[$class] = $service;
+        }
+    }
 
     /**
      * Создает экземпляр сервиса
@@ -31,79 +72,23 @@ class Container
      * @param array $params динамически назначаемые параметры
      * @return mixed
      */
-    public static function getInstanceOf($name, $owner = null, array $params = array())
+    public function get($className, array $params = array())
     {
-        if (!self::$_initialised) {
-            self::_loadConfig();
-            self::$_initialised = true;
-        }
-        if (!isset(self::$_config[$name])) {
-            throw new ContainerException(self::getInstanceOf('Message')->i18n('Class did not found in config file.'));
-        }
-        $config = self::$_config[$name];
-
-        $config['variables']['owner'] = $owner;
-        if (!empty($config['singleton'])) {
-            if (!isset(self::$_services[$name])) {
-                self::$_services[$name] = self::_createService($config, $params);
+        if (
+                $config = $this->_getVariables($className)
+            and !empty($config['singleton'])
+        ) {
+            if (!isset($this->_services[$className])) {
+                $this->_services[$className] = $this->resolve($className, $params);
             }
-            return self::$_services[$name];
+            return $this->_services[$className];
         }
-        return self::_createService($config, $params);
+        return $this->resolve($className, $params);
     }
 
-    /**
-     * Загружаем компоненты и параметры компонентов в массив $_config
-     */
-    private static function _loadConfig()
+    public function has($id)
     {
-        $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-        $coreConfText = file_get_contents("$basePath/dic/services.json");
-        $elements = json_decode($coreConfText, true);
-        if (
-                file_exists($appConfPath = "$basePath/../../app/dic/services.json")
-            and $appConfText = file_get_contents($appConfPath)
-            and $appElements = json_decode($appConfText, true)
-        ) {
-            $elements = array_merge($elements, $appElements);
-        }
-        foreach ($elements as $element) {
-            $id = $element['id'];
-            if (isset(self::$_config[$id])) {
-                continue;
-            }
-            $service = [
-                'class' => $element['class'],
-                'services' => array(),
-                'variables' => array(),
-                'singleton' => (isset($element['singleton']) && 'true' === $element['singleton']),
-            ];
-            if (isset($element['properties'])) {
-                foreach ($element['properties'] as $property) {
-                    $propName = $property['name'];
-                    if (isset($property['ref'])) {
-                        $subService = [
-                            'id' => $property['ref'],
-                            'variables' => array(),
-                        ];
-                        if (isset($property['properties'])) {
-                            foreach ($property['properties'] as $subProperty) {
-                                $value = $subProperty['value'];
-                                if (strpos($value, '[')!==false) {
-                                    $value = str_replace(array('[', ']'), '', $value);
-                                    $value = explode(',', $value);
-                                }
-                                $subService['variables'][$subProperty['name']] = $value;
-                            }
-                        }
-                        $service['services'][$propName] = $subService;
-                    } elseif ($val = $property['value']) {
-                        $service['variables'][$propName] = $val;
-                    }
-                }
-            }
-            self::$_config[$id] = $service;
-        }
+        return isset($this->_services[$name]);
     }
 
     /**
@@ -114,31 +99,79 @@ class Container
      * @return void
      * @throws ContainerException
      */
-    private static function _createService(array $config, array $params = array())
+    private function resolve(string $className, array $params = array())
     {
-        if (!$className = self::_getConfigParam($config, 'class')) {
-            throw new ContainerException(self::getInstanceOf('Message')->i18n('Class did not found in config file.'));
+        $reflection = new ReflectionClass($className);
+        if (!$reflection->isInstantiable()) {
+            throw new ContainerException("Class $className is not instantiable.");
         }
-        $service = new $className($params);
-
-        self::_setProperties($service, $config);
-
-        $parents = class_parents($service);
+        $variables = $this->_getVariables($className);
+        $dependencies = $this->_getDependencies($reflection);
+        $parents = class_parents($className);
         foreach ($parents as $parentClassName) {
-            $id = StringHelper::getShortClassName($parentClassName);
-            if (!isset(self::$_config[$id])) {
+            $parentReflection = new ReflectionClass($parentClassName);
+            $parentDependencies = $this->_getDependencies($parentReflection);
+            $dependencies = array_merge($dependencies, $parentDependencies);
+            $parentVariables = $this->_getVariables($parentClassName);
+            $variables = array_merge($variables, $parentVariables);
+        }
+
+        $service = empty($dependencies) ? $reflection->newInstance() : $reflection->newInstanceArgs($dependencies);
+        
+        $this->_setVariables($service, array_merge($variables, $params));
+
+        return $service;
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return array
+     * @throws ContainerException
+     */
+    private function _getDependencies($reflection)
+    {
+        if (
+               !$constructor = $reflection->getConstructor()
+            or $constructor->getDeclaringClass()==$reflection->getParentClass()
+        ) {
+            return array();
+        }
+        $params = $constructor->getParameters();
+        $dependencies = [];
+        foreach ($params as $param) {
+            if ('params'==$param->getName()) {
                 continue;
             }
-            $parentConfig = self::$_config[$id];
-            if (isset($config['owner'])) {
-                $parentConfig['variables']['owner'] = $config['owner'];
+            // get the type hinted class
+            if (is_null($dependency = $param->getClass())) {
+                // check if default value for a parameter is available
+                if ($param->isDefaultValueAvailable()) {
+                    // get default value of parameter
+                    $dependencies[] = $param->getDefaultValue();
+                } else {
+                    throw new ContainerException("Can not resolve class dependency {$param->name}");
+                }
+            } else {
+                // get dependency resolved
+                $dependencies[] = $this->get($dependency->name);
             }
-            self::_setProperties($service, $parentConfig);
         }
-        if (method_exists($service, 'initialize')) {
-            $service->initialize();
+        return $dependencies;
+    }
+
+    /**
+     * Извлечение конфигурации по полному имени класса
+     * 
+     * @param string $className
+     * @return array
+     */
+    private function _getVariables($className)
+    {
+        if (isset($this->_config[$className])) {
+            return $this->_config[$className];
         }
-        return $service;
+        return array();
     }
 
     /**
@@ -147,66 +180,18 @@ class Container
      * @param string $name
      * @return void
      */
-    private static function _setProperties($service, $config)
+    private function _setVariables($service, $config)
     {
-        if ($variables = self::_getConfigParam($config, 'variables')) {
-            foreach ($variables as $name => $val) {
-                self::_setProperty($service, $name, $val);
+        if (empty($config)) {
+            return;
+        }
+        if (!empty($config['variables'])) {
+            foreach ($config['variables'] as $name => $val) {
+                // Устанавливает св-во объекта $service
+                if (array_key_exists($name, get_object_vars($service))) {
+                    $service->$name = $val;
+                }
             }
         }
-        if ($subServices = self::_getConfigParam($config, 'services')) {
-            foreach ($subServices as $name => $subServiceConf) {
-                $subServConfig = self::$_config[$subServiceConf['id']];
-                $subServConfig['variables'] = array_merge($subServConfig['variables'], $subServiceConf['variables']);
-                $subServConfig['variables']['owner'] = $service;
-                $subService = self::_createService($subServConfig);
-                self::_setProperty($service, $name, $subService);
-            }
-        }
-    }
-
-    /**
-     * Устанавливает св-во объекта $service
-     * 
-     * @param mixed $service
-     * @param string $name
-     * @param mixed $val
-     * @return void
-     * @throws ContainerException
-     */
-    private static function _setProperty($service, $name, $val)
-    {
-        try {
-            if (array_key_exists($name, get_object_vars($service))) {
-                $service->$name = $val;
-                return;
-            }
-            $setterMethod = 'set' . ucfirst($name);
-            if (method_exists($service, $setterMethod)) {
-                $service->$setterMethod($val);
-                return;
-            }
-            if ($name!=='owner') {
-                throw new ContainerException(self::getInstanceOf('Message')->i18n('Unable to set property %property to service %service.', [
-                    'property' => $name,
-                    'service' => get_class($service),
-                ]));
-            }
-        } catch (ContainerException $e) {
-            echo $e->getMessage();
-            die;
-        }
-    }
-
-    private static function _getConfigParam($config, $param)
-    {
-        if (isset($config[$param])) {
-            return $config[$param];
-        }
-    }
-
-    private static function _setConfigParam(&$config, $param, $val)
-    {
-        $config[$param] = $val;
     }
 }

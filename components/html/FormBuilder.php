@@ -1,19 +1,39 @@
 <?php
 namespace tachyon\components\html;
 
+use tachyon\Config,
+    tachyon\components\AssetManager,
+    tachyon\components\html\Html,
+    tachyon\View,
+    tachyon\components\Csrf;
+
 /**
  * Построитель форм
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2010 IMND
  */
-class FormBuilder extends \tachyon\Component
+class FormBuilder
 {
-    # сеттеры DIC
-    use \tachyon\dic\AssetManager,
-        \tachyon\dic\Html,
-        \tachyon\dic\Csrf,
-        \tachyon\dic\View;
+    use \tachyon\traits\ClassName;
+
+    /**
+     * @var tachyon\components\AssetManager $assetManager
+     */
+    protected $assetManager;
+    /**
+     * Компонент построителя html-кода
+     * @var tachyon\components\html\Html $html
+     */
+    protected $html;
+    /**
+     * @var tachyon\components\Csrf $csrf
+     */
+    protected $csrf;
+    /**
+     * @var tachyon\View $view
+     */
+    protected $view;
 
     /**
      * включать ли компонент защиты от csrf-атак
@@ -27,7 +47,7 @@ class FormBuilder extends \tachyon\Component
         // сабмитить или посылать ajax-запрос
         'ajax' => false,
         // путь к шаблону
-        'viewPath' => '../vendor/tachyon/components/html/tpl/',
+        'viewsPath' => '../vendor/tachyon/components/html/tpl/',
         // имя файла шаблона
         'view' => 'form',
         // id по умолчанию
@@ -65,16 +85,22 @@ class FormBuilder extends \tachyon\Component
     private $_dateFieldNames = array();
 
     /**
-     * __construct
-     * Инициализация
-     * 
-     * @param $options array 
+     * @param Config $config
+     * @param AssetManager $assetManager
+     * @param Html $html
+     * @param Csrf $csrf
+     * @param View $view
      */
-    public function __construct($options=array())
+    public function __construct(Config $config, AssetManager $assetManager, Html $html, Csrf $csrf, View $view)
     {
-        $this->_csrfCheck = $this->get('config')->get('csrf_check');
+        $this->assetManager = $assetManager;
+        $this->html = $html;
+        $this->csrf = $csrf;
+        $this->view = $view;
+
+        $this->_csrfCheck = $config->get('csrf_check');
         // текстовые
-        $this->_options['text'] = $this->_options['text'][$this->get('config')->get('lang')];
+        $this->_options['text'] = $this->_options['text'][$config->get('lang')];
     }
 
     /**
@@ -83,7 +109,7 @@ class FormBuilder extends \tachyon\Component
      * 
      * @param $params array 
      */
-    public function build($params=array())
+    public function build($params = array())
     {
         // Custom опции
         $options = isset($params['options']) ? $params['options'] : array();
@@ -99,7 +125,7 @@ class FormBuilder extends \tachyon\Component
         // генерируем для каждой формы уникальный id и уникальный name если он не задан в $options
         $this->_options['attrs']['id'] = $this->_options['attrs']['name'] = $this->_options['defId'] . '_frm_' . $this->_formCnt++;
         // инициализируем путь для отображения
-        $this->view->setViewsPath($this->_options['viewPath']);
+        $this->view->setViewsPath($this->_options['viewsPath']);
 
         $formId = $this->_options['attrs']['id']; // для удобства записи
         $requiredFields = false;
@@ -222,7 +248,7 @@ class FormBuilder extends \tachyon\Component
         // включаем дэйтпикеры
         if (!empty($this->_dateFieldNames)) {
             $this->view->widget([
-                'class' => 'Datepicker',
+                'class' => 'tachyon\components\widgets\Datepicker',
                 'controller' => $this,
                 'fieldNames' => $this->_dateFieldNames,
             ]);
@@ -263,5 +289,13 @@ class FormBuilder extends \tachyon\Component
     public function getCsrfCheck()
     {
         return $this->_csrfCheck;
+    }
+
+    /**
+     * @return Html
+     */
+    public function getHtml()
+    {
+        return $this->html;
     }
 }

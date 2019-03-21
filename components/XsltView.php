@@ -1,6 +1,9 @@
 <?php
 namespace tachyon\components;
 
+use DOMDocument,
+    XSLTProcessor;
+
 /**
  * Компонент отображения на основе XSLT шаблонизации
  * 
@@ -9,9 +12,26 @@ namespace tachyon\components;
  */
 class XsltView extends View
 {
-    use \tachyon\dic\DomDocument,
-        \tachyon\dic\XSLTProcessor;
+    /**
+     * @var DOMDocument $domDocument
+     */
+    protected $domDocument;
+    /**
+     * @var XSLTProcessor $xsltProcessor
+     */
+    protected $xsltProcessor;
 
+    /**
+     * @param boolean string integer array mixed 
+     */
+    public function __construct(DOMDocument $domDocument, XSLTProcessor $xsltProcessor, ...$params)
+    {
+        $this->domDocument = $domDocument;
+        $this->xsltProcessor = $xsltProcessor;
+
+        parent::__construct(...$params);
+    }
+    
     /**
      * Отображает файл представления 
      * передавая ему параметря в виде массива
@@ -62,10 +82,8 @@ class XsltView extends View
     private function _xsltTransform($xml, $tpl)
     {
         $this->domDocument->load("{$this->viewsPath}/$tpl.xsl");
-        $proc = $this->xsltProcessor;
-        $proc->importStylesheet($this->domDocument);
-        $doc = $this->get('Dom');
-        $doc->loadXML($xml);
-        return $proc->transformToXML($doc);
+        $this->xsltProcessor->importStylesheet($this->domDocument);
+        $this->domDocument->loadXML($xml);
+        return $this->xsltProcessor->transformToXML($this->domDocument);
     }
 }

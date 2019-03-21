@@ -1,16 +1,25 @@
 <?php
 namespace tachyon\components\html;
 
+use tachyon\Config;
+
 /**
  * Построитель html-кода
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Html extends \tachyon\Component
+class Html
 {
-    # сеттеры DIC
-    use \tachyon\dic\View;
+    /**
+     * @var tachyon\Config $config
+     */
+    protected $config;
+
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
 
     public function div($options=array(), $type='dual')
     {
@@ -272,9 +281,9 @@ class Html extends \tachyon\Component
         
         if (!empty($options['template'])) {
             // инициализируем путь для отображения
-            $this->view->setViewsPath($this->get('config')->get('base_path') . '/tachyon/components/html/tpl');
+            $this->owner->setViewsPath($this->config->get('base_path') . '/tachyon/components/html/tpl');
             $model = $options['model'];
-            return $this->view->display($options['template'], compact('output', 'attrs', 'model'), true);
+            return $this->owner->display($options['template'], compact('output', 'attrs', 'model'), true);
         }
         return $output;
     }

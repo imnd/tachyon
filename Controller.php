@@ -2,7 +2,14 @@
 namespace tachyon;
 
 use BadMethodCallException,
-    tachyon\exceptions\HttpException;
+    tachyon\exceptions\HttpException,
+
+    tachyon\components\Cookie,
+    tachyon\components\Csrf,
+    tachyon\components\Lang,
+    tachyon\components\Message,
+    tachyon\View
+;
 
 /**
  * Базовый класс для всех контроллеров
@@ -10,15 +17,8 @@ use BadMethodCallException,
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Controller extends Component
+class Controller
 {
-    # сеттеры DIC
-    use \tachyon\dic\Cookie,
-        \tachyon\dic\Message,
-        \tachyon\dic\Lang,
-        \tachyon\dic\View,
-        \tachyon\dic\Csrf;
-
     /**
      * Язык сайта
      * @var $language string
@@ -61,6 +61,39 @@ class Controller extends Component
      * @var array $protectedActions
      */
     protected $protectedActions = array();
+
+    /**
+     * @var tachyon\components\Message $msg
+     */
+    protected $msg;
+    /**
+     * @var tachyon\components\Cookie $cookie
+     */
+    protected $cookie;
+    /**
+     * @var tachyon\components\Lang $lang
+     */
+    protected $lang;
+    /**
+     * @var tachyon\View $view
+     */
+    protected $view;
+    /**
+     * @var tachyon\components\Csrf $csrf
+     */
+    protected $csrf;
+
+    /**
+     * @return void
+     */
+    public function __construct(Message $msg, Cookie $cookie, Lang $lang, View $view, Csrf $csrf)
+    {
+        $this->msg = $msg;
+        $this->cookie = $cookie;
+        $this->lang = $lang;
+        $this->view = $view;
+        $this->csrf = $csrf;
+    }
 
     /**
      * Инициализация

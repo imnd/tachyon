@@ -1,6 +1,13 @@
 <?php
 namespace tachyon;
 
+use tachyon\dic\Container,
+    tachyon\Config,
+    tachyon\components\AssetManager,
+    tachyon\components\Message,
+    tachyon\components\html\Html,
+    tachyon\components\Flash;
+
 /**
  * class View
  * Компонент отображения
@@ -8,12 +15,10 @@ namespace tachyon;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class View extends Component
+class View
 {
-    # сеттеры DIC
-    use \tachyon\dic\AssetManager,
-        \tachyon\dic\Message,
-        \tachyon\dic\Html;
+    use \tachyon\traits\HasOwner;
+    use \tachyon\traits\HasProperties;
 
     /**
      * Контроллер, вызывающий вью
@@ -47,12 +52,38 @@ class View extends Component
     protected $pageTitle;
 
     /**
-     * Инициализация
+     * @var tachyon\Config $config
+     */
+    protected $config;
+    /**
+     * @var \tachyon\components\AssetManager $assetManager
+     */
+    protected $assetManager;
+    /**
+     * @var \tachyon\components\Message $msg
+     */
+    protected $msg;
+    /**
+     * Компонент построителя html-кода
+     * @var \tachyon\components\html\Html $html
+     */
+    protected $html;
+    /**
+     * @var tachyon\components\Flash
+     */
+    protected $flash;
+
+    /**
      * @return void
      */
-    public function __construct()
+    public function __construct(Config $config, AssetManager $assetManager, Message $msg, Html $html, Flash $flash)
     {
-        $this->appViewsPath = $this->viewsPath = $this->get('config')->get('base_path') . '/../app/views';
+        $this->config = $config;
+        $this->appViewsPath = $this->viewsPath = $this->config->get('base_path') . '/../app/views';
+        $this->assetManager = $assetManager;
+        $this->msg = $msg;
+        $this->html = $html;
+        $this->flash = $flash;
     }
 
     /**
@@ -81,11 +112,11 @@ class View extends Component
      * @param $vars array 
      * @return void
      */
-    public function layout($viewPath, array $vars=array())
+    public function layout($viewsPath, array $vars=array())
     {
         $this->layoutPath = "{$this->appViewsPath}/layouts";
 
-        echo $this->_displayLayout($this->display($viewPath, $vars, true), $vars);
+        echo $this->_displayLayout($this->display($viewsPath, $vars, true), $vars);
     }
 
     private function _displayLayout($viewContents, $vars)
@@ -156,7 +187,7 @@ class View extends Component
 
         $buffer = file_get_contents($filePath);
         if (false!==strpos($buffer, '{{')) {
-            $tempViewFilePath = "{$_SERVER["DOCUMENT_ROOT"]}/../runtime/templates/" . md5($filePath) . ".php";
+            $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
             if (
                    // в debug mode скомпиленные шаблоны переписываются всегда
                    $this->config->get('mode')!=='production'
@@ -166,7 +197,7 @@ class View extends Component
                     $start = $echoPos + 2;
                     $end = strpos($buffer, '}}', $start);
                     $text = substr($buffer, $start, $end - $start);
-                    $buffer = substr($buffer, 0, $echoPos) . '<?=$this->escape(' . $text . ')?>' . substr($buffer, $end + 2);
+                    $buffer = substr($buffer, 0, $echoPos) . '<?=trim($this->escape(' . $text . '))?>' . substr($buffer, $end + 2);
                 }
                 file_put_contents($tempViewFilePath, $buffer);
             }
@@ -210,9 +241,10 @@ class View extends Component
     {
         $class = $params['class'];
         unset($params['class']);
-        $widget = $this->get($class);
+        $widget = (new Container)->get($class);
         $widget->setVariables($params);
-        $controller = is_null($this->controller) ? $params['controller'] : $this->controller;
+        $widget->setOwner($this);
+        $controller = $this->controller ?: $params['controller'];
         $widget->setController($controller);
         return $widget->run();
     }

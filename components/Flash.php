@@ -1,22 +1,22 @@
 <?php
-namespace tachyon\helpers;
+namespace tachyon\components;
 
 use Iterator;
 
 /**
- * Класс для создания и отображения флэш сообщений
+ * Методы для создания и отображения флэш сообщений
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-class FlashHelper
+class Flash
 {
     /** @const Типы сообщений */
-    const TYPE_ERROR = 'error';
-    const TYPE_SUCCESS = 'success';
-    const TYPES = [
-        self::TYPE_ERROR,
-        self::TYPE_SUCCESS,
+    const FLASH_TYPE_ERROR = 'error';
+    const FLASH_TYPE_SUCCESS = 'success';
+    const FLASH_TYPES = [
+        self::FLASH_TYPE_ERROR,
+        self::FLASH_TYPE_SUCCESS,
     ];
 
     /**
@@ -25,7 +25,7 @@ class FlashHelper
      * @param string $message
      * @param string $type
      */
-    public static function set($message, $type)
+    public function setFlash($message, $type)
     {
         $_SESSION["message_$type"] = $message;
     }
@@ -35,7 +35,7 @@ class FlashHelper
      * 
      * @param string $type
      */
-    public static function get($type)
+    public function getFlash($type)
     {
         if ($message = $_SESSION["message_$type"] ?? null) {
             unset($_SESSION["message_$type"]);
@@ -48,10 +48,10 @@ class FlashHelper
      * 
      * @return array
      */
-    public static function getAll(): Iterator
+    public function getAllFlashes(): Iterator
     {
-        foreach (self::TYPES as $type) {
-            if ($message = self::get($type)) {
+        foreach (self::FLASH_TYPES as $type) {
+            if ($message = $this->getFlash($type)) {
                 yield $type => $message;
             }
         }

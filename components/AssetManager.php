@@ -2,11 +2,10 @@
 namespace tachyon\components;
 
 /**
- * class AssetManager
  * Работа с JS скриптами
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2019 IMND
  */
 class AssetManager
 {

@@ -1,13 +1,16 @@
 <?php
 namespace tachyon\cache;
 
+use ReflectionClass,
+    tachyon\Config;
+
 /**
  * кеширование
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-abstract class Cache extends \tachyon\Component
+abstract class Cache
 {
     protected $duration = 60;
     protected $cacheFolder = '../runtime/cache/';
@@ -20,17 +23,19 @@ abstract class Cache extends \tachyon\Component
      * Инициализация
      * @return void
      */
-    public function __construct()
+    public function __construct(Config $config)
     {
-        $type = strtolower($this->getClassName());
-        $cache = $this->get('config')->get('cache');
-        if ($this->get('config')->get('mode')!=='production' || !isset($cache[$type]))
+        $type = strtolower((new ReflectionClass($this))->getShortName());
+        $cache = $config->get('cache');
+        if ($config->get('mode')!=='production' || !isset($cache[$type])) {
             return;
-
+        }
         $options = $cache[$type];
-        foreach ($options as $key => $value)
-            if (property_exists($type, $key))
+        foreach ($options as $key => $value) {
+            if (property_exists($type, $key)) {
                 $this->$key = $value;
+            }
+        }
     }
 
     /**

@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\db\activeRecord;
 
+use tachyon\db\activeRecord\Join;
+
 /**
  * class HasoneRelation
  * Класс реализующий связь "имеет один" между моделями
@@ -10,6 +12,16 @@ namespace tachyon\db\activeRecord;
  */
 class HasoneRelation extends Relation
 {
+    /**
+     * @var \tachyon\db\activeRecord\Join $join
+     */
+    protected $join;
+
+    public function __construct(Join $join)
+    {
+        $this->join = $join;
+    }
+
     public function joinWith($owner)
     {
         if (is_array($this->linkKey)) {
@@ -19,7 +31,7 @@ class HasoneRelation extends Relation
             $thisTableLinkKey = $this->pkName;
             $joinTableLinkKey = $this->linkKey;
         }
-        $this->get('join')->leftJoin("{$this->tableName} AS {$this->tableAlias}", "{$this->tableAlias}.$thisTableLinkKey={$owner->getTableName()}.$joinTableLinkKey", $this->getTableAlias(), $owner);
+        $this->join->leftJoin("{$this->tableName} AS {$this->tableAlias}", "{$this->tableAlias}.$thisTableLinkKey={$owner->getTableName()}.$joinTableLinkKey", $this->getTableAlias(), $owner);
     }
 
     public function attachWithObject($retItem, $with)

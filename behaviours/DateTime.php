@@ -1,13 +1,15 @@
 <?php
 namespace tachyon\behaviours;
 
+use tachyon\components\Lang;
+
 /**
  * Содержит полезные функции для работы с датой и временем
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class DateTime extends \tachyon\Component
+class DateTime
 {
     private $_months = ['ru' => [
         'short' => [
@@ -19,6 +21,16 @@ class DateTime extends \tachyon\Component
             'gen' => array('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря')
         ]
     ]];
+
+    /**
+     * @var tachyon\components\Lang
+     */
+    protected $lang;
+
+    public function __construct(Lang $lang)
+    {
+        $this->lang = $lang;
+    }
 
     /**
      * @param $glue string
@@ -34,7 +46,7 @@ class DateTime extends \tachyon\Component
         $dateArr = array_reverse($dateArr);
 
         if ($mode==='long') {
-            $dateArr[1] = $this->_months[$this->get('lang')->getLanguage()]['long']['gen'][(int)$dateArr[1] - 1];
+            $dateArr[1] = $this->_months[$this->lang->getLanguage()]['long']['gen'][(int)$dateArr[1] - 1];
         }
 
         return implode($glue, $dateArr) . ' г.';

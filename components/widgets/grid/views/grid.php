@@ -1,6 +1,6 @@
 <?php
 /**
- * @var \tachyon\components\widgets\Widget $widget
+ * @var tachyon\components\widgets\Widget $widget
  * @throws ErrorException
  */
 
@@ -82,14 +82,14 @@ if (empty($items)) {?>
     <?php }?>
     </tbody>
 </table>
-<?php }?>
+<?php }
 
-<?php $this->display('_btnHandler', compact('buttons', 'items', 'csrfJson', 'widget'))?>
+$this->display('_btnHandler', compact('buttons', 'items', 'csrfJson', 'widget'));
 
-<?=
-$this->assetManager->coreJs('ajax'),
-$this->owner->js('sort'),
-$this->owner->css('style')
+echo
+    $this->assetManager->coreJs('ajax'),
+    $this->owner->js('sort'),
+    $this->owner->css('style')
 ?>
 
 <script>

@@ -1,5 +1,7 @@
 <?php
-namespace tachyon\behaviours;
+namespace tachyon\traits;
+
+use tachyon\dic\Container;
 
 /**
  * Содержит полезные функции для работы со списками
@@ -7,28 +9,17 @@ namespace tachyon\behaviours;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class ListBehaviour extends \tachyon\Component
+trait ListTrait
 {
     /**
-     * Поле модели, которое попадает в подпись элемента селекта
-     * @var $valueField string | array
+     * Список для select`а из массива строк таблицы $items
+     * @return array
      */
-    protected $valueField = 'value';
-    /**
-     * В случае, если $valueField - массив это строка, склеивающая возвращаемые значения
-     * @var $valsGlue string
-     */
-    protected $valsGlue = ', ';
-    /**
-     * Поле первичного ключа модели
-     * @var $pkField integer
-     */
-    protected $pkField = 'id';
-    /**
-     * Пустое значение в начале списка для селекта. Равно false если выводить не надо.
-     * @var $pkField integer | boolean
-     */
-    protected $emptyVal = '...';
+    public static function getAllSelectList()
+    {
+        $model = (new Container)->get(get_called_class());
+        return $model->getSelectList($model->findAllScalar());
+    }
 
     /**
      * Список для select`а из массива строк таблицы $items
@@ -66,7 +57,7 @@ class ListBehaviour extends \tachyon\Component
     public function getSelectListFromArr($array, $keyIndexed=false, $emptyVal='...')
     {
         if (is_array($this->valueField)) {
-            throw new \ErrorException($this->msg->i18n('Method ListBehaviour::getSelectListFromArr is not work if valueField is an array.'));
+            throw new \ErrorException($this->msg->i18n('Method ListTrait::getSelectListFromArr is not work if valueField is an array.'));
         }
         $items = array();
         foreach ($array as $key => $value) {

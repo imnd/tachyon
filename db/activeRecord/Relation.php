@@ -1,6 +1,9 @@
 <?php
 namespace tachyon\db\activeRecord;
 
+use tachyon\components\Message,
+    tachyon\db\Alias;
+
 /**
  * class Relation
  * Класс реализующий связи между моделями
@@ -8,10 +11,16 @@ namespace tachyon\db\activeRecord;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-abstract class Relation extends \tachyon\Component
+abstract class Relation
 {
-    use \tachyon\dic\Join,
-        \tachyon\dic\Alias;
+    /**
+     * @var tachyon\components\Message $msg
+     */
+    protected $msg;
+    /**
+     * @var \tachyon\db\Alias $Alias
+     */
+    protected $alias;
 
     protected $tableName;
     protected $fields;
@@ -25,17 +34,20 @@ abstract class Relation extends \tachyon\Component
     protected $linkKey;
     protected $relationKeys;
     
-    public function __construct(array $params = array())
+    public function __construct(Message $msg, Alias $alias, array $params = array())
     {
+        $this->msg = $msg;
+        $this->alias = $alias;
+
         $this->modelName = $params['modelName'];
-        $model = $this->get($this->modelName);
+        $model = (new \tachyon\dic\Container)->get($this->modelName);
         $this->tableName = $model::getTableName();
         $this->pkName = $model->getPkName();
         $this->linkKey = $params['linkKey'];
         $this->aliasSuffix = "_{$params['type']}";
         $this->tableAlias = $this->tableName . $this->aliasSuffix;
-        $this->relationKeys = $this->get('alias')->appendSuffixToKeys(array_flip($params['relationKeys']), $this->aliasSuffix);
-        $this->fields = $this->get('alias')->aliasFields($params['relationKeys'], $this->tableName, $this->aliasSuffix);
+        $this->relationKeys = $this->alias->appendSuffixToKeys(array_flip($params['relationKeys']), $this->aliasSuffix);
+        $this->fields = $this->alias->aliasFields($params['relationKeys'], $this->tableName, $this->aliasSuffix);
     }
 
     /**
@@ -45,7 +57,7 @@ abstract class Relation extends \tachyon\Component
      */
     public function trimSuffixes($with='')
     {
-        $this->values = $this->get('alias')->trimSuffixes($this->values, $this->aliasSuffix, $with);
+        $this->values = $this->alias->trimSuffixes($this->values, $this->aliasSuffix, $with);
     }
     
     /**

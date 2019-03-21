@@ -7,7 +7,7 @@ namespace tachyon\db;
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-class Terms extends \tachyon\Component
+class Terms
 {
     /**
      * Устанавливает условие больше чем

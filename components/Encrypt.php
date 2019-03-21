@@ -7,7 +7,7 @@ namespace tachyon\components;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Encrypt extends \tachyon\Component
+class Encrypt
 {
     /**
      * алгоритм для шифровки пароля

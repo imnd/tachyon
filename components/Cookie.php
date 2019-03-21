@@ -1,7 +1,8 @@
 <?php
 namespace tachyon\components;
 
-use tachyon\helpers\ArrayHelper;
+use tachyon\helpers\ArrayHelper,
+    tachyon\Config;
 
 /**
  * Инкапсулирует работу с cookie
@@ -9,8 +10,13 @@ use tachyon\helpers\ArrayHelper;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Cookie extends \tachyon\Component
+class Cookie
 {
+    /**
+     * @var tachyon\Config $config
+     */
+    protected $config;
+
     /**
      * Время жизни куки дней
      * @var integer $duration
@@ -22,6 +28,14 @@ class Cookie extends \tachyon\Component
      */
     private $secure = false;
 
+    /**
+     * @return void
+     */
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
+
     public function getCookie($key)
     {
         return $_COOKIE[$key] ?? null;
@@ -29,7 +43,7 @@ class Cookie extends \tachyon\Component
     
     public function setCookie($key, $val, $path = '/')
     {
-        setcookie($key, ArrayHelper::filterText($val), time() + 30 * 24 * 60 * $this->duration, $path, $this->config->get('domain') ?? "", $this->secure, true);
+        setcookie($key, ArrayHelper::filterText($val), time() + 30 * 24 * 60 * $this->duration, $path, $this->config->get('domain') ?? '', $this->secure, true);
     }
 
     public function deleteCookie($key, $path = '/')

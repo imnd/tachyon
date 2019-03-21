@@ -1,30 +1,33 @@
 <?php
 namespace tachyon\components;
 
+use tachyon\Config,
+    tachyon\components\Cookie;
+
 /**
- * class Lang
  * Класс работы с языковыми настройками
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Lang extends \tachyon\Component
+class Lang
 {
-    private $_lang;
+    /**
+     * @var tachyon\Config $config
+     */
+    protected $config;
+    /**
+     * @var tachyon\components\Cookie $cookie
+     */
+    protected $cookie;
 
     /**
-     * Инициализация
      * @return void
      */
-    public function __construct()
+    public function __construct(Config $config, Cookie $cookie)
     {
-        $cookieService = $this->get('cookie');
-        // установка и текущего языка из cookie
-        if (!$lang = $cookieService->getCookie('lang')) {
-            $lang = $this->get('config')->get('lang');
-            $cookieService->setCookie('lang', $lang);
-        }
-        $this->_lang = $lang;
+        $this->config = $config;
+        $this->cookie = $cookie;
     }
 
     /**
@@ -32,6 +35,11 @@ class Lang extends \tachyon\Component
      */
     public function getLanguage()
     {
-        return $this->_lang;
+        // установка и текущего языка из cookie
+        if (!$lang = $this->cookie->getCookie('lang')) {
+            $lang = $this->config->get('lang');
+            $this->cookie->setCookie('lang', $lang);
+        }
+        return $lang;
     }
 }

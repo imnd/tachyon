@@ -5,8 +5,10 @@ namespace tachyon\db\activeRecord;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Join extends \tachyon\Component
+class Join
 {
+    use \tachyon\traits\HasOwner;
+
     public function innerJoin($join, $on, $alias)
     {
         $this->setJoin($join, $on, 'INNER', $alias);

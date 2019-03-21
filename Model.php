@@ -1,17 +1,19 @@
 <?php
 namespace tachyon;
 
+use tachyon\validation\ValidationInterface,
+    tachyon\validation\Validator,
+    tachyon\components\Lang;
+
 /**
  * Базовый класс для всех моделей
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-abstract class Model extends \tachyon\Component
+abstract class Model implements ValidationInterface
 {
-    # сеттеры DIC
-    use \tachyon\dic\Validator,
-        \tachyon\dic\Lang;
+    use \tachyon\traits\ClassName;
 
     /**
      * массив [поле => значение]
@@ -40,6 +42,24 @@ abstract class Model extends \tachyon\Component
      * ошибки валидации
      */
     protected $errors = array();
+
+    /**
+     * @var tachyon\components\Lang $lang
+     */
+    protected $lang;
+    /**
+     * @var tachyon\validation\Validator $validator
+     */
+    protected $validator;
+
+    /**
+     * @return void
+     */
+    public function __construct(Lang $lang, Validator $validator)
+    {
+        $this->lang = $lang;
+        $this->validator = $validator;
+    }
 
     public function __get($var)
     {
@@ -146,15 +166,14 @@ abstract class Model extends \tachyon\Component
         }
     }
 
-    /************
-    *           *
-    * ВАЛИДАЦИЯ *
-    *           *
-    ************/
+    /*************
+    *            *
+    * VALIDATION *
+    *            *
+    *************/
 
     /**
-     * attachAttributes
-     * присваивание аттрибутов модели с учетом правил валидации
+     * Присваивание аттрибутов модели с учетом правил валидации
      * 
      * @param $arr array
      * @param $useModelName boolean
@@ -195,8 +214,8 @@ abstract class Model extends \tachyon\Component
      */
     public function validate(array $attrs=null)
     {
-        $this->errors = $this->validator->validate($this, $attrs);
-        return empty($this->errors);
+        $errors = $this->validator->validate($this, $attrs);
+        return empty($errors);
     }
 
     public function getRules($fieldName)
@@ -223,7 +242,7 @@ abstract class Model extends \tachyon\Component
      */
     public function getErrors()
     {
-        return $this->errors;
+        return $this->validator->getErrors();
     }
 
     /**
@@ -234,8 +253,9 @@ abstract class Model extends \tachyon\Component
      */
     public function getError($attr)
     {
-        if (!empty($this->errors) && !empty($this->errors[$attr])) {
-            return implode(' ', $this->errors[$attr]);
+        $errors = $this->validator->getErrors();
+        if (!empty($errors) && !empty($errors[$attr])) {
+            return implode(' ', $errors[$attr]);
         }
     }
 
@@ -243,34 +263,20 @@ abstract class Model extends \tachyon\Component
      * добавляет ошибку к списку ошибок
      * 
      * @param string $attr
-     * @param string $err
+     * @param string $message
      * @return void
      */
-    public function addError($attr, $err)
+    public function addError($attr, $message)
     {
-        if (!isset($this->errors[$attr])) {
-            $this->errors[$attr] = [];
-        }
-        $this->errors[$attr][] = $err;
+        $this->validator->addError($attr, $message);
     }
     
-    /**
-     * устанавливает список ошибок
-     * 
-     * @param $errors array
-     */
-    public function setErrors(array $errors)
-    {
-        $this->errors = $errors;
-        return $this;
-    }    
-
     /**
      * @return boolean
      */
     public function hasErrors()
     {
-        return !empty($this->errors);
+        return !empty($this->validator->getErrors());
     }
 
     /**
@@ -280,7 +286,7 @@ abstract class Model extends \tachyon\Component
     public function getErrorsSummary()
     {
         $retArr = array();
-        foreach ($this->errors as $key => $val) {
+        foreach ($this->validator->getErrors() as $key => $val) {
             $retArr[] = $this->getAttributeName($key) . ': ' . implode(' ', $val);
         }
         return implode('; ', $retArr);
@@ -297,22 +303,28 @@ abstract class Model extends \tachyon\Component
         $modelName = $this->getClassName();
         $rules = $this->rules();
         foreach ($rules as $fieldName=> $fieldRules) {
-            if (isset($fieldRules['on']) && $fieldRules['on']!==$this->scenario)
+            if (isset($fieldRules['on']) && $fieldRules['on']!==$this->scenario) {
                 continue;
-            if (!is_null($fields) && !in_array($fieldName, $fields))
+            }
+            if (!is_null($fields) && !in_array($fieldName, $fields)) {
                 continue;
+            }
             $attrName = $this->getAttributeName($fieldName);
             $attrType = $this->getAttributeType($fieldName);
             foreach ($fieldRules as $key => $rule) {
                 if (is_array($rule)) {
-                    if (isset($rule['on']) && $rule['on']!==$this->scenario)
+                    if (isset($rule['on']) && $rule['on']!==$this->scenario) {
                         continue;
-                    foreach ($rule as $subKey=> $subRule)
-                        if (is_numeric($key))
+                    }
+                    foreach ($rule as $subKey => $subRule) {
+                        if (is_numeric($key)) {
                             $check[] = "'$subRule'";
+                        }
+                    }
                 }
-                if (is_numeric($key))
+                if (is_numeric($key)) {
                     $check[] = "'$rule'";
+                }
             }
             $validationItems[] = "{
                 'type' :'$attrType',

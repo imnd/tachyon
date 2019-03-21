@@ -1,13 +1,22 @@
 <?php
 namespace tachyon;
 
-use Error,
+use 
+    ReflectionClass,
+    tachyon\helpers\ArrayHelper,
+    // exceptions
+    Error,
     ErrorException,
     BadMethodCallException,
     tachyon\exceptions\ContainerException,
     tachyon\exceptions\HttpException,
-
-    tachyon\helpers\ArrayHelper;
+    // dependencies
+    tachyon\dic\Container,
+    tachyon\Config,
+    tachyon\cache\Output,
+    tachyon\components\Message,
+    tachyon\View
+;
 
 /**
  * Front Controller приложения
@@ -15,17 +24,40 @@ use Error,
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-final class Router extends Component
+final class Router
 {
-    # сеттеры сервисов, которые внедряются в компонент
-    use \tachyon\dic\OutputCache,
-        \tachyon\dic\Message,
-        \tachyon\dic\View;
+    /**
+     * @var tachyon\Config $config
+     */
+    protected $config;
+    /**
+     * @var \tachyon\cache\Output $cache
+     */
+    protected $cache;
+    /**
+     * @var \tachyon\components\Message $msg
+     */
+    protected $msg;
+    /**
+     * @var \tachyon\View $view
+     */
+    protected $view;
 
     /**
      * @var string контроллер по умолчанию
      */
     private $defaultController;
+
+    /**
+     * @param boolean string integer array mixed 
+     */
+    public function __construct(Config $config, Output $cache, Message $msg, View $view)
+    {
+        $this->config = $config;
+        $this->cache = $cache;
+        $this->msg = $msg;
+        $this->view = $view;
+    }
 
     /**
      * Обработка входящего запроса
@@ -40,7 +72,7 @@ final class Router extends Component
         $urlInfo = parse_url($requestUri);
         $requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
-        $this->defaultController = $this->config->get('defaultController') ?: 'Index';
+        $this->defaultController = $this->config->get('defaultController') ?: 'app\controllers\IndexController';
         // Извлекаем имя контроллера
         $controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController);
         // Извлекаем имя экшна
@@ -130,11 +162,10 @@ final class Router extends Component
     private function _startController($controllerName, $actionName, $requestVars)
     {
         try {
-            $controller = $this->get($controllerName . 'Controller');
+            $controller = (new Container)->get('\app\controllers\\' . ucfirst($controllerName) . 'Controller');
             if (!method_exists($controller, $actionName)) {
                 throw new BadMethodCallException;
             }
-            $controllerName = lcfirst($controllerName);
             $controller
                 ->setAction($actionName)
                 ->setId($controllerName)
@@ -161,10 +192,10 @@ final class Router extends Component
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
-        } catch (ErrorException $e) {
-            $this->_error($e->getCode(), $e->getMessage());
-        } catch (Error $e) {
-            $this->_error($e->getCode(), $e->getMessage());
+        /*} catch (ErrorException $e) {
+            $this->_error($e->getCode(), $e->getMessage());*/
+        /*} catch (Error $e) {
+            $this->_error($e->getCode(), $e->getMessage());*/
         }
     }
 
@@ -180,10 +211,11 @@ final class Router extends Component
     {
         http_response_code($code);
 
-        $this
-            ->get($this->defaultController . 'Controller')
+        $id = lcfirst(str_replace('Controller', '', (new ReflectionClass($this->defaultController))->getShortName()));
+        (new Container)
+            ->get($this->defaultController)
             ->setAction('error')
-            ->setId(lcfirst($this->defaultController))
+            ->setId($id)
             ->start()
             ->layout('error', compact('code', 'msg'));
 

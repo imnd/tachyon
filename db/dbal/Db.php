@@ -2,7 +2,8 @@
 namespace tachyon\db\dbal;
 
 use PDOException,
-    tachyon\exceptions\DBALException;
+    tachyon\exceptions\DBALException,
+    tachyon\components\Message;
 
 /**
  * DBAL (на PDO)
@@ -10,11 +11,8 @@ use PDOException,
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-abstract class Db extends \tachyon\Component
+abstract class Db
 {
-    # сеттеры DIC
-    use \tachyon\dic\Message;
-
     /**
      * параметры БД
      */
@@ -25,6 +23,7 @@ abstract class Db extends \tachyon\Component
     protected $connection;
     /**
      * Компонент msg
+     * @var tachyon\components\Message $msg
      */
     protected $msg;
     /**
@@ -50,10 +49,9 @@ abstract class Db extends \tachyon\Component
     protected $explainPath;
 
     /**
-     * Инициализация
      * @return void
      */
-    public function __construct(array $config, $msg)
+    public function __construct(Message $msg, array $config)
     {
         $this->config = $config;
         $this->msg = $msg;
@@ -114,11 +112,14 @@ abstract class Db extends \tachyon\Component
         $fields = array_merge($fields, $this->fields);
         $fields = $this->prepareFields($fields);
 
-        $query =
-              "SELECT $fields FROM $tblName {$this->join} {$conditions['clause']}"
-            . $this->groupByString()
-            . $this->orderByString()
-            . $this->limit;
+        $query = "
+            SELECT $fields
+            FROM $tblName
+            {$this->join} {$conditions['clause']}
+        "
+        . $this->groupByString()
+        . $this->orderByString()
+        . $this->limit;
 
         // очищаем переменные
         $this->clearOrderBy();

@@ -1,7 +1,8 @@
 <?php
 namespace tachyon\db;
 
-use tachyon\exceptions\ModelException;
+use tachyon\exceptions\ModelException,
+    tachyon\components\Message;
 
 /**
  * Класс отвечающий за подбор псевдонимов таблиц
@@ -9,9 +10,9 @@ use tachyon\exceptions\ModelException;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Alias extends \tachyon\Component
+class Alias
 {
-    use \tachyon\dic\Message;
+    use \tachyon\traits\HasOwner;
 
     const PK_GLUE = '____';
     /**
@@ -19,6 +20,19 @@ class Alias extends \tachyon\Component
      * используется т/ж в представлениях
      */
     const PK_MARKER = '_pk';
+
+    /**
+     * @var tachyon\components\Message $msg
+     */
+    protected $msg;
+
+    /**
+     * @return void
+     */
+    public function __construct(Message $msg)
+    {
+        $this->msg = $msg;
+    }
 
     /**
      * Приделывает название таблицы вначале и объявляет алиас
@@ -141,7 +155,7 @@ class Alias extends \tachyon\Component
     /**
      * алиас первичного ключа
      */
-    public function getPrimKeyAliasArr($with, $pkName=null)
+    public function getPrimKeyAliasArr($with, $pkName)
     {
         if (!$pkName) {
             throw new ModelException($this->msg->i18n('The primary key of the related table is not declared.'));

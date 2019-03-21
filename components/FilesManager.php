@@ -1,7 +1,7 @@
 <?php 
 namespace tachyon\components;
 
-class FilesManager extends \tachyon\Component
+class FilesManager
 {
     /** @const Папка для загрузки файлов */
     const UPLOAD_DIR = '../runtime/uploads/';

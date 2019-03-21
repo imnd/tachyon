@@ -7,7 +7,7 @@ namespace tachyon\db\dataMapper;
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-class DbContext extends \tachyon\Component
+class DbContext
 {
     /**
      * @var array $newEntities

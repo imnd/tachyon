@@ -1,6 +1,9 @@
 <?php
 namespace tachyon\db\dbal;
 
+use tachyon\Config,
+    tachyon\components\Message;
+
 /**
  * Реализует паттерн "фабричный метод"
  * Инстанциирует соответствующий класс DBAL
@@ -8,15 +11,30 @@ namespace tachyon\db\dbal;
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-class DbFactory extends \tachyon\Component
+class DbFactory
 {
-    # сеттеры DIC
-    use \tachyon\dic\Message;
-
     /**
      * @var Db
      */
     private $db;
+
+    /**
+     * @var tachyon\components\Message $msg
+     */
+    protected $msg;
+    /**
+     * @var tachyon\Config $config
+     */
+    protected $config;
+
+    /**
+     * @return void
+     */
+    public function __construct(Config $config, Message $msg)
+    {
+        $this->config = $config;
+        $this->msg = $msg;
+    }
 
     /**
      * @return Db
@@ -30,14 +48,14 @@ class DbFactory extends \tachyon\Component
             if (!isset($config['engine'])) {
                 throw new \tachyon\exceptions\DBALException('Не задан параметр конфигурации "engine"');
             }
-            $config['mode'] = $this->get('config')->get('mode');
+            $config['mode'] = $this->config->get('mode');
             $className = [
                 'mysql' => 'MySql',
                 'pgsql' => 'PgSql',
             ][$config['engine']];
             $className = "\\tachyon\\db\\dbal\\$className";
 
-            $this->db = new $className($config, $this->get('msg'));
+            $this->db = new $className($this->msg, $config);
         }
         return $this->db;
     }

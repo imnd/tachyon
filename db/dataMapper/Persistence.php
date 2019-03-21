@@ -1,9 +1,24 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-class Persistence extends \tachyon\Component
+use tachyon\db\dbal\DbFactory;
+
+class Persistence
 {
-    use \tachyon\dic\DbFactory;
+    use \tachyon\traits\HasOwner;
+
+    /**
+     * @var \tachyon\db\dbal\DbFactory
+     */
+    protected $dbFactory;
+
+    /**
+     * @return void
+     */
+    public function __construct(DbFactory $dbFactory)
+    {
+        $this->dbFactory = $dbFactory;
+    }
 
     /**
      * Находит все записи по условию $condition

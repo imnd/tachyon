@@ -1,6 +1,9 @@
 <?php
 namespace tachyon\components;
 
+use tachyon\Config,
+    tachyon\components\Lang;
+
 /**
  * class Message
  * Класс работы с текстовыми сообщениями
@@ -8,7 +11,7 @@ namespace tachyon\components;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Message extends \tachyon\Component
+class Message
 {
     private $_messages = array();
 
@@ -17,12 +20,12 @@ class Message extends \tachyon\Component
      * 
      * @return void
      */
-    public function __construct()
+    public function __construct(Config $config, Lang $lang)
     {
-        $basePath = $this->get('config')->get('base_path');
-        $lang = $this->get('lang')->getLanguage();
-        $this->loadMessages("$basePath/tachyon/lang/$lang.php");
-        $this->loadMessages("$basePath/../app/config/lang/$lang.php");
+        $basePath = $config->get('base_path');
+        $lng = $lang->getLanguage();
+        $this->loadMessages("$basePath/tachyon/lang/$lng.php");
+        $this->loadMessages("$basePath/../app/config/lang/$lng.php");
     }
 
     /**

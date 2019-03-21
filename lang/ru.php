@@ -26,7 +26,7 @@
     'equals' => 'Значения полей не равны.',
     'unique' => 'Поле не уникально.',
 
-    // Container
+    // SetterContainer
     'Unable to set property %property to service %service.' => 'Невозможно установить свойство %property в сервис %service.',
     'Class did not found in config file.' => 'Класс не найден в файле конфигурации.',
 

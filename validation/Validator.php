@@ -1,26 +1,35 @@
 <?php
-namespace tachyon\components;
+namespace tachyon\validation;
 
-use tachyon\exceptions\ValidationException;
+use tachyon\exceptions\ValidationException,
+    tachyon\components\Message;
 
 /**
- * class Validator
  * Класс содержащий правила валидации
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Validator extends \tachyon\Component
+class Validator
 {
-    # сеттеры DIC
-    use \tachyon\dic\Message;
-
+    /**
+     * @var tachyon\components\Message $msg
+     */
+    protected $msg;
     private $_errors = array();
+
+    /**
+     * @return void
+     */
+    public function __construct(Message $msg)
+    {
+        $this->msg = $msg;
+    }
 
     public function required($model, $fieldName)
     {
         if ($model->getAttribute($fieldName)==='') {
-            $this->_addError($fieldName, $this->msg->i18n('fieldRequired'));
+            $this->addError($fieldName, $this->msg->i18n('fieldRequired'));
         }
     }
     
@@ -28,7 +37,7 @@ class Validator extends \tachyon\Component
     {
         $val = $model->getAttribute($fieldName);
         if (!empty($val) && preg_match('/[^0-9]+/', $val) > 0) {
-            $this->_addError($fieldName, $this->msg->i18n('alpha'));
+            $this->addError($fieldName, $this->msg->i18n('alpha'));
         }
     }
 
@@ -36,7 +45,7 @@ class Validator extends \tachyon\Component
     {
         $val = $model->getAttribute($fieldName);
         if (!empty($val) && preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $val)===0) {
-            $this->_addError($fieldName, $this->msg->i18n('alpha'));
+            $this->addError($fieldName, $this->msg->i18n('alpha'));
         }
     }
 
@@ -44,7 +53,7 @@ class Validator extends \tachyon\Component
     {
         $val = $model->getAttribute($fieldName);
         if (!empty($val) && preg_match('/[^А-ЯЁа-яёA-Za-z ]+/u', $val) > 0) {
-            $this->_addError($fieldName, $this->msg->i18n('alpha'));
+            $this->addError($fieldName, $this->msg->i18n('alpha'));
         }
     }
 
@@ -52,14 +61,14 @@ class Validator extends \tachyon\Component
     {
         $val = $model->getAttribute($fieldName);
         if (!empty($val) && preg_match('/[^А-ЯЁа-яёA-Za-z-_.,0-9 ]+/u', $val) > 0) {
-            $this->_addError($fieldName, $this->msg->i18n('alpha'));
+            $this->addError($fieldName, $this->msg->i18n('alpha'));
         }
     }
 
     public function phone($model, $fieldName)
     {
         if (!preg_match('/^\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}$/', $model->getAttribute($fieldName))) {
-            $this->_addError($fieldName, $this->msg->i18n('phone'));
+            $this->addError($fieldName, $this->msg->i18n('phone'));
         }
     }
 
@@ -67,14 +76,14 @@ class Validator extends \tachyon\Component
     {
         $val = $model->getAttribute($fieldName);
         if (!empty($val) && preg_match('/[^A-Za-z0-9]+/u', $val) > 0) {
-            $this->_addError($fieldName, $this->msg->i18n('password'));
+            $this->addError($fieldName, $this->msg->i18n('password'));
         }
     }
 
     public function email($model, $fieldName)
     {
         if (!preg_match('/^[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/', $model->getAttribute($fieldName))) {
-            $this->_addError($fieldName, $this->msg->i18n('email'));
+            $this->addError($fieldName, $this->msg->i18n('email'));
         }
     }
 
@@ -83,7 +92,7 @@ class Validator extends \tachyon\Component
         $val1 = $model->getAttribute($fieldName1);
         $val2 = $model->getAttribute($fieldName2);
         if (!empty($val1) && !empty($val2) && $val1!==$val2) {
-            $this->_addError($fieldName1, $this->msg->i18n('equals'));
+            $this->addError($fieldName1, $this->msg->i18n('equals'));
         }
     }
 
@@ -93,7 +102,7 @@ class Validator extends \tachyon\Component
             return;
         }
         if ($rows = $model->findAllScalar(array($fieldName => $fieldVal))) {
-            $this->_addError($fieldName, $this->msg->i18n('unique'));
+            $this->addError($fieldName, $this->msg->i18n('unique'));
         }
     }    
 
@@ -106,11 +115,11 @@ class Validator extends \tachyon\Component
      * @param $fieldName string
      * @param $message string
      */
-    private function _addError($fieldName, $message)
+    public function addError($fieldName, $message)
     {
-        if (empty($this->_errors[$fieldName]))
+        if (empty($this->_errors[$fieldName])) {
             $this->_errors[$fieldName] = [];
-
+        }
         $this->_errors[$fieldName][] = $message;
     }
 
@@ -202,6 +211,14 @@ class Validator extends \tachyon\Component
     }
 
     /**
+     * @return array
+     */
+    public function getErrors($object)
+    {
+        return $this->_errors;
+    }
+
+    /**
      * Сообщение об ошибках
      * 
      * @return array
@@ -209,7 +226,7 @@ class Validator extends \tachyon\Component
     public function getErrorsSummary($object)
     {
         $summary = '';
-        foreach ($object->errors as $attribute => $errors) {
+        foreach ($this->_errors as $attribute => $errors) {
             $summary .= "{$object->getCaption($attribute)}: " . implode(', ', $errors) . "\n";
         }
         return $summary;

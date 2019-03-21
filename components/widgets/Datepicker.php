@@ -2,7 +2,6 @@
 namespace tachyon\components\widgets;
 
 /**
- * class Datepicker
  * Отображает дэйтпикер
  * Использует стороннюю библиотеку Pikaday David Bushell datepicker
  * 
@@ -16,15 +15,15 @@ class Datepicker extends Widget
 
     public function run()
     {
-        $text = $this->display('datepicker', array(
+        $text = $this->display('datepicker', [
             'id' => $this->id,
             'fieldNames' => $this->fieldNames,
             'format' => $this->format,
-        ), true);
+        ], true);
 
-        if ($this->return)
+        if ($this->return) {
             return $text;
-
+        }
         echo $text;
     }
 }

@@ -5,15 +5,17 @@
     }
 </style>
 <?php
+use tachyon\dic\Container;
+
 if (!empty($searchFields)) {
-    $this->get('FormBuilder')
+    (new Container)->get('\tachyon\components\html\FormBuilder')
         ->build(array(
             'options' => array(
                 'action' => "/{$widget->getController()->getId()}",
                 'class' => 'search-form',
                 'submitCaption' => $this->i18n('search'),
                 'view' => 'searchForm',
-                'viewPath' => $widget->getViewPath(),
+                'viewsPath' => $widget->getViewPath(),
             ),
             'model' => $model,
             'fields' => $searchFields,

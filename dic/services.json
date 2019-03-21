@@ -1,39 +1,11 @@
 [
     {
-        "id" : "Router",
-        "class" : "\\tachyon\\Router",
-        "properties" : [
-            {
-                "name" : "cache",
-                "ref" : "OutputCache"
-            },
-            {
-                "name" : "msg",
-                "ref" : "Message"
-            },
-            {
-                "name" : "config",
-                "ref" : "Config"
-            }
-        ]
-    },
-    {
-        "id" : "DOMDocument",
-        "class" : "\\DOMDocument"
-    },
-    {
-        "id" : "XSLTProcessor",
-        "class" : "\\XSLTProcessor"
-    },
-    {
-        "id" : "Config",
         "class" : "\\tachyon\\Config",
-        "singleton" : "true"
+        "singleton" : true
     },
     {
-        "id" : "Cookie",
         "class" : "\\tachyon\\components\\Cookie",
-        "singleton" : "true",
+        "singleton" : true,
         "properties" : [
             {
                 "name" : "duration",
@@ -42,9 +14,8 @@
         ]
     },
     {
-        "id" : "Encrypt",
         "class" : "\\tachyon\\components\\Encrypt",
-        "singleton" : "true",
+        "singleton" : true,
         "properties" : [
             {
                 "name" : "algorithm",
@@ -57,302 +28,35 @@
         ]
     },
     {
-        "id" : "Csrf",
         "class" : "\\tachyon\\components\\Csrf",
-        "singleton" : "true"
+        "singleton" : true
     },
     {
-        "id" : "OutputCache",
+        "class" : "\\tachyon\\components\\Flash",
+        "singleton" : true
+    },
+    {
         "class" : "\\tachyon\\cache\\Output",
-        "singleton" : "true"
+        "singleton" : true
     },
     {
-        "id" : "DbCache",
         "class" : "\\tachyon\\cache\\Db",
-        "singleton" : "true"
+        "singleton" : true
     },
     {
-        "id" : "AssetManager",
-        "class" : "\\tachyon\\components\\AssetManager"
-    },
-    {
-        "id" : "FilesManager",
-        "class" : "\\tachyon\\components\\FilesManager"
-    },
-    {
-        "id" : "Message",
         "class" : "\\tachyon\\components\\Message",
-        "singleton" : "true"
+        "singleton" : true
     },
     {
-        "id" : "Lang",
         "class" : "\\tachyon\\components\\Lang",
-        "singleton" : "true"
+        "singleton" : true
     },
     {
-        "id" : "DateTime",
-        "class" : "\\tachyon\\behaviours\\DateTime"
-    },
-    {
-        "id" : "List",
-        "class" : "\\tachyon\\behaviours\\ListBehaviour"
-    },
-    {
-        "id" : "Active",
-        "class" : "\\tachyon\\behaviours\\Active"
-    },
-    {
-        "id" : "Html",
         "class" : "\\tachyon\\components\\html\\Html",
-        "singleton" : "true"
+        "singleton" : true
     },
     {
-        "id" : "FormBuilder",
-        "class" : "\\tachyon\\components\\html\\FormBuilder",
-        "properties" : [
-            {
-                "name" : "assetManager",
-                "ref" : "AssetManager"
-            },
-            {
-                "name" : "csrf",
-                "ref" : "Csrf"
-            },
-            {
-                "name" : "html",
-                "ref" : "Html"
-            },
-            {
-                "name" : "view",
-                "ref" : "View"
-            }
-        ]
-    },
-    {
-        "id" : "Widget",
-        "class" : "\\tachyon\\components\\widgets\\Widget",
-        "properties" : [
-            {
-                "name" : "assetManager",
-                "ref" : "AssetManager"
-            },
-            {
-                "name" : "msg",
-                "ref" : "Message"
-            }
-        ]
-    },
-    {
-        "id" : "Grid",
-        "class" : "\\tachyon\\components\\widgets\\grid\\Grid",
-        "properties" : [
-            {
-                "name" : "msg",
-                "ref" : "Message"
-            }
-        ]
-    },
-    {
-        "id" : "Datepicker",
-        "class" : "\\tachyon\\components\\widgets\\Datepicker"
-    },
-    {
-        "id" : "Menu",
-        "class" : "\\app\\components\\widgets\\menu\\Menu"
-    },
-    {
-        "id" : "XsltView",
-        "class" : "\\tachyon\\XsltView",
-        "properties" : [
-            {
-                "name" : "xsltProcessor",
-                "ref" : "XsltProcessor"
-            }
-        ]
-    },
-    {
-        "id" : "View",
-        "class" : "\\tachyon\\View",
-        "properties" : [
-            {
-                "name" : "assetManager",
-                "ref" : "AssetManager"
-            },
-            {
-                "name" : "msg",
-                "ref" : "Message"
-            },
-            {
-                "name" : "html",
-                "ref" : "Html"
-            }
-        ]
-    },
-    {
-        "id" : "Controller",
-        "class" : "\\tachyon\\Controller",
-        "properties" : [
-            {
-                "name" : "view",
-                "ref" : "View"
-            },
-            {
-                "name" : "msg",
-                "ref" : "Message"
-            },
-            {
-                "name" : "cookie",
-                "ref" : "Cookie"
-            },
-            {
-                "name" : "lang",
-                "ref" : "Lang"
-            },
-            {
-                "name" : "csrf",
-                "ref" : "Csrf"
-            }
-        ]
-    },
-    {
-        "id" : "DbFactory",
         "class" : "\\tachyon\\db\\dbal\\DbFactory",
-        "singleton" : "true",
-        "properties" : [
-            {
-                "name" : "msg",
-                "ref" : "Message"
-            }
-        ]
-    },
-    {
-        "id" : "Alias",
-        "class" : "\\tachyon\\db\\Alias"
-    },
-    {
-        "id" : "Join",
-        "class" : "\\tachyon\\db\\activeRecord\\Join"
-    },
-    {
-        "id" : "Relation",
-        "class" : "\\tachyon\\db\\activeRecord\\Relation"
-    },
-    {
-        "id" : "JoinRelation",
-        "class" : "\\tachyon\\db\\activeRecord\\JoinRelation"
-    },
-    {
-        "id" : "HasoneRelation",
-        "class" : "\\tachyon\\db\\activeRecord\\HasoneRelation"
-    },
-    {
-        "id" : "HasmanyRelation",
-        "class" : "\\tachyon\\db\\activeRecord\\HasmanyRelation"
-    },
-    {
-        "id" : "ManytomanyRelation",
-        "class" : "\\tachyon\\db\\activeRecord\\ManytomanyRelation"
-    },
-    {
-        "id" : "ActiveRecord",
-        "class" : "\\tachyon\\db\\activeRecord\\ActiveRecord",
-        "properties" : [
-            {
-                "name" : "cache",
-                "ref" : "DbCache"
-            },
-            {
-                "name" : "alias",
-                "ref" : "Alias"
-            },
-            {
-                "name" : "dbFactory",
-                "ref" : "DbFactory"
-            },
-            {
-                "name" : "join",
-                "ref" : "Join"
-            },
-            {
-                "name" : "terms",
-                "ref" : "Terms"
-            }
-        ]
-    },
-    {
-        "id" : "Terms",
-        "class" : "\\tachyon\\db\\Terms"
-    },
-    {
-        "id" : "Model",
-        "class" : "\\tachyon\\Model",
-        "properties" : [
-            {
-                "name" : "validator",
-                "ref" : "Validator"
-            }
-        ]
-    },
-    {
-        "id" : "Validator",
-        "class" : "\\tachyon\\components\\Validator",
-        "properties" : [
-            {
-                "name" : "msg",
-                "ref" : "Message"
-            }
-        ]
-    },
-    {
-        "id" : "Component",
-        "class" : "\\tachyon\\Component",
-        "properties" : [
-            {
-                "name" : "config",
-                "ref" : "Config"
-            }
-        ]
-    },
-    {
-        "id" : "DbContext",
-        "class" : "\\tachyon\\db\\dataMapper\\DbContext"
-    },
-    {
-        "id" : "Entity",
-        "class" : "\\tachyon\\db\\dataMapper\\Entity",
-        "properties" : [
-            {
-                "name" : "dbContext",
-                "ref" : "DbContext"
-            },
-            {
-                "name" : "validator",
-                "ref" : "Validator"
-            }
-        ]
-    },
-    {
-        "id" : "Repository",
-        "class" : "\\tachyon\\db\\dataMapper\\Repository",
-        "properties" : [
-            {
-                "name" : "persistence",
-                "ref" : "Persistence"
-            },
-            {
-                "name" : "terms",
-                "ref" : "Terms"
-            }
-        ]
-    },
-    {
-        "id" : "Persistence",
-        "class" : "\\tachyon\\db\\dataMapper\\Persistence",
-        "properties" : [
-            {
-                "name" : "dbFactory",
-                "ref" : "DbFactory"
-            }
-        ]
+        "singleton" : true
     }
 ]

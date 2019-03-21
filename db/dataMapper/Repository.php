@@ -3,7 +3,10 @@ namespace tachyon\db\dataMapper;
 
 use Iterator,
     tachyon\db\dataMapper\Entity,
-    tachyon\helpers\StringHelper;
+    tachyon\db\dataMapper\Persistence,
+    tachyon\db\Terms,
+    tachyon\helpers\StringHelper
+;
 
 /**
  * EntityManager является центральной точкой доступа к функциональности DataMapper ORM.
@@ -11,10 +14,18 @@ use Iterator,
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-abstract class Repository extends \tachyon\Component
+abstract class Repository
 {
-    use \tachyon\dic\Persistence,
-        \tachyon\dic\Terms;
+    use \tachyon\traits\ClassName;
+
+    /**
+     * @var \tachyon\db\dataMapper\Persistence
+     */
+    protected $persistence;
+    /**
+     * @var \tachyon\db\Terms $terms
+     */
+    protected $terms;
 
     /** @var string */
     protected $tableName;
@@ -35,10 +46,14 @@ abstract class Repository extends \tachyon\Component
      */
     protected $sortBy = array();
 
-    public function initialize()
+    public function __construct(Persistence $persistence, Terms $terms)
     {
+        $this->persistence = $persistence;
+        $this->persistence->setOwner($this);
+        $this->terms = $terms;
+
         if (is_null($this->entityName)) {
-            $this->entityName = lcfirst( str_replace('Repository', '', StringHelper::getShortClassName(get_called_class())) );
+            $this->entityName = lcfirst( str_replace('Repository', '', $this->getClassName()) );
         }
     }
 

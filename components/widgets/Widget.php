@@ -1,18 +1,34 @@
 <?php
 namespace tachyon\components\widgets;
 
+use tachyon\components\AssetManager,
+    tachyon\components\Message,
+    tachyon\View;
+
 /**
- * class Widget
  * Базовый класс для всех виджетов
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-abstract class Widget extends \tachyon\Component
+abstract class Widget
 {
-    use \tachyon\dic\AssetManager,
-        \tachyon\dic\Message,
-        \tachyon\traits\Configurable;
+    use \tachyon\traits\HasOwner;
+    use \tachyon\traits\ClassName;
+    use \tachyon\traits\Configurable;
+
+    /**
+     * @var \tachyon\components\AssetManager $assetManager
+     */
+    protected $assetManager;
+    /**
+     * @var \tachyon\components\Message $msg
+     */
+    protected $msg;
+    /**
+     * @var \tachyon\View $view
+     */
+    protected $view;
 
     /**
      * id виджета
@@ -28,17 +44,22 @@ abstract class Widget extends \tachyon\Component
      * Путь файла отображения
      * @var $view string
      */
-    protected $view;
+    protected $viewsPath;
     /**
      * Выводить или возвращать вывод
      * @var $return boolean
      */
     protected $return = false;
 
-    public function __construct()
+    public function __construct(AssetManager $assetManager, Message $msg, View $view)
     {
-        if (is_null($this->view)) {
-            $this->view = lcfirst(get_called_class());
+        $this->assetManager = $assetManager;
+        $this->msg = $msg;
+        $this->view = $view;
+        $this->view->setOwner($this);
+
+        if (is_null($this->viewsPath)) {
+            $this->viewsPath = lcfirst(get_called_class());
         }
         if (is_null($this->id)) {
             $this->id = strtolower($this->getClassName()) . '_' . uniqid();
@@ -60,15 +81,15 @@ abstract class Widget extends \tachyon\Component
      */
     protected function display($view = '', array $vars = array(), $return = null)
     {
-        if (empty($view))
+        if (empty($view)) {
             $view = strtolower($this->getClassName());
-
-        if (is_null($return))
+        }
+        if (is_null($return)) {
             $return = $this->return;
-
+        }
         $vars['widget'] = $this;
 
-        return $this->getService('view')
+        return $this->view
             ->setViewsPath($this->getViewPath())
             ->display($view, $vars, $return);
     }

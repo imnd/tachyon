@@ -1,10 +1,29 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-abstract class Entity extends \tachyon\Component
+use tachyon\validation\ValidationInterface,
+    tachyon\db\dataMapper\DbContext,
+    tachyon\validation\Validator;
+
+abstract class Entity implements EntityInterface, ValidationInterface
 {
-    use \tachyon\dic\Validator,
-        \tachyon\dic\DbContext;
+    /**
+     * @var tachyon\db\dataMapper\DbContext
+     */
+    protected $dbContext;
+    /**
+     * @var tachyon\validation\Validator $validator
+     */
+    protected $validator;
+
+    /**
+     * @return void
+     */
+    public function __construct(DbContext $dbContext, Validator $validator)
+    {
+        $this->dbContext = $dbContext;
+        $this->validator = $validator;
+    }
 
     /**
      * @var array Подписи для поля сущностей
@@ -36,12 +55,6 @@ abstract class Entity extends \tachyon\Component
     {
         return $this->getOwner();
     }
-
-    abstract public function fromState(array $state): Entity;
-
-    abstract public function setAttributes(array $state);
-
-    abstract public function getAttributes(): array;
 
     /**
      * Подпись для поля сущности
@@ -131,7 +144,7 @@ abstract class Entity extends \tachyon\Component
         return $this;
     }
 
-    # ВАЛИДАЦИЯ
+    # VALIDATION
 
     /**
      * Возвращает список правил валидации
@@ -158,6 +171,28 @@ abstract class Entity extends \tachyon\Component
     public function getRules($fieldName)
     {
         return $this->validator->getRules($this, $fieldName);
+    }
+
+    /**
+     * добавляет ошибку к списку ошибок
+     * 
+     * @param string $attr
+     * @param string $message
+     * @return void
+     */
+    public function addError($attr, $message)
+    {
+        $this->validator->addError($attr, $message);
+    }
+
+    /**
+     * Сообщение об ошибках
+     * 
+     * @return array
+     */
+    public function getErrors()
+    {
+        return $this->validator->getErrors();
     }
 
     /**

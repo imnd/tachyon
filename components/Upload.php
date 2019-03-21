@@ -1,16 +1,16 @@
 <?php
 namespace tachyon\components;
 
+use tachyon\components\Encrypt;
+
 /**
  * Класс работы с файлами
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Upload extends \tachyon\Component
+class Upload
 {
-    use \tachyon\dic\Encrypt;
-
     private $allowedTypes = '*';
     private $uploadPath = '/';
     private $thumbDir = '';
@@ -21,15 +21,22 @@ class Upload extends \tachyon\Component
      * Jpeg качество
      */
     private $jpegQuality = 80;
-    private $imageTypes = array(
+    private $imageTypes = [
         'jpg' => IMAGETYPE_JPEG,
         'jpeg' => IMAGETYPE_JPEG,
         'png' => IMAGETYPE_PNG,
         'gif' => IMAGETYPE_GIF,
-    );
-    
-    public function __construct($config)
+    ];
+
+    /**
+     * @var tachyon\components\Encrypt $encrypt
+     */
+    protected $encrypt;
+
+    public function __construct(Encrypt $encrypt, $config)
     {
+        $this->encrypt = $encrypt;
+
         $this->allowedTypes = $config['allowedTypes'];
         $this->uploadPath = $config['uploadPath'];
         $this->thumbDir = $config['thumbDir']; 

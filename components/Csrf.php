@@ -1,16 +1,31 @@
 <?php
 namespace tachyon\components;
 
+use tachyon\components\Encrypt,
+    tachyon\Config;
+
 /**
  * Компонент защиты от CSRF-атак
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Csrf extends \tachyon\Component
+class Csrf
 {
-    # сеттеры DIC
-    use \tachyon\dic\Encrypt;
+    /**
+     * @var tachyon\Config $config
+     */
+    protected $config;
+    /**
+     * @var tachyon\components\Encrypt $encrypt
+     */
+    protected $encrypt;
+
+    public function __construct(Config $config, Encrypt $encrypt)
+    {
+        $this->config = $config;
+        $this->encrypt = $encrypt;
+    }
 
     private $_started = false;
 

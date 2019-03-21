@@ -1,8 +1,11 @@
 <?php
 namespace tachyon\components\widgets\grid;
 
+use tachyon\Config,
+    tachyon\components\Message,
+    tachyon\components\Csrf;
+
 /**
- * class Grid
  * Отображает в виде таблицы результат выборки
  * 
  * @author Андрей Сердюк
@@ -10,9 +13,6 @@ namespace tachyon\components\widgets\grid;
  */
 class Grid extends \tachyon\components\widgets\Widget
 {
-    use \tachyon\dic\Message,
-        \tachyon\dic\Csrf;
-
     /**
      * @var \tachyon\db\activeRecord\ActiveRecord $model
      */
@@ -47,7 +47,6 @@ class Grid extends \tachyon\components\widgets\Widget
      * @var $sortable array
      */
     protected $sortable = false;
-
     /**
      * включать ли компонент защиты от csrf-атак
      */
@@ -67,6 +66,31 @@ class Grid extends \tachyon\components\widgets\Widget
      */
     protected $modelName;
 
+    /**
+     * @var tachyon\Config $config
+     */
+    protected $config;
+    /**
+     * @var tachyon\components\Message $msg
+     */
+    protected $msg;
+    /**
+     * @var tachyon\components\Csrf $csrf
+     */
+    protected $csrf;
+
+    /**
+     * @return void
+     */
+    public function __construct(Config $config, Message $msg, Csrf $csrf, ...$params)
+    {
+        $this->config = $config;
+        $this->msg = $msg;
+        $this->csrf = $csrf;
+
+        parent::__construct(...$params);
+    }
+
     public function run()
     {
         $this->assetManager->publishFolder('images', 'assets' . $this->getAssetsPublicPath(), $this->getAssetsSourcePath());
@@ -76,7 +100,7 @@ class Grid extends \tachyon\components\widgets\Widget
             $this->csrfJson = '"' . $this->csrf->getTokenId() . '":"' . $this->csrf->getTokenVal() . '",';
         }
         if (is_null($this->model)) {
-            $this->model = $this->get($this->modelName);
+            $this->model = (new \tachyon\dic\Container)->get($this->modelName);
         } else {
             $this->modelName = $this->model->getClassName();
         }
