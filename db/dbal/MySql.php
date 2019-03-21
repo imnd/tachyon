@@ -58,17 +58,17 @@ class MySql extends Db
             $this->execute($stmt, $fields);
             $rows = $stmt->fetchAll();
             foreach ($rows as $row) {
-                foreach ($row as $key => $value)
+                foreach ($row as $key => $value) {
                     if (is_numeric($key))
                         $output .= "$value\t";
-
+                }
                 $output .= "\r\n";
             }
             $file = fopen($this->explainPath, 'w');
             fwrite($file, $output);
             fclose($file);
         } catch (\Exception $e) {
-            throw new \tachyon\exceptions\DBALException('Some error occured');
+            return;
         }
     }
 }

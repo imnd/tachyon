@@ -1,7 +1,8 @@
 <?php
 namespace tachyon\db\dbal;
 
-use PDOException,
+use PDO,
+    PDOException,
     tachyon\exceptions\DBALException,
     tachyon\components\Message;
 
@@ -56,7 +57,7 @@ abstract class Db
         $this->config = $config;
         $this->msg = $msg;
 
-        if ($this->explain = $this->config['mode']==='debug') {
+        if ($this->explain = $this->config['explain']) {
             $this->explainPath = $this->config['explain_path'] ?? '../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
@@ -77,7 +78,7 @@ abstract class Db
             return;
         }
         try {
-            $this->connection = new \PDO(
+            $this->connection = new PDO(
                 $this->getDsn(),
                 $this->config['user'],
                 $this->config['password']
@@ -89,7 +90,7 @@ abstract class Db
     }
 
     /**
-     * @return \PDO
+     * @return PDO
      */
     abstract protected function getDsn(): string;
 
@@ -534,9 +535,6 @@ abstract class Db
     protected function execute($stmt, $fields=null): bool
     {
         if (!$stmt->execute($fields)) {
-            //if ('00000' == $this->connection->errorCode())
-                //return false;
-
             throw new DBALException($this->msg->i18n('Database error.'));
         }
         return true;
