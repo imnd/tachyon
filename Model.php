@@ -79,9 +79,10 @@ abstract class Model implements ValidationInterface
 
     /**
      * Присваивание значения аттрибуту модели
-     * 
-     * @param $name string 
-     * @param $value string 
+     *
+     * @param $name string
+     * @param $value string
+     * @return Model
      */
     public function setAttribute($name, $value)
     {
@@ -91,9 +92,9 @@ abstract class Model implements ValidationInterface
 
     /**
      * Извлечение значения аттрибута $name
-     * 
-     * @param string $attribute 
-     * @returns mixed 
+     *
+     * @param string $attribute
+     * @return mixed
      */
     public function getAttribute(string $name)
     {
@@ -102,8 +103,9 @@ abstract class Model implements ValidationInterface
 
     /**
      * Присваивание значений аттрибутам модели
-     * 
-     * @param $attributes array 
+     *
+     * @param $attributes array
+     * @return Model
      */
     public function setAttributes(array $attributes)
     {
@@ -148,7 +150,7 @@ abstract class Model implements ValidationInterface
      * 
      * @return array
      */
-    public static function getAttributeTypes()
+    public function getAttributeTypes()
     {
         return $this->attributeTypes;
     }
@@ -208,9 +210,10 @@ abstract class Model implements ValidationInterface
 
     /**
      * Валидация полей модели
-     * 
+     *
      * @param $attrs array массив полей
      * @return boolean
+     * @throws exceptions\ValidationException
      */
     public function validate(array $attrs=null)
     {
@@ -338,8 +341,9 @@ abstract class Model implements ValidationInterface
 
     /**
      * устанавливает сценарий валидации
-     * 
+     *
      * @param $scenario string
+     * @return Model
      */
     public function setScenario($scenario)
     {

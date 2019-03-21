@@ -72,7 +72,7 @@ final class Router
         $urlInfo = parse_url($requestUri);
         $requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
-        $this->defaultController = '\app\controllers\\' . ($this->config->get('defaultController') ?: 'Index') . 'Controller';
+        $this->defaultController = $this->config->get('defaultController') ?: 'Index';
         // Извлекаем имя контроллера
         $controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController);
         // Извлекаем имя экшна
@@ -220,9 +220,10 @@ final class Router
     {
         http_response_code($code);
 
-        $id = lcfirst(str_replace('Controller', '', (new ReflectionClass($this->defaultController))->getShortName()));
+        $defaultController = '\app\controllers\\' . $this->defaultController . 'Controller';
+        $id = lcfirst(str_replace('Controller', '', (new ReflectionClass($defaultController))->getShortName()));
         (new Container)
-            ->get($this->defaultController)
+            ->get($defaultController)
             ->setAction('error')
             ->setId($id)
             ->start()

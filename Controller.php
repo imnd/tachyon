@@ -67,27 +67,33 @@ class Controller
     protected $protectedActions = array();
 
     /**
-     * @var tachyon\components\Message $msg
+     * @var Message $msg
      */
     protected $msg;
     /**
-     * @var tachyon\components\Cookie $cookie
+     * @var Cookie $cookie
      */
     protected $cookie;
     /**
-     * @var tachyon\components\Lang $lang
+     * @var Lang $lang
      */
     protected $lang;
     /**
-     * @var tachyon\View $view
+     * @var View $view
      */
     protected $view;
     /**
-     * @var tachyon\components\Csrf $csrf
+     * @var Csrf $csrf
      */
     protected $csrf;
 
     /**
+     * @param Message $msg
+     * @param Cookie $cookie
+     * @param Lang $lang
+     * @param View $view
+     * @param Csrf $csrf
+     *
      * @return void
      */
     public function __construct(Message $msg, Cookie $cookie, Lang $lang, View $view, Csrf $csrf)

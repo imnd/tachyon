@@ -211,6 +211,7 @@ class View
         extract($vars);
 
         if ('_displayLayout'===debug_backtrace()[1]['function']) {
+            // отрисовка лэйаута
             require($filePath);
 
             $layoutVars = get_defined_vars();
@@ -219,17 +220,19 @@ class View
                     unset($layoutVars[$name]);
                 }
             }
-            unset($layoutVars['filePath']);
-            unset($layoutVars['buffer']);
-            unset($layoutVars['vars']);
-            unset($layoutVars['this']);
+            foreach (array('filePath', 'buffer', 'vars', 'this') as $varName) {
+                unset($layoutVars[$varName]);
+            }
+            // переписываем значения переменных в дочерних лэйаутах
             foreach ($this->layoutVars as $name => $var) {
                 if (isset($this->layoutVars[$name])) {
                     unset($layoutVars[$name]);
                 }
             }
+            // собираем все переменные объявленные в лэйаутах
             $this->layoutVars = array_merge($this->layoutVars, $layoutVars);
         } else {
+            // отрисовка вью
             extract($this->layoutVars);
 
             require($filePath);
@@ -264,8 +267,9 @@ class View
     /**
      * widget
      * Запуск виджета на странице
-     * 
-     * @param $params array 
+     *
+     * @param $params array
+     * @return mixed
      */
     public function widget($params)
     {
