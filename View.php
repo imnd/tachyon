@@ -74,6 +74,11 @@ class View
     protected $flash;
 
     /**
+     * Сохраняем переменные между отрисовкой наследуемых лэйаутов
+     */
+    protected $layoutVars = array();
+
+    /**
      * @return void
      */
     public function __construct(Config $config, AssetManager $assetManager, Message $msg, Html $html, Flash $flash)
@@ -125,8 +130,8 @@ class View
 
         $layoutHtml = $this->_include($layoutHtml, $vars);
 
-        if (false!==$dirPos = strpos($layoutHtml, '@extends')) {
-            $start = $dirPos + strlen('@extends') + 2;
+        if (false!==$extendsPos = strpos($layoutHtml, '@extends')) {
+            $start = $extendsPos + strlen('@extends') + 2;
             $end = strpos($layoutHtml, "'", $start);
             // устанавливаем родительский лэйаут
             $this->layout = substr($layoutHtml, $start, $end - $start);
@@ -182,9 +187,6 @@ class View
             die;
         }
         
-        extract($vars);
-        ob_start();
-
         $buffer = file_get_contents($filePath);
         if (false!==strpos($buffer, '{{')) {
             $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
@@ -201,10 +203,38 @@ class View
                 }
                 file_put_contents($tempViewFilePath, $buffer);
             }
-            require($tempViewFilePath);
+            $filePath = $tempViewFilePath;
+        }
+
+        ob_start();
+
+        extract($vars);
+
+        if ('_displayLayout'===debug_backtrace()[1]['function']) {
+            require($filePath);
+
+            $layoutVars = get_defined_vars();
+            foreach ($layoutVars as $name => $var) {
+                if (isset($vars[$name])) {
+                    unset($layoutVars[$name]);
+                }
+            }
+            unset($layoutVars['filePath']);
+            unset($layoutVars['buffer']);
+            unset($layoutVars['vars']);
+            unset($layoutVars['this']);
+            foreach ($this->layoutVars as $name => $var) {
+                if (isset($this->layoutVars[$name])) {
+                    unset($layoutVars[$name]);
+                }
+            }
+            $this->layoutVars = array_merge($this->layoutVars, $layoutVars);
         } else {
+            extract($this->layoutVars);
+
             require($filePath);
         }
+
         $contents = ob_get_contents();
         ob_end_clean();
         

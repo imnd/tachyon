@@ -64,7 +64,7 @@ class MySql extends Db
 
                 $output .= "\r\n";
             }
-            $file = fopen(self::$explainPath, "w");
+            $file = fopen($this->explainPath, 'w');
             fwrite($file, $output);
             fclose($file);
         } catch (\Exception $e) {
