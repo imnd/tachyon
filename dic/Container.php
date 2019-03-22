@@ -3,7 +3,8 @@ namespace tachyon\dic;
 
 use ReflectionClass,
     tachyon\exceptions\NotFoundException,
-    tachyon\exceptions\ContainerException;
+    tachyon\exceptions\ContainerException
+;
 
 /**
  * Dependency Injection Container
@@ -14,14 +15,20 @@ use ReflectionClass,
 class Container implements ContainerInterface
 {
     /**
-     * массив инстанциированных компонентов
+     * Массив инстанциированных компонентов
+     * @var $_services array
      */
     private $_services = array();
     /**
-     * конфигурация компонентов и их параметров
-     * @var $parameters array
+     * Конфигурация компонентов и их параметров
+     * @var $_config array
      */
     private $_config = array();
+    /**
+     * Сопоставление интерфейсов и их реализаций
+     * @var $_implementations array
+     */
+    private $_implementations;
 
     public function __construct()
     {
@@ -62,6 +69,10 @@ class Container implements ContainerInterface
             }
             $this->_config[$class] = $service;
         }
+        $implementationFile = "$basePath/../../app/config/implementations.php";
+        if (file_exists($implementationFile)) {
+            $this->_implementations = require($implementationFile);
+        }
     }
 
     /**
@@ -92,6 +103,14 @@ class Container implements ContainerInterface
     }
 
     /**
+     * Извлечение реализации интерфейса
+     */
+    public function getImplementation($interface)
+    {
+        return $this->_implementations[$interface] ?? null;
+    }
+
+    /**
      * Создает экземпляр сервиса
      * 
      * @param array $config
@@ -99,15 +118,20 @@ class Container implements ContainerInterface
      * @return void
      * @throws ContainerException
      */
-    private function resolve(string $className, array $params = array())
+    private function resolve(string $name, array $params = array())
     {
-        $reflection = new ReflectionClass($className);
-        if (!$reflection->isInstantiable()) {
-            throw new ContainerException("Class $className is not instantiable.");
+        $reflection = new ReflectionClass($name);
+        if ($reflection->isInterface()) {
+            if (!$name = $this->getImplementation($name)) {
+                throw new ContainerException("Interface $name is not instantiable.");
+            }
+            $reflection = new ReflectionClass($name);
+        } elseif (!$reflection->isInstantiable()) {
+            throw new ContainerException("Class $name is not instantiable.");
         }
-        $variables = $this->_getVariables($className);
-        $dependencies = $this->getDependencies($className);
-        $parents = class_parents($className);
+        $variables = $this->_getVariables($name);
+        $dependencies = $this->getDependencies($name);
+        $parents = class_parents($name);
         foreach ($parents as $parentClassName) {
             $parentDependencies = $this->getDependencies($parentClassName);
             $dependencies = array_merge($dependencies, $parentDependencies);
