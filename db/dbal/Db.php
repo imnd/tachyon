@@ -283,7 +283,10 @@ abstract class Db
     }
 
     /**
-     * устанавливает условие
+     * Устанавливает условие выборки
+     * 
+     * @param array $where
+     * @return void
      */
     public function setWhere($where)
     {
@@ -358,7 +361,11 @@ abstract class Db
     }
 
     /**
-     * добавляет в массив orderBy новый эт-т
+     * Добавляет в массив orderBy новый эт-т
+     * 
+     * @param string $field
+     * @param string $order
+     * @return void
      */
     public function orderBy($fieldName, $order = 'ASC')
     {

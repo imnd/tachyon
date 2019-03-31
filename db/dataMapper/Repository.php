@@ -45,8 +45,6 @@ abstract class Repository
      */
     protected $collection;
 
-    protected $sortBy;
-
     public function __construct(Persistence $persistence, Terms $terms)
     {
         $this->persistence = $persistence;
@@ -88,6 +86,7 @@ abstract class Repository
      */
     public function setSearchConditions($conditions = array()): Repository
     {
+        $this->where($conditions);
         return $this;
     }
 
@@ -153,6 +152,17 @@ abstract class Repository
     }
 
     /**
+     * Устанавливает условие выборки.
+     * 
+     * @param array $where
+     * @return void
+     */
+    public function where($where)
+    {
+        $this->persistence->setWhere($where);
+    }
+
+    /**
      * Устанавливает условия сортировки для хранилища
      * 
      * @param array $attrs
@@ -175,22 +185,6 @@ abstract class Repository
      */
     public function addSortBy($field, $order)
     {
-        $this->sortBy = array_merge($this->sortBy, [$field => $order]);
-    }
-
-    /**
-     * Shortcut
-     */
-    public function gt($where, $field, $arrKey, $precise=false): array
-    {
-        return $this->terms->gt($where, $field, $arrKey, $precise);
-    }
-
-    /**
-     * Shortcut
-     */
-    public function lt($where, $field, $arrKey, $precise=false): array
-    {
-        return $this->terms->lt($where, $field, $arrKey, $precise);
+        $this->persistence->orderBy($field, $order);
     }
 }

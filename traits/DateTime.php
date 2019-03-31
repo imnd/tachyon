@@ -97,11 +97,15 @@ trait DateTime
         if (!isset($conditions['dateFrom'])) {
             $conditions['dateFrom'] = $this->getYearBorders()['first'];
         }
-        $this->gt($conditions, 'date', 'dateFrom');
-
         if (!isset($conditions['dateTo'])) {
             $conditions['dateTo'] = $this->getYearBorders()['last'];
         }
-        $this->lt($conditions, 'date', 'dateTo');
+        $where = array_merge(
+            $this->terms->gt($conditions, 'date', 'dateFrom'),
+            $this->terms->lt($conditions, 'date', 'dateTo')
+        );
+        unset($conditions['dateFrom']);
+        unset($conditions['dateTo']);
+        return array_merge($where, $conditions);
     }
 }

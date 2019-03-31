@@ -192,6 +192,17 @@ class Persistence
     }
 
     /**
+     * Устанавливает условие выборки.
+     * 
+     * @param array $where
+     * @return void
+     */
+    public function setWhere($where)
+    {
+        $this->db->setWhere($where);
+    }
+
+    /**
      * Устанавливает LIMIT.
      * 
      * @param string $limit
@@ -206,10 +217,23 @@ class Persistence
     /**
      * Устанавливает поля сортировки.
      * 
+     * @param string $field
+     * @param string $order
+     * @return Persistence
+     */
+    public function orderBy($field, $order)
+    {
+        $this->db->orderBy($field, $order);
+        return $this;
+    }
+
+    /**
+     * Устанавливает поля сортировки.
+     * 
      * @param string $fields
      * @return Persistence
      */
-    public function orderBy($fields)
+    public function setOrderBy($fields)
     {
         $this->db->setOrderBy($fields);
         return $this;

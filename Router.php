@@ -54,7 +54,7 @@ final class Router
     /**
      * @var string контроллер по умолчанию
      */
-    private $defaultController;
+    private $defaultController = '\app\controllers\IndexController';
 
     /**
      * @param boolean string integer array mixed 
@@ -84,10 +84,11 @@ final class Router
         $urlInfo = parse_url($requestUri);
         $requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
-        // Извлекаем имя контроллера
-        $controllerName = $this->_getNameFromRequest($requestArr);
-        // Извлекаем имя экшна
-        $actionName = $this->_getNameFromRequest($requestArr);
+        // Извлекаем имя контроллера и экшна
+        $route = [
+            'controller' => $this->_getNameFromRequest($requestArr),
+            'action' => $this->_getNameFromRequest($requestArr)
+        ];
         // разбираем массив параметров
         $requestVars = array_merge_recursive([
             'get' => $_GET,
@@ -99,7 +100,7 @@ final class Router
             $requestVars[$key] = $this->_filterVars($requestVars, $key);
         }
         // запускаем соотв. контроллер
-        $this->_startController($controllerName, $actionName, $requestVars);
+        $this->_startController($route, $requestVars);
         // кеширование
         $this->cache->end();
     }
@@ -177,19 +178,21 @@ final class Router
     /**
      * запускаем контроллер
      */
-    private function _startController($controllerName, $actionName, $requestVars)
+    private function _startController($route, $requestVars)
     {
-        $this->defaultController = $this->routes['default'] ?? '\app\controllers\IndexController';
+        if (isset($this->routes['default'])) {
+            $this->defaultController = $this->routes['default'];
+        }
         try {
-            if (empty($controllerName)) {
+            if (empty($controllerName = $route['controller'])) {
                 $controllerClassName = $this->defaultController;
             } else {
                 $controllerClassName = $this->routes[$controllerName] ?? '\app\controllers\\' . ucfirst($controllerName) . 'Controller';
             }
             $controller = $this->container->get($controllerClassName);
             $controllerName = lcfirst(str_replace('Controller', '', $controller->getClassName()));
-            if (empty($actionName) and !$actionName = $controller->getDefaultAction()) {
-                $actionName = 'index';
+            if (empty($actionName = $route['action'])) {
+                $actionName = $controller->getDefaultAction();
             }
             if (!method_exists($controller, $actionName)) {
                 throw new BadMethodCallException;
@@ -218,17 +221,17 @@ final class Router
             }
             $controller->$actionName(...$actionVars);
             $controller->afterAction();
-        /*} catch (ContainerException $e) {
-            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));*/
         } catch (BadMethodCallException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
-        /*} catch (ErrorException $e) {
+        }/* catch (ContainerException $e) {
+            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));
+        } catch (ErrorException $e) {
             $this->_error($e->getCode(), $e->getMessage());
         } catch (Error $e) {
-            $this->_error($e->getCode(), $e->getMessage());*/
-        }
+            $this->_error($e->getCode(), $e->getMessage());
+        }*/
     }
 
     /**
@@ -243,11 +246,11 @@ final class Router
     {
         http_response_code($code);
 
-        $id = lcfirst(str_replace('Controller', '', (new ReflectionClass($this->defaultController))->getShortName()));
+        $controllerId = lcfirst(str_replace('Controller', '', (new ReflectionClass($this->defaultController))->getShortName()));
         $this->container
             ->get($this->defaultController)
             ->setAction('error')
-            ->setId($id)
+            ->setId($controllerId)
             ->start()
             ->layout('error', compact('code', 'msg'));
 
