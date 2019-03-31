@@ -23,28 +23,29 @@ abstract class Repository
      */
     protected $persistence;
     /**
-     * @var \tachyon\db\Terms $terms
+     * @var \tachyon\Terms $terms
      */
     protected $terms;
 
-    /** @var string */
+    // ВЫПИЛИТЬ или перенести вниз по иерархии
+    
+    /**
+     * Имя таблицы БД
+     * @var string
+     */
     protected $tableName;
     /**
      * Имя класса сущности
+     * @var string
      */
     protected $entityName;
     /**
      * Массив сущностей
+     * @var array
      */
     protected $collection;
-    /**
-     * условия для поиска
-     */
-    protected $where = array();
-    /**
-     * сортировка
-     */
-    protected $sortBy = array();
+
+    protected $sortBy;
 
     public function __construct(Persistence $persistence, Terms $terms)
     {
@@ -52,14 +53,18 @@ abstract class Repository
         $this->persistence->setOwner($this);
         $this->terms = $terms;
 
+        if (is_null($this->tableName)) {
+            $tableNameArr = preg_split('/(?=[A-Z])/', str_replace('Repository', '', get_called_class()));
+            array_shift($tableNameArr);
+            $this->tableName = strtolower(implode('_', $tableNameArr)) . 's';
+        }
         if (is_null($this->entityName)) {
             $this->entityName = lcfirst( str_replace('Repository', '', $this->getClassName()) );
         }
     }
 
     /**
-     * @param string $tableName
-     * @return void
+     * @return string
      */
     public function getTableName()
     {
@@ -67,14 +72,84 @@ abstract class Repository
     }
 
     /**
-     * Устанавливает условия поиска для хранилища
-     * 
-     * @param array $conditions условия поиска
-     * @return Repository
+     * @inheritdoc
      */
-    public function setSearchConditions($conditions=array()): Repository
+    public function create($mark = true)
+    {
+        $entity = clone($this->{$this->entityName});
+        if ($mark) {
+            $entity->markNew();
+        }
+        return $entity;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setSearchConditions($conditions = array()): Repository
     {
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findAllRaw(array $where = array(), array $sort = array()): array
+    {
+        return $this->persistence
+            ->from($this->tableName)
+            ->findAll($where, $sort);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findAll(array $where = array(), array $sort = array()): Iterator
+    {
+        $arrayData = $this->findAllRaw($where, $sort);
+        return $this->convertArrayData($arrayData);
+    }
+
+    /**
+     * @param array $arrayData
+     * @return Iterator
+     */
+    protected function convertArrayData($arrayData): Iterator
+    {
+        foreach ($arrayData as $data) {
+            $entity = $this->{$this->entityName}->fromState($data);
+            yield $this->collection[$entity->getPk()] = $entity;
+        }
+    }
+
+    /**
+     * Получить сущность по первичному ключу и поместить в $this->collection.
+     * 
+     * @param int $pk
+     * @return Entity
+     */
+    public function findByPk($pk)
+    {
+        if (!isset($this->collection[$pk])) {
+            $this->collection[$pk] = $this->getByPk($pk);
+        }
+        return $this->collection[$pk];
+    }
+
+    /**
+     * Получить сущность из БД по первичному ключу.
+     * 
+     * @param int $pk
+     * @return Entity
+     */
+    protected function getByPk($pk): Entity
+    {
+        $data = $this
+            ->persistence
+            ->setTableName($this->tableName)
+            ->findByPk($pk);
+
+        return $this->{$this->entityName}->fromState($data);
     }
 
     /**
@@ -104,74 +179,18 @@ abstract class Repository
     }
 
     /**
-     * Создать новую сущность
-     * @return Entity
+     * Shortcut
      */
-    public function create()//: ?Entity
+    public function gt($where, $field, $arrKey, $precise=false): array
     {
-        $entity = clone($this->{$this->entityName});
-        $entity->markNew();
-        return $entity;
+        return $this->terms->gt($where, $field, $arrKey, $precise);
     }
 
     /**
-     * Получить все сущности по условию $condition
-     * 
-     * @return array
+     * Shortcut
      */
-    public function findAll(array $conditions = array(), array $sort = array()): Iterator
+    public function lt($where, $field, $arrKey, $precise=false): array
     {
-        $arrayData = $this->persistence->findAll(array_merge($this->where, $conditions), $sort);
-        //$this->where = $this->sortBy = array();
-        foreach ($arrayData as $data) {
-            $entity = $this->{$this->entityName}->fromState($data);
-            yield $this->collection[$entity->getPk()] = $entity;
-        }
-    }
-
-    /**
-     * Получить сущность по первичному ключу
-     * @return Entity
-     */
-    public function findByPk($pk)//: ?Entity
-    {
-        if (!isset($this->collection[$pk])) {
-            $data = $this->persistence->findByPk($pk);
-            $this->collection[$pk] = $this->{$this->entityName}->fromState($data);
-        }
-        return $this->collection[$pk];
-    }
-
-    /**
-     * Сохраняет в хранилище измененную сущность
-     * 
-     * @param Entity $entity
-     * @return boolean
-     */
-    public function update(Entity $entity)
-    {
-        return $this->persistence->updateByPk($entity->getPk(), $entity->getAttributes());
-    }
-
-    /**
-     * Вставляет в хранилище новую сущность
-     *
-     * @param Entity $entity
-     * @return boolean
-     */
-    public function insert(Entity $entity)
-    {
-        return $this->persistence->insert($entity->getAttributes());
-    }
-
-    /**
-     * Удаляет сущность из хранилища
-     * 
-     * @param Entity $entity
-     * @return boolean
-     */
-    public function delete(Entity $entity)
-    {
-        return $this->persistence->delete($entity->getPk());
+        return $this->terms->lt($where, $field, $arrKey, $precise);
     }
 }

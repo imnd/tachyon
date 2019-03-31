@@ -19,11 +19,12 @@ class Terms
      * 
      * @return ActiveRecord
      */
-    public function gt($where, $field, $arrKey, $precise=false)
+    public function gt($where, $field, $arrKey, $precise=false): array
     {
         if (!empty($where[$arrKey])) {
             return array("$field>" . ($precise ? '' : '=') => $where[$arrKey]);
         }
+        return array();
     }
 
     /**
@@ -36,11 +37,12 @@ class Terms
      * 
      * @return ActiveRecord
      */
-    public function lt($where, $field, $arrKey, $precise=false)
+    public function lt($where, $field, $arrKey, $precise=false): array
     {
         if (!empty($where[$arrKey])) {
             return array("$field<" . ($precise ? '' : '=') => $where[$arrKey]);
         }
+        return array();
     }
 
     /**
@@ -49,10 +51,11 @@ class Terms
      * @param $where array 
      * @param $field string
      */
-    public function like($where, $field)
+    public function like($where, $field): array
     {
         if (!empty($where[$field])) {
             return array("$field LIKE" => $where[$field]);
         }
+        return array();
     }
 }

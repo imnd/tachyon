@@ -1,9 +1,11 @@
 <?php
 namespace tachyon\db\activeRecord;
 
-use tachyon\exceptions\ModelException,
+use tachyon\Model,
+    tachyon\dic\Container,
+    tachyon\exceptions\ModelException,
     tachyon\components\Message,
-    tachyon\cache\Db,
+    tachyon\cache\Db as DbCache,
     tachyon\db\Alias,
     tachyon\db\dbal\DbFactory,
     tachyon\db\activeRecord\Join,
@@ -16,10 +18,10 @@ use tachyon\exceptions\ModelException,
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-abstract class ActiveRecord extends \tachyon\Model
+abstract class ActiveRecord extends Model
 {
     /**
-     * @var \tachyon\cache\Db $cache
+     * @var DbCache $cache
      */
     protected $cache;
     /**
@@ -31,7 +33,7 @@ abstract class ActiveRecord extends \tachyon\Model
      */
     protected $alias;
     /**
-     * @var \tachyon\db\activeRecord\Join $join
+     * @var Join $join
      */
     protected $join;
     /**
@@ -138,7 +140,7 @@ abstract class ActiveRecord extends \tachyon\Model
      */
     public function __construct(
         Message $msg,
-        Db $cache,
+        DbCache $cache,
         Alias $alias,
         DbFactory $dbFactory,
         Join $join,
@@ -171,11 +173,11 @@ abstract class ActiveRecord extends \tachyon\Model
         // если это не подключенное ч/з with св-во ("жадная" загрузка)
         // ищем среди присоединенных ч/з внешние ключи объектов
         // TODO: перенести в Relations
-        $container = new \tachyon\dic\Container;
+        $container = new Container;
         if (isset($this->relations[$var])) {
             // добавляем внешние ключи по объявленным связям
             $relationParams = $this->relations[$var];
-            $relationModel = (new \tachyon\dic\Container)->get($this->_getFullModelName($relationParams[0]));
+            $relationModel = $container->get($this->_getFullModelName($relationParams[0]));
             // приделываем поля связанной таблицы (если не заданы в связи)
             if (!isset($relationParams[3])) {
                 $relationParams[3] = $relationModel->getTableFields();
@@ -187,13 +189,16 @@ abstract class ActiveRecord extends \tachyon\Model
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->getAlias()->getPrimKeyAliasArr($with, $relationModel->getPkName()));
             }
             
-            $relModel = $container->get($relationArr[0]);
-            $type = $relationArr[1];
+            /**
+             * @var ActiveRecord $relModel
+             */
+            $relModel = $container->get("\\app\\models\\{$relationParams[0]}");
+            $type = $relationParams[1];
             // первичный ключ внешней таблицы
             $relPk = $relModel->getPkName();
             switch ($type) {
                 case 'has_one':
-                    $fk = $relationArr[2];
+                    $fk = $relationParams[2];
                     $where = is_array($fk) ? array($fk[1] => $this->{$fk[0]}) : array($relPk=> $this->$fk);
                     return $relModel
                         ->where($where)
@@ -204,7 +209,7 @@ abstract class ActiveRecord extends \tachyon\Model
                     // первичный ключ этой таблицы
                     $thisPk = $this->pkName;
                     // внешний ключ связанной таблицы, указывающий на первичный ключ этой таблицы
-                    $fk = $relationArr[2];
+                    $fk = $relationParams[2];
                     return $relModel
                         ->where(array($fk => $this->$thisPk))
                         ->findAll();
@@ -212,14 +217,14 @@ abstract class ActiveRecord extends \tachyon\Model
 
                 case 'many_to_many':
                     $pk = $this->pkName;
-                    $lnkModel = $container->get($relationArr[2][0]);
+                    $lnkModel = $container->get($relationParams[2][0]);
                     $linkTableName = $lnkModel->getTableName();
-                    $relFk1 = $relationArr[2][1];
-                    $relFk2 = $relationArr[2][2];
+                    $relFk1 = $relationParams[2][1];
+                    $relFk2 = $relationParams[2][2];
                     $relTableName = $relModel->getTableName();
                     $thisTableName = $this->getTableName();
-                    if (isset($relationArr[2][3])) {
-                        foreach ($relationArr[2][3] as $fieldName) {
+                    if (isset($relationParams[2][3])) {
+                        foreach ($relationParams[2][3] as $fieldName) {
                             $relModel->select("$linkTableName.$fieldName");
                         }
                     }
@@ -232,19 +237,19 @@ abstract class ActiveRecord extends \tachyon\Model
                 
                 case 'belongs_to':
                     // внешний ключ данной таблицы, указывающий на первичный ключ внешней таблицы
-                    $relFk = $relationArr[2];
+                    $relFk = $relationParams[2];
                     return $relModel
                         ->where(array($relPk => $this->$relFk))
                         ->findOne();
                 break;
 
                 case 'join':
-                    $linkKey = $relationArr[2];
+                    $linkKey = $relationParams[2];
                     $relTableName = $relModel->getTableName();
                     $pk = $this->pkName;
                     $thisTableName = $this->getTableName();
                     $this->getDb()->setJoin("{$relModel->getSource()} AS $relTableName", "$relTableName.$linkKey=$thisTableName.$pk");
-                    $this->getDb()->setFields($relationArr[3]);
+                    $this->getDb()->setFields($relationParams[3]);
                     return $this->getDb()->selectOne($thisTableName, array("$thisTableName.$pk" => $this->$pk));
                 break;
 
@@ -265,7 +270,7 @@ abstract class ActiveRecord extends \tachyon\Model
      * @param array $conditions условия поиска массив поле => значение
      * @return array
      */
-    public function findAllScalar(array $conditions = array()): array
+    public function findAllRaw(array $conditions = array()): array
     {
         if (!empty($conditions)) {
             $this->addWhere($conditions);
@@ -299,10 +304,10 @@ abstract class ActiveRecord extends \tachyon\Model
      * @param $attrs array массив поле=>значение
      * @return array
      */
-    public function findOneScalar(array $conditions = array())
+    public function findOneRaw(array $conditions = array())
     {
         $this->getDb()->setLimit(1);
-        if ($items = $this->findAllScalar($conditions)) {
+        if ($items = $this->findAllRaw($conditions)) {
             return $items[0];
         }
     }
@@ -326,9 +331,9 @@ abstract class ActiveRecord extends \tachyon\Model
                   . $this->getGroupBy()
                   . json_encode($this->with);
 
-        if ($items = $this->cache->start($cacheKey))
+        if ($items = $this->cache->start($cacheKey)) {
             return $items;
-
+        }
         $this->setDefaultSortBy();
 
         // для алиасинга имен таблиц в условиях и группировках
@@ -378,7 +383,7 @@ abstract class ActiveRecord extends \tachyon\Model
             // чтобы не перезаписывать данные основной записи в случае JOIN
             if (!array_key_exists($itemPk, $retItems)) {
                 // берём только поля данной модели (без присоединенных ч/з JOIN)
-                $model = (new \tachyon\dic\Container)->get(get_called_class());
+                $model = (new Container)->get(get_called_class());
                 $model->with($this->with);
                 $model->setAttributes(array_intersect_key($item, $modelFieldsKeys));
                 $model->setAttribute($this->pkName, $itemPk);
@@ -391,9 +396,9 @@ abstract class ActiveRecord extends \tachyon\Model
                 $relation = $this->relationClasses[$with];
                 // выбираем значения внешних полей
                 $relation->setValues($item);
-                if (count($relation->getValues())===0)
+                if (count($relation->getValues())===0) {
                     continue;
-
+                }
                 // убираем суффиксы у ключей
                 $relation->trimSuffixes($with);
                 /*
@@ -455,13 +460,14 @@ abstract class ActiveRecord extends \tachyon\Model
     {
         $where = array();
         $tableName = $this->getTableName();
-        foreach ($this->attributes as $key => $value)
+        foreach ($this->attributes as $key => $value) {
             if (!is_null($value))
                 $where["$tableName.$key"] = $value;
-
+        }
         $this->where($where);
-        if (!is_null($fields))
+        if (!is_null($fields)) {
             $this->select($fields);
+        }
         return $this->findAll();
     }
 
@@ -515,9 +521,9 @@ abstract class ActiveRecord extends \tachyon\Model
             return false;
 
         $result = $this->isNew ? $this->insert() : $this->update();
-        if ($result!==false)
+        if ($result!==false) {
             $this->afterSave();
-
+        }
         return $result;
     }
 
@@ -532,9 +538,9 @@ abstract class ActiveRecord extends \tachyon\Model
     public function saveAttrs(array $attrs, $validate=false)
     {
         $this->setAttributes($attrs);
-        if ($validate && !$this->validate(array_keys($attrs)))
+        if ($validate && !$this->validate(array_keys($attrs))) {
             return false;
-
+        }
         return $this->update();
     }
 
@@ -614,14 +620,6 @@ abstract class ActiveRecord extends \tachyon\Model
             $relModel->delete();
             unset($relModel);
         }
-    }
-
-    /**
-     * очищаем таблицу
-     */
-    public static function clear()
-    {
-        $this->getDb()->truncate(static::$tableName);
     }
 
     /**
@@ -852,7 +850,7 @@ abstract class ActiveRecord extends \tachyon\Model
      */
     public function setSelect()
     {
-        // если он пуст 
+        // если он пуст
         if (empty($this->getSelect())) {
             $this->select($this->getTableFields());
         }
@@ -879,12 +877,12 @@ abstract class ActiveRecord extends \tachyon\Model
 
     public function with($with)
     {
-        if (is_array($with))
+        if (is_array($with)) {
             foreach ($with as $item)
                 $this->setWith($item);
-        else
+        } else {
             $this->setWith($with);
-
+        }
         return $this;
     }
 
@@ -895,7 +893,7 @@ abstract class ActiveRecord extends \tachyon\Model
         }
         $relType = $relationParams[1];
         $relationClassName = ucfirst(str_replace('_', '', $relType)) . 'Relation';
-        if (!$relation = (new \tachyon\dic\Container)->get($relationClassName, [
+        if (!$relation = (new Container)->get($relationClassName, [
             'modelName' => $relationParams[0],
             'type' => $relationParams[1],
             'linkKey' => $relationParams[2],
@@ -932,7 +930,7 @@ abstract class ActiveRecord extends \tachyon\Model
         $relationName = $this->join->getRelationName($join);
         $relation = $this->relations[$relationName];
         if (in_array($relation[1], array('has_many', 'has_one'))) {
-            $joinModel = (new \tachyon\dic\Container)->get($relation[0]);
+            $joinModel = (new Container)->get($relation[0]);
             return array($joinModel::getTableName() => $join[$relationName]);
         }
         throw new ModelException($this->msg->i18n('Determine the join condition of the table %table', array('table' => $join)));
@@ -946,15 +944,14 @@ abstract class ActiveRecord extends \tachyon\Model
     {
         $relationName = $this->join->getRelationName($join);
         $relation = $this->relations[$relationName];
-        $joinModel = (new \tachyon\dic\Container)->get($relation[0]);
+        $joinModel = (new Container)->get($relation[0]);
         $tableName = static::$tableName;
         // алиасим имя таблицы
-        if (!is_null($this->tableAlias))
+        if (!is_null($this->tableAlias)) {
             $tableName .= " AS {$this->tableAlias}";
-
+        }
         if (in_array($relation[1], array('has_many', 'has_one'))) {
-            $on = $tableName . "." . $this->pkName . "=" . $join[$relationName] . "." . $relation[2];
-            return $on;
+            return "$tableName.{$this->pkName}={$join[$relationName]}.{$relation[2]}";
         }
         throw new ModelException($this->msg->i18n('Determine the join condition of the table %table', array('table' => $join)));
     }
@@ -975,42 +972,45 @@ abstract class ActiveRecord extends \tachyon\Model
 
     public function innerJoin($join, $on=array(), $tblName=null)
     {
-        if (is_null($tblName))
+        if (is_null($tblName)) {
             $tblName = $this->getTableAlias();
-
+        }
         $this->join->innerJoin($join, $on, $tblName);
         return $this; 
     }
 
     public function leftJoin($join, $on=array(), $tblName=null)
     {
-        if (is_null($tblName))
+        if (is_null($tblName)) {
             $tblName = $this->getTableAlias();
-
+        }
         $this->join->leftJoin($join, $on, $tblName);
         return $this; 
     }
 
     public function rightJoin($join, $on=array(), $tblName=null)
     {
-        if (is_null($tblName))
+        if (is_null($tblName)) {
             $tblName = $this->getTableAlias();
-
+        }
         $this->join->rightJoin($join, $on, $tblName);
         return $this; 
     }
 
     public function outerJoin($join, $on=array(), $tblName=null)
     {
-        if (is_null($tblName))
+        if (is_null($tblName)) {
             $tblName = $this->getTableAlias();
-
+        }
         $this->join->outerJoin($join, $on, $tblName);
         return $this; 
     }
 
     /**
-     * Устанавливает алиас текущей (главной) таблицы запроса
+     * Устанавливает алиас текущей (главной) таблицы запроса.
+     * 
+     * @param string $alias
+     * @return ActiveRecord
      */
     public function asa($alias)
     {
@@ -1039,9 +1039,9 @@ abstract class ActiveRecord extends \tachyon\Model
             foreach ($pk as $key)
                 if (!in_array($key, $modelFields)) 
                     $modelFields[] = $key;
-        } elseif (!in_array($pk, $modelFields)) 
+        } elseif (!in_array($pk, $modelFields)) {
             $modelFields[] = $pk;
-            
+        }
         $this->select($modelFields);
     }
 
@@ -1125,7 +1125,7 @@ abstract class ActiveRecord extends \tachyon\Model
     public function getPkArr()
     {
         if (!$pkName = $this->pkName) {
-            throw new ModelException((new \tachyon\dic\Container)->get('msg')->i18n('The primary key of the related table is not declared.'));
+            throw new ModelException((new Container)->get('msg')->i18n('The primary key of the related table is not declared.'));
         }
         return (array)($pkName);
     }

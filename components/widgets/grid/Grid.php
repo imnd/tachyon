@@ -1,7 +1,8 @@
 <?php
 namespace tachyon\components\widgets\grid;
 
-use tachyon\Config,
+use tachyon\dic\Container,
+    tachyon\Config,
     tachyon\components\Message,
     tachyon\components\Csrf;
 
@@ -100,7 +101,7 @@ class Grid extends \tachyon\components\widgets\Widget
             $this->csrfJson = '"' . $this->csrf->getTokenId() . '":"' . $this->csrf->getTokenVal() . '",';
         }
         if (is_null($this->model)) {
-            $this->model = (new \tachyon\dic\Container)->get($this->modelName);
+            $this->model = (new Container)->get($this->modelName);
         } else {
             $this->modelName = $this->model->getClassName();
         }

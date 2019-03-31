@@ -1,7 +1,9 @@
 <?php
 namespace tachyon\db\dbal;
 
-use tachyon\Config,
+use tachyon\dic\Container,
+    tachyon\exceptions\DBALException,
+    tachyon\Config,
     tachyon\components\Message;
 
 /**
@@ -43,19 +45,17 @@ class DbFactory
     {
         if (is_null($this->db)) {
             if (!$config = $this->config->get('db')) {
-                throw new \tachyon\exceptions\DBALException('Не задан параметр конфигурации "db"');
+                throw new DBALException('Не задан параметр конфигурации "db"');
             }
             if (!isset($config['engine'])) {
-                throw new \tachyon\exceptions\DBALException('Не задан параметр конфигурации "engine"');
+                throw new DBALException('Не задан параметр конфигурации "engine"');
             }
             $config['mode'] = $this->config->get('mode');
             $className = [
                 'mysql' => 'MySql',
                 'pgsql' => 'PgSql',
             ][$config['engine']];
-            $className = "\\tachyon\\db\\dbal\\$className";
-
-            $this->db = new $className($this->msg, $config);
+            $this->db = (new Container)->get("\\tachyon\\db\\dbal\\$className", $config);
         }
         return $this->db;
     }

@@ -8,11 +8,6 @@ namespace tachyon\db\dataMapper;
 interface EntityInterface
 {
     /**
-     * @return DbContext
-     */
-    public function getDbContext();
-
-    /**
      * @return Repository
      */
     public function getRepository();
@@ -42,10 +37,10 @@ interface EntityInterface
     /**
      * Присваивание значения $value аттрибуту $attribute
      * 
-     * @param string $attribute 
+     * @param mixed $attribute 
      * @param mixed $value 
      */
-    public function setAttribute(string $attribute, $value);
+    public function setAttribute($attribute, $value = null);
 
     /**
      * Имя поля первичного ключа
@@ -60,21 +55,4 @@ interface EntityInterface
      * @return mixed
      */
     public function getPk();
-
-    # UNIT OF WORK
-
-    /**
-     * Помечает только что созданую сущность как новую.
-     */
-    public function markNew();
-
-    /**
-     * Помечает сущность как измененную.
-     */
-    public function markDirty();
-
-    /**
-     * Помечает сущность на удаление.
-     */
-    public function markDeleted();
 }

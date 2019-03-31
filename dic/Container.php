@@ -41,12 +41,10 @@ class Container implements ContainerInterface
     private function _loadConfig()
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-        $coreConfText = file_get_contents("$basePath/dic/services.json");
-        $elements = json_decode($coreConfText, true);
+        $elements = include "$basePath/dic/services.php";
         if (
-                file_exists($appConfPath = "$basePath/../../app/config/services.json")
-            and $appConfText = file_get_contents($appConfPath)
-            and $appElements = json_decode($appConfText, true)
+                file_exists($appConfPath = "$basePath/../../app/config/services.php")
+            and $appElements = include $appConfPath
         ) {
             $elements = array_merge($elements, $appElements);
         }
@@ -139,9 +137,9 @@ class Container implements ContainerInterface
             $variables = array_merge($variables, $parentVariables);
         }
 
-        $service = empty($dependencies) ? $reflection->newInstance() : $reflection->newInstanceArgs($dependencies);
+        $service = empty($dependencies) ? $reflection->newInstance() : $reflection->newInstanceArgs(array_merge($dependencies, compact('params')));
         
-        $this->_setVariables($service, array_merge($variables, $params));
+        $this->_setVariables($service, $variables);
 
         return $service;
     }

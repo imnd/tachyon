@@ -128,8 +128,6 @@ class View
     {
         $layoutHtml = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
 
-        $layoutHtml = $this->_include($layoutHtml, $vars);
-
         if (false!==$extendsPos = strpos($layoutHtml, '@extends')) {
             $start = $extendsPos + strlen('@extends') + 2;
             $end = strpos($layoutHtml, "'", $start);
@@ -143,25 +141,6 @@ class View
         $layoutHtml = $this->_replaceTag($layoutHtml, $viewContents, '@contents');
 
         return $layoutHtml;
-    }
-
-    /**
-     * Заменяет все тэги '@include' в тексте $textToReplace на содержимое файлов
-     * 
-     * @param string $textToReplace
-     * @param array $vars
-     * @return void
-     */
-    private function _include($text, $vars)
-    {
-        $directive = '@include';
-        while (false!==$dirPos = strpos($text, $directive)) {
-            $start = $dirPos + strlen($directive) + 2;
-            $fileNameLen = strpos($text, "'", $start) - $start;
-            $fileName = substr($text, $start, $fileNameLen);
-            $text = substr($text, 0, $dirPos) . $this->_view("{$this->layoutPath}/$fileName", $vars, true) . substr($text, $start + $fileNameLen + 2);
-        }
-        return $text;
     }
 
     /**

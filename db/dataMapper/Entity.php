@@ -5,8 +5,15 @@ use tachyon\validation\ValidationInterface,
     tachyon\db\dataMapper\DbContext,
     tachyon\validation\Validator;
 
-abstract class Entity implements EntityInterface, ValidationInterface
+abstract class Entity implements EntityInterface, UnitOfWorkInterface, ValidationInterface
 {
+    use \tachyon\traits\ClassName;
+    
+    /**
+     * Имя таблицы БД
+     * @var string
+     */
+    protected $tableName;
     /**
      * @var tachyon\db\dataMapper\DbContext
      */
@@ -23,6 +30,11 @@ abstract class Entity implements EntityInterface, ValidationInterface
     {
         $this->dbContext = $dbContext;
         $this->validator = $validator;
+        if (is_null($this->tableName)) {
+            $tableNameArr = preg_split('/(?=[A-Z])/', $this->getClassName());
+            array_shift($tableNameArr);
+            $this->tableName = strtolower(implode('_', $tableNameArr)) . 's';
+        }
     }
 
     /**
@@ -41,11 +53,11 @@ abstract class Entity implements EntityInterface, ValidationInterface
     protected $errors = array();
 
     /**
-     * @return DbContext
+     * @return string
      */
-    public function getDbContext()
+    public function getTableName()
     {
-        return $this->dbContext;
+        return $this->tableName;
     }
 
     /**
@@ -83,16 +95,27 @@ abstract class Entity implements EntityInterface, ValidationInterface
 
     /**
      * Присваивание значения $value аттрибуту $attribute
+     * При этом сущность не помечается как измененная.
      * 
-     * @param string $attribute 
+     * @param mixed $attribute 
      * @param mixed $value 
      */
-    public function setAttribute(string $attribute, $value)
+    public function setAttribute($attribute, $value = null)
     {
-        $methodName = 'set' . ucfirst($attribute);
-        if (method_exists($this, $methodName)) {
-            $this->$methodName();
+        if (is_array($attribute)) {
+            $value = array_values($attribute)[0];
+            $attribute = array_keys($attribute)[0];
         }
+        $this->$attribute = $value;
+    }
+
+    protected function _setAttribute(string $attribute, string $value = null): Entity
+    {
+        if (!is_null($value)) {
+            $this->$attribute = $value;
+            $this->markDirty();
+        }
+        return $this;
     }
 
     /**
@@ -115,7 +138,52 @@ abstract class Entity implements EntityInterface, ValidationInterface
         return $this->getAttribute($this->pk);
     }
 
-    # UNIT OF WORK
+    /**
+     * Установка значения первичного ключа
+     * 
+     * @return mixed
+     */
+    public function setPk($pk)
+    {
+        $this->{$this->pk} = $pk;
+    }
+
+    # Unit of work
+
+    /**
+     * @return DbContext
+     */
+    public function getDbContext()
+    {
+        return $this->dbContext;
+    }
+
+    /**
+     * @param Entity $entity
+     * @return bool
+     */
+    public function isNew()
+    {
+        return $this->dbContext->isNew($this);
+    }
+
+    /**
+     * @param Entity $entity
+     * @return bool
+     */
+    public function isDirty(Entity $entity)
+    {
+        return $this->dbContext->isDirty($this);
+    }
+
+    /**
+     * @param Entity $entity
+     * @return bool
+     */
+    public function isDeleted(Entity $entity)
+    {
+        return $this->dbContext->isDeleted($this);
+    }
 
     /**
      * Помечает только что созданую сущность как новую.
@@ -144,7 +212,33 @@ abstract class Entity implements EntityInterface, ValidationInterface
         return $this;
     }
 
-    # VALIDATION
+    /**
+     * Сохранение одиночной сущности.
+     * 
+     * @return boolean
+     */
+    public function save()
+    {
+        return
+                $this->validate()
+            and $this->getDbContext()->commit()
+        ;
+    }
+
+    /**
+     * Удаление одиночной сущности.
+     * 
+     * @return boolean
+     */
+    public function delete()
+    {
+        return
+                $this->markDeleted()
+            and $this->getDbContext()->commit()
+        ;
+    }
+
+    # Validation
 
     /**
      * Возвращает список правил валидации

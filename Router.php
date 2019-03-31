@@ -27,21 +27,29 @@ use
 final class Router
 {
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
-    protected $config;
+    private $config;
     /**
      * @var \tachyon\cache\Output $cache
      */
-    protected $cache;
+    private $cache;
     /**
      * @var \tachyon\components\Message $msg
      */
-    protected $msg;
+    private $msg;
     /**
-     * @var \tachyon\View $view
+     * @var View $view
      */
-    protected $view;
+    private $view;
+    /**
+     * @var Container $container
+     */
+    private $container;
+    /**
+     * @var array $routes
+     */
+    private $routes;
 
     /**
      * @var string контроллер по умолчанию
@@ -57,6 +65,10 @@ final class Router
         $this->cache = $cache;
         $this->msg = $msg;
         $this->view = $view;
+        $this->container = new Container;
+
+        $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
+        $this->routes = require("$basePath/../app/config/routes.php");
     }
 
     /**
@@ -72,9 +84,8 @@ final class Router
         $urlInfo = parse_url($requestUri);
         $requestArr = explode('/', $urlInfo['path']);
         array_shift($requestArr);
-        $this->defaultController = $this->config->get('defaultController') ?: 'Index';
         // Извлекаем имя контроллера
-        $controllerName = $this->_getNameFromRequest($requestArr, $this->defaultController);
+        $controllerName = $this->_getNameFromRequest($requestArr);
         // Извлекаем имя экшна
         $actionName = $this->_getNameFromRequest($requestArr);
         // разбираем массив параметров
@@ -101,16 +112,15 @@ final class Router
      * 
      * @return string
      */
-    private function _getNameFromRequest(array &$requestArr, $default = null)
+    private function _getNameFromRequest(array &$requestArr)
     {
         if (
                 count($requestArr)===0
             || is_numeric($requestArr[0])
-            or '' === $name = array_shift($requestArr)
         ) {
-            return $default;
+            return;
         }
-        return $name;
+        return array_shift($requestArr);
     }
 
     /**
@@ -137,23 +147,31 @@ final class Router
     /**
      * Защита от XSS и SQL injection
      * @param array $vars
-     * @return void
+     * @return mixed
      */
     private function _filterVars($vars, $key)
     {
         if (!isset($vars[$key])) {
             return;
         }
-        $arr = $vars[$key];
+        return $this->_filterVar($vars[$key]);
+    }
+
+    /**
+     * Защита от XSS и SQL injection
+     * @param mixed $arr
+     * @return mixed
+     */
+    private function _filterVar($arr)
+    {
         if (is_string($arr)) {
-            $arr = ArrayHelper::filterText($arr);
+            return ArrayHelper::filterText($arr);
         } elseif (is_array($arr)) {
-            foreach ($arr as &$value) {
-                $value = ArrayHelper::filterText($value);
+            foreach ($arr as &$val) {
+                $val = $this->_filterVar($val);
             }
-            $arr = array_filter($arr);
+            return array_filter($arr);
         }
-        return $arr;
     }
 
     /**
@@ -161,11 +179,16 @@ final class Router
      */
     private function _startController($controllerName, $actionName, $requestVars)
     {
-        $container = new Container;
+        $this->defaultController = $this->routes['default'] ?? '\app\controllers\IndexController';
         try {
-            $controllerClassName = '\app\controllers\\' . ucfirst($controllerName) . 'Controller';
-            $controller = $container->get($controllerClassName);
-            if (is_null($actionName) && is_null($actionName = $controller->getDefaultAction())) {
+            if (empty($controllerName)) {
+                $controllerClassName = $this->defaultController;
+            } else {
+                $controllerClassName = $this->routes[$controllerName] ?? '\app\controllers\\' . ucfirst($controllerName) . 'Controller';
+            }
+            $controller = $this->container->get($controllerClassName);
+            $controllerName = lcfirst(str_replace('Controller', '', $controller->getClassName()));
+            if (empty($actionName) and !$actionName = $controller->getDefaultAction()) {
                 $actionName = 'index';
             }
             if (!method_exists($controller, $actionName)) {
@@ -189,14 +212,14 @@ final class Router
             // Защита от XSS. HTTP Only
             ini_set('session.cookie_httponly', 1);
 
-            $actionVars = $container->getDependencies($controllerClassName, $actionName);
+            $actionVars = $this->container->getDependencies($controllerClassName, $actionName);
             if (!is_null($requestVars['inline'])) {
                 $actionVars[] = $requestVars['inline'];
             }
             $controller->$actionName(...$actionVars);
             $controller->afterAction();
-        } catch (ContainerException $e) {
-            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));
+        /*} catch (ContainerException $e) {
+            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));*/
         } catch (BadMethodCallException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
         } catch (HttpException $e) {
@@ -220,10 +243,9 @@ final class Router
     {
         http_response_code($code);
 
-        $defaultController = '\app\controllers\\' . $this->defaultController . 'Controller';
-        $id = lcfirst(str_replace('Controller', '', (new ReflectionClass($defaultController))->getShortName()));
-        (new Container)
-            ->get($defaultController)
+        $id = lcfirst(str_replace('Controller', '', (new ReflectionClass($this->defaultController))->getShortName()));
+        $this->container
+            ->get($this->defaultController)
             ->setAction('error')
             ->setId($id)
             ->start()

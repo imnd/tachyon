@@ -19,6 +19,8 @@ use BadMethodCallException,
  */
 class Controller
 {
+    use \tachyon\traits\ClassName;
+
     /**
      * Язык сайта
      * @var $language string

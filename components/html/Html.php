@@ -141,13 +141,13 @@ class Html
         if (!isset($options['value']))
             $options['value'] = $model->$name;
 
-        $options['attrs']['name'] = $model->getClassName() . "[$name]";
-        if (!empty($options['multiple']))
+        $options['attrs']['name'] = "{$model->getClassName()}[$name]";
+        if (!empty($options['multiple'])) {
             $options['attrs']['name'] .= '[]';
-
-        if (isset($options['readonly']))
+        }
+        if (isset($options['readonly'])) {
             $options['attrs']['readonly'] = 'readonly';
-
+        }
         return $this->tag('input', $options, 'single');
     }
 

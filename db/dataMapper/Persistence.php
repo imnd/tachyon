@@ -8,30 +8,88 @@ class Persistence
     use \tachyon\traits\HasOwner;
 
     /**
-     * @var \tachyon\db\dbal\DbFactory
+     * Имя текущей (главной) таблицы запроса
      */
-    protected $dbFactory;
+    protected $tableName;
+    /**
+     * Алиас текущей (главной) таблицы запроса
+     */
+    protected $tableAlias = 't';
+    /**
+     * Поля выборки.
+     * выпилить. переместить в DB
+     */
+    protected $select = array();
+
+    /**
+     * @var \tachyon\db\dbal\Db
+     */
+    protected $db;
 
     /**
      * @return void
      */
     public function __construct(DbFactory $dbFactory)
     {
-        $this->dbFactory = $dbFactory;
+        $this->db = $dbFactory->getDb();
     }
 
     /**
-     * Находит все записи по условию $condition
+     * Находит все записи по условию $where, отсортированные по $sort
+     * 
+     * @param array $where
+     * @param array $fields
+     * @param array $sort
+     * @param string $tableName
      */
-    public function findAll(array $condition = array(), array $sort = array()): array
+    public function findAll(array $where = [], array $sortBy = [], array $fields = [], $tableName = null): array
     {
-        $db = $this->dbFactory->getDb();
-        if (!empty($sort)) {
-            foreach ($sort as $fieldName => $order) {
-                $db->orderBy($fieldName, $order);
+        if (!is_null($tableName)) {
+            $this->tableName = $tableName;
+        }
+        $this->_alias();
+        if (!empty($sortBy)) {
+            foreach ($sortBy as $fieldName => $order) {
+                $this->db->orderBy($fieldName, $order);
             }
         }
-        return $db->select($this->owner->getTableName(), $condition);
+        return $this->db->select($this->tableName, $where, array_merge($this->select, $fields));
+    }
+
+    /**
+     * Делает запрос $query к БД и извлекает результаты в виде массива.
+     * @param string $query
+     * @return array
+     */
+    public function queryAll(string $query)
+    {
+        return $this->db->queryAll($query);
+    }
+
+    /**
+     * Находит все записи по условию $where, отсортированные по $sort
+     * 
+     * @param array $where
+     * @param array $fields
+     * @param string $tableName
+     */
+    public function findOne(array $where = [], array $fields = [], $tableName = null): array
+    {
+        if (!is_null($tableName)) {
+            $this->tableName = $tableName;
+        }
+        $this->_alias();
+        return $this->db->selectOne($this->tableName, $where, array_merge($this->select, $fields));
+    }
+
+    /**
+     * @return void
+     */
+    private function _alias()
+    {
+        if (!is_null($this->tableAlias)) {
+            $this->tableName .= " AS {$this->tableAlias}";
+        }
     }
 
     /**
@@ -39,9 +97,12 @@ class Persistence
      * 
      * return mixed;
      */
-    public function findByPk($pk)
+    public function findByPk($pk, $tableName = null)
     {
-        return $this->dbFactory->getDb()->selectOne($this->owner->getTableName(), ['id' => $pk]);
+        if (!is_null($tableName)) {
+            $this->tableName = $tableName;
+        }
+        return $this->db->selectOne($this->tableName, ['id' => $pk]);
     }
 
     /**
@@ -49,9 +110,12 @@ class Persistence
      * 
      * @return boolean
      */
-    public function updateByPk($pk, array $fieldValues)
+    public function updateByPk($pk, array $fieldValues, $tableName = null)
     {
-        return $this->dbFactory->getDb()->update($this->owner->getTableName(), $fieldValues, ['id' => $pk]);
+        if (!is_null($tableName)) {
+            $this->tableName = $tableName;
+        }
+        return $this->db->update($this->tableName, $fieldValues, ['id' => $pk]);
     }
 
     /**
@@ -59,9 +123,12 @@ class Persistence
      * 
      * @return boolean
      */
-    public function insert(array $fieldValues)
+    public function insert(array $fieldValues, $tableName = null)
     {
-        return $this->dbFactory->getDb()->insert($this->owner->getTableName(), $fieldValues);
+        if (!is_null($tableName)) {
+            $this->tableName = $tableName;
+        }
+        return $this->db->insert($this->tableName, $fieldValues);
     }
 
     /**
@@ -70,8 +137,137 @@ class Persistence
      * @param mixed $pk
      * @return boolean
      */
-    public function deleteByPk($pk)
+    public function deleteByPk($pk, $tableName = null)
     {
-        return $this->dbFactory->getDb()->delete($this->owner->getTableName(), ['id' => $pk]);
+        if (!is_null($tableName)) {
+            $this->tableName = $tableName;
+        }
+        return $this->db->delete($this->tableName, ['id' => $pk]);
+    }
+
+    /**
+     * @return void
+     */
+    public function beginTransaction()
+    {
+        $this->db->beginTransaction();
+    }
+
+    /**
+     * @return void
+     */
+    public function endTransaction()
+    {
+        $this->db->endTransaction();
+    }
+
+    /**
+     * Устанавливаем какие таблицы джойнить
+     * 
+     * @param array $with
+     * @param array $on
+     * @return Persistence
+     */
+    public function with(array $with, $on = array())
+    {
+        $withAlias = array_values($with)[0];
+        if (is_array($on)) {
+            $onForeignKey = array_keys($on)[0];
+            $onPrimaryKey = array_values($on)[0];
+        } else {
+            $onForeignKey = $onPrimaryKey = $on;
+        }
+        $onForeignKey = "{$this->tableAlias}.$onForeignKey";
+        $onPrimaryKey = "$withAlias.$onPrimaryKey";
+        if (!in_array($onForeignKey, $this->select)) {
+            $this->select[] = $onForeignKey;
+        }
+        if (!in_array($onPrimaryKey, $this->select)) {
+            $this->select[] = $onPrimaryKey;
+        }
+        $withTableName = array_keys($with)[0];
+        $this->db->setJoin("$withTableName AS $withAlias", "$onPrimaryKey = $onForeignKey");
+
+        return $this;
+    }
+
+    /**
+     * Устанавливает LIMIT.
+     * 
+     * @param string $limit
+     * @return Persistence
+     */
+    public function limit($limit)
+    {
+        $this->db->setLimit($limit);
+        return $this;
+    }
+
+    /**
+     * Устанавливает поля сортировки.
+     * 
+     * @param string $fields
+     * @return Persistence
+     */
+    public function orderBy($fields)
+    {
+        $this->db->setOrderBy($fields);
+        return $this;
+    }
+
+    /**
+     * Устанавливает поля сортировки.
+     * 
+     * @param string $fields
+     * @return Persistence
+     */
+    public function groupBy($fields)
+    {
+        $this->db->setGroupBy($fields);
+        return $this;
+    }
+
+    /**
+     * Устанавливает поля выборки.
+     * 
+     * @param string $fields
+     * @return Persistence
+     */
+    public function select($fields)
+    {
+        $this->db->setFields((array)$fields);
+        return $this;
+    }
+
+    /**
+     * @param string $tableName
+     * @return Persistence
+     */
+    public function setTableName($tableName): Persistence
+    {
+        $this->tableName = $tableName;
+        return $this;
+    }
+
+    /**
+     * @param string $tableName
+     * @return Persistence
+     */
+    public function from($tableName): Persistence
+    {
+        $this->tableName = $tableName;
+        return $this;
+    }
+
+    /**
+     * Устанавливает алиас текущей (главной) таблицы запроса
+     * 
+     * @param string $alias
+     * @return Persistence
+     */
+    public function asa($alias)
+    {
+        $this->tableAlias = $alias;
+        return $this;
     }
 }

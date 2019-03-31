@@ -10,11 +10,11 @@ namespace tachyon;
 class Config
 {
     private $_options;
-    // перенести в services.json
+    // перенести в services.php
     private $_fileName = '../app/config/main.php';
 
     /**
-     * извлечение опции
+     * Извлечение опции
      */
     public function get($optionName)
     {

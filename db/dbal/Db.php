@@ -54,8 +54,8 @@ abstract class Db
      */
     public function __construct(Message $msg, array $config)
     {
-        $this->config = $config;
         $this->msg = $msg;
+        $this->config = $config;
 
         if ($this->explain = $this->config['explain']) {
             $this->explainPath = $this->config['explain_path'] ?? '../runtime/explain.xls';
@@ -123,12 +123,13 @@ abstract class Db
         . $this->limit;
 
         // очищаем переменные
-        $this->clearOrderBy();
-        $this->clearWhere();
-        $this->clearFields();
-        $this->clearJoin();
-        $this->clearGroupBy();
-        $this->clearLimit();
+        $this
+            ->clearOrderBy()
+            ->clearWhere()
+            ->clearFields()
+            ->clearJoin()
+            ->clearGroupBy()
+            ->clearLimit();
 
         if ($this->explain) {
             $this->explain($query, $conditions);
@@ -147,7 +148,7 @@ abstract class Db
      */
     public function selectOne(string $tblName, array $where=array(), array $fields=array())
     {
-        $rows = $this->select($tblName, $where, $fields);
+        $rows = $this->setLimit(1)->select($tblName, $where, $fields);
         return $this->getOneRow($rows);
     }
 
@@ -217,7 +218,7 @@ abstract class Db
         $fieldValues = array_merge($fieldValues, $this->fields);
         $updateConditions = $this->prepareConditions($fieldValues, 'update');
         $whereConditions = $this->prepareConditions($where, 'where');
-        $query = "UPDATE `$tblName` {$updateConditions['clause']} {$whereConditions['clause']}";
+        $query = "UPDATE $tblName {$updateConditions['clause']} {$whereConditions['clause']}";
         $stmt = $this->connection->prepare($query);
         $this->clearWhere();
         $this->clearFields();
@@ -287,6 +288,7 @@ abstract class Db
     public function setWhere($where)
     {
         $this->where = $where;
+        return $this;
     }
 
     /**
@@ -298,11 +300,29 @@ abstract class Db
     }
 
     /**
-     * устанавливает поля для выборки
+     * очищает условие
+     */
+    protected function clearWhere()
+    {
+        $this->where = array();
+        return $this;
+    }
+
+    /**
+     * Добавляет поля для выборки.
+     */
+    public function addFields($fieldNames)
+    {
+        $this->fields = array_merge($this->fields, $fieldNames);
+    }
+
+    /**
+     * Устанавливает поля для выборки.
      */
     public function setFields($fieldNames)
     {
         $this->fields = $fieldNames;
+        return $this;
     }
 
     /**
@@ -313,9 +333,28 @@ abstract class Db
         return $this->fields;
     }
 
-    public function setJoin($tblName, $onCond, $joinMode='INNER')
+    /**
+     * очищает поля выборки
+     */
+    protected function clearFields()
+    {
+        $this->fields = array();
+        return $this;
+    }
+
+    public function setJoin($tblName, $onCond, $joinMode='LEFT')
     {
         $this->join .= " $joinMode JOIN $tblName ON $onCond ";
+        return $this;
+    }
+
+    /**
+     * очищает join
+     */
+    protected function clearJoin()
+    {
+        $this->join = '';
+        return $this;
     }
 
     /**
@@ -332,6 +371,7 @@ abstract class Db
     public function setOrderBy($orderBy)
     {
         $this->orderBy = $orderBy;
+        return $this;
     }
 
     /**
@@ -340,6 +380,15 @@ abstract class Db
     public function getOrderBy()
     {
         return $this->orderBy;
+    }
+
+    /**
+     * очищает orderBy
+     */
+    protected function clearOrderBy()
+    {
+        $this->orderBy = array();
+        return $this;
     }
 
     /**
@@ -367,61 +416,12 @@ abstract class Db
             $this->limit = " $offset, {$this->limit}";
         }
         $this->limit = " LIMIT {$this->limit} ";
+        return $this;
     }
 
     public function getLimit()
     {
         return $this->limit;
-    }
-
-    public function setGroupBy($fieldName)
-    {
-        $this->groupBy = $fieldName;
-    }
-
-    public function getGroupBy()
-    {
-        return $this->groupBy;
-    }
-
-    protected function groupByString()
-    {
-        if ($this->groupBy!=='')
-            return " GROUP BY {$this->groupBy} ";
-        
-        return '';
-    }
-
-    /**
-     * очищает orderBy
-     */
-    protected function clearOrderBy()
-    {
-        $this->orderBy = array();
-    }
-
-    /**
-     * очищает условие
-     */
-    protected function clearWhere()
-    {
-        $this->where = array();
-    }
-
-    /**
-     * очищает поля выборки
-     */
-    protected function clearFields()
-    {
-        $this->fields = array();
-    }
-
-    /**
-     * очищает join
-     */
-    protected function clearJoin()
-    {
-        $this->join = '';
     }
 
     /**
@@ -430,6 +430,18 @@ abstract class Db
     protected function clearLimit()
     {
         $this->limit = '';
+        return $this;
+    }
+
+    public function setGroupBy($fieldName)
+    {
+        $this->groupBy = $fieldName;
+        return $this;
+    }
+
+    public function getGroupBy()
+    {
+        return $this->groupBy;
     }
 
     /**
@@ -438,6 +450,15 @@ abstract class Db
     protected function clearGroupBy()
     {
         $this->groupBy = '';
+        return $this;
+    }
+
+    protected function groupByString()
+    {
+        if ($this->groupBy!=='')
+            return " GROUP BY {$this->groupBy} ";
+        
+        return '';
     }
 
     protected function prepareConditions($conditions, $type, $operator='=')
@@ -491,8 +512,12 @@ abstract class Db
         if (count($fields)==0) {
             return '*';
         }
-        foreach ($fields as &$field) {
-            $field = $this->quoteField($field);
+        foreach ($fields as $key => &$field) {
+            if (!is_numeric($key)) {
+                $field = "$key AS $field";
+            } else {
+                $field = $this->quoteField($field);
+            }
         }
         return implode(',', $fields);
     }

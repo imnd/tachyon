@@ -110,6 +110,9 @@ class ArrayHelper
     {
         $transposed = array();
         foreach ($array as $key => $params) {
+            if (!is_array($params)) {
+                continue;
+            }
             foreach ($params as $num => $val) {
                 $transposed[$num][$key] = $val;
             }

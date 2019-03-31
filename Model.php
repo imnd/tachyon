@@ -84,9 +84,9 @@ abstract class Model implements ValidationInterface
      * @param $value string
      * @return Model
      */
-    public function setAttribute($name, $value)
+    public function setAttribute($attribute, $value)
     {
-        $this->attributes[$name] = $value;
+        $this->attributes[$attribute] = $value;
         return $this;
     }
 

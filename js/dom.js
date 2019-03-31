@@ -154,6 +154,9 @@ var dom = (function() {
                 return;
             }
             const objType = obj.type;
+            if (objType===undefined) {
+                return;
+            }
             if (objType==="checkbox") {
                 obj.checked = "";  
             } else if (objType==="select-one" || objType==="select-multiple") {

@@ -18,7 +18,7 @@ trait ListTrait
     public static function getAllSelectList()
     {
         $model = (new Container)->get(get_called_class());
-        return $model->getSelectList($model->findAllScalar());
+        return $model->getSelectList($model->findAllRaw());
     }
 
     /**

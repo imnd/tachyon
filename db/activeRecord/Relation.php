@@ -94,7 +94,7 @@ abstract class Relation
         return $this;
     }
 
-    public function getFields()
+    /*public function getFields()
     {
         return $this->fields;
     }
@@ -103,7 +103,7 @@ abstract class Relation
     {
         $this->fields = $fields;
         return $this;
-    }
+    }*/
 
     public function getTableAlias()
     {

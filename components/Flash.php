@@ -33,6 +33,20 @@ class Flash
     }
 
     /**
+     * Создание
+     * 
+     * @param string $message
+     * @param string $type
+     */
+    public function addFlash($message, $type = self::FLASH_TYPE_ANY)
+    {
+        if (!isset($_SESSION)) {
+            $_SESSION["message_$type"] = '';
+        }
+        $_SESSION["message_$type"] .= "\n$message";
+    }
+
+    /**
      * Извлечение
      * 
      * @param string $type
