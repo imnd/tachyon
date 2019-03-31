@@ -3,7 +3,7 @@
 Tiny MVC php framework.
 
 Features:
-- Dependency Injection Container. At initial realisation it used setter methods and xml configuration files, now I changed it for using __constructor() methods and json configuration files. Also it uses controllers actions variables;
+- Dependency Injection Container. At initial realisation it used setter methods and xml configuration files, now I changed it for using __constructor() methods and json configuration files. Also it uses controllers actions variables. You can embed dependencies both through class names and through interface names. In this case, the correspondence of interfaces must be specified in file app/config/implementations.php.
 - Front Controller with a simple (file system) routing;
 - PDO based DBAL. It works on both MySql and PgSql. Instantiation of the corresponding class occurs using the Factory Method pattern;
 - ORM 
@@ -37,7 +37,7 @@ MVC микро-PHP-фреймворк.
 
 Это Front Controller с простым (физическим) роутингом.
 Компоненты ядра:
-- Dependency Injection Container, который первоначально был реализован с использованием сеттеров и файлов конфигурации xml, в котором были прописаны зависимости. Сейчас я переписал его на использование методов __constructor() и файлов конфигурации json в которых прописаны только значения переменных подключаемых объектов. Также он использует переменные экшнов контроллеров;
+- Dependency Injection Container, который первоначально был реализован с использованием сеттеров и файлов конфигурации xml, в котором были прописаны зависимости. Сейчас я переписал его на использование методов __constructor() и файлов конфигурации json в которых прописаны только значения переменных подключаемых объектов. Также он использует переменные экшнов контроллеров. Внедрять зависимости можно как через имена классов так и через имена интерфейсов. В последнем случае соответствие интерфейсов классап надо прописать в файле конфигурации app/config/implementations.php;
 - DBAL на основе PDO. DBAL работает как на MySql так и на PgSql. Инстанциирование соответствующего класса DBAL происходит с помощью паттерна Factory Method.;
 - 2 типа ORM, которые взаимодействует с БД через DBAL используя паттерн Bridge: 
   - Active Record с поддержкой внешних ключей + особый вид моделей для подзапросов. Связанные записи могут загружаться как одним запросом в основной записью так и по требованию.
