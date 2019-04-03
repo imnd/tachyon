@@ -200,7 +200,7 @@ class Controller
      * @param $vars array 
      * @return string
      */
-    public function layout($view=null, array $vars=array())
+    public function view($view=null, array $vars=array())
     {
         $this->view->setLayout($this->layout);
 

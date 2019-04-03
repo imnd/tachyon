@@ -59,13 +59,19 @@ final class Router
     /**
      * @param boolean string integer array mixed 
      */
-    public function __construct(Config $config, Output $cache, Message $msg, View $view)
+    public function __construct(
+        Config $config,
+        Output $cache,
+        Message $msg,
+        View $view,
+        Container $container
+    )
     {
         $this->config = $config;
         $this->cache = $cache;
         $this->msg = $msg;
         $this->view = $view;
-        $this->container = new Container;
+        $this->container = $container;
 
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         $this->routes = require("$basePath/../app/config/routes.php");
@@ -133,12 +139,11 @@ final class Router
     {
         $requestVars = array('get' => array());
         if (!empty($requestArr)) {
+            $requestVars['inline'] = array_shift($requestArr);
             $requestArr = array_chunk($requestArr, 2);
             foreach ($requestArr as $pair) {
                 if (isset($pair[1])) {
                     $requestVars['get'][$pair[0]] = urldecode($pair[1]);
-                } elseif ($pair[0]!=='') {
-                    $requestVars['inline'] = $pair[0];
                 }
             }
         }
