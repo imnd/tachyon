@@ -217,12 +217,19 @@ class Persistence
     /**
      * Устанавливает поля сортировки.
      * 
-     * @param string $field
+     * @param mixed $field
      * @param string $order
      * @return Persistence
      */
-    public function orderBy($field, $order)
+    public function orderBy($field, $order=null)
     {
+        if (is_null($order)) {
+            if (!is_array($field)) {
+                throw new \ErrorException('Неправильный формат аргументов в методе Persistence::orderBy()');
+            }
+            $order = key($field);
+            $field = current($field);
+        }
         $this->db->orderBy($field, $order);
         return $this;
     }
