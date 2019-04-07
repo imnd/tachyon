@@ -103,8 +103,8 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     public function setAttribute($attribute, $value = null)
     {
         if (is_array($attribute)) {
-            $value = array_values($attribute)[0];
-            $attribute = array_keys($attribute)[0];
+            $value = current($attribute);
+            $attribute = key($attribute);
         }
         $this->$attribute = $value;
     }

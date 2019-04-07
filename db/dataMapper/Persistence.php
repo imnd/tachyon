@@ -170,10 +170,11 @@ class Persistence
      */
     public function with(array $with, $on = array())
     {
-        $withAlias = array_values($with)[0];
+        $withAlias = current($with);
+        $withTableName = key($with);
         if (is_array($on)) {
-            $onForeignKey = array_keys($on)[0];
-            $onPrimaryKey = array_values($on)[0];
+            $onForeignKey = key($on);
+            $onPrimaryKey = current($on);
         } else {
             $onForeignKey = $onPrimaryKey = $on;
         }
@@ -185,7 +186,6 @@ class Persistence
         if (!in_array($onPrimaryKey, $this->select)) {
             $this->select[] = $onPrimaryKey;
         }
-        $withTableName = array_keys($with)[0];
         $this->db->setJoin("$withTableName AS $withAlias", "$onPrimaryKey = $onForeignKey");
 
         return $this;

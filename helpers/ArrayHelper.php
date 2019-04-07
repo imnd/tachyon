@@ -57,8 +57,8 @@ class ArrayHelper
     {
         $result = array();
         if (is_array($key)) {
-            $ind = array_keys($key)[0];
-            $key = array_values($key)[0];
+            $ind = key($key);
+            $key = current($key);
         } else
             $i = 0;
 
