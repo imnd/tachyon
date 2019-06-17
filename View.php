@@ -120,7 +120,6 @@ class View
     public function view($viewsPath, array $vars=array())
     {
         $this->layoutPath = "{$this->appViewsPath}/layouts";
-
         echo $this->_displayLayout($this->display($viewsPath, $vars, true), $vars);
     }
 
@@ -139,6 +138,7 @@ class View
             $layoutHtml = $this->_displayLayout($layoutHtml, $vars);
         }
         $layoutHtml = $this->_replaceTag($layoutHtml, $viewContents, '@contents');
+        $this->assetManager->finalize($layoutHtml);
 
         return $layoutHtml;
     }
