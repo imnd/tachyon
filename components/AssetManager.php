@@ -48,21 +48,17 @@ class AssetManager
 
     public function publishFolder($dirName, $publicPath = null, $sourcePath = null)
     {
-        if (is_null($sourcePath))
-            $sourcePath = $this->assetsSourcePath;
-
-        if (is_null($publicPath))
-            $publicPath = $this->assetsPublicPath;
-
+        $sourcePath = $sourcePath ?? $this->assetsSourcePath;
+        $publicPath = $publicPath ?? $this->assetsPublicPath;
         $sourcePath .= "/$dirName";
         $publicPath .= "/$dirName";
-        $dir = dir($sourcePath);
-        while ($fileName = $dir->read()) {
+        $sourceDir = dir($sourcePath);
+        while ($fileName = $sourceDir->read()) {
             if ($fileName{0} != '.') {
                 $this->_copyFile($fileName, $sourcePath, $publicPath);
-            };
+            }
         } 
-        $dir->close();
+        $sourceDir->close();
     }
 
     private function _publishFile($tag, $name, $publicPath, $sourcePath = null)
@@ -106,7 +102,25 @@ class AssetManager
                 mkdir($path);
             }
         }
-        copy("$sourcePath/$name", "$path/$name");
+        $text = file_get_contents("$sourcePath/$name");
+        // многострочные комменты
+        $text = preg_replace('!/\*.*?\*/!s', '', $text);
+        // однострочные комменты
+        $text = preg_replace('/\/{2,}.*\n/', '', $text);
+        // все whitespaces
+        $text = preg_replace('/[\n\t]/', ' ', $text);
+        // лишние пробелы
+        $text = trim(preg_replace('/[ ]{2,}/', ' ', $text));
+        $specSymb = '[\?{}\(\)\[\],;:|=-]';
+        $text = preg_replace("/($specSymb)[ ]/", '$1', $text);
+        $text = preg_replace("/[ ]($specSymb)/", '$1', $text);
+        // лишние , и ;
+        $text = preg_replace('/[,;](})/', '$1', $text);
+
+        // записываем
+        $fileName = "$path/$name";
+        file_put_contents($fileName, $text);
+        file_put_contents("$fileName.gz", gzencode($text, 9));
     }
 
     /**
