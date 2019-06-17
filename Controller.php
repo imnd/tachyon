@@ -207,7 +207,7 @@ class Controller
         if (empty($view)) {
             $view = lcfirst($this->action);
         }
-        $this->view->layout($view, $vars);
+        $this->view->view($view, $vars);
     }
 
     /**

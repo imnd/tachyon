@@ -257,7 +257,7 @@ final class Router
             ->setAction('error')
             ->setId($controllerId)
             ->start()
-            ->layout('error', compact('code', 'msg'));
+            ->view('error', compact('code', 'msg'));
 
         die;
     }

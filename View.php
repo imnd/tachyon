@@ -117,7 +117,7 @@ class View
      * @param $vars array 
      * @return void
      */
-    public function layout($viewsPath, array $vars=array())
+    public function view($viewsPath, array $vars=array())
     {
         $this->layoutPath = "{$this->appViewsPath}/layouts";
 

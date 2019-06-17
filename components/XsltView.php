@@ -41,7 +41,7 @@ class XsltView extends View
      * @param $vars array 
      * @return
      */
-    public function layout($view, array $vars=array())
+    public function view($view, array $vars=array())
     {
         require $this->getLayoutPath() . '/head.php';
         $xml = $this->arrayToXML($vars, 'root');
