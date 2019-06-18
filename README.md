@@ -28,7 +28,7 @@ Components:
 - flash messages;
 - component for publishing js and css resource files.
 
-Tere is also JS library. It consists of separated components that can be selectively pluged to the page.  They are all clearified of whitespaces and glued together in one sprite. A compressed gzip version is also created to reduce traffic.
+Tere is also JS library. It consists of separated components that can be selectively pluged to the page.  They are all clearified of whitespaces and glued together in one bundle you can serve up to the browser in a single <script> tag. A compressed gzip version is also created to reduce traffic.
 
 The code was written in compliance with the PSR-2 standard.
 All PHP and JS code, except datepicker is written by me.
