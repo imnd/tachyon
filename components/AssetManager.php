@@ -50,11 +50,6 @@ class AssetManager
         return $this->_publishFile('script', "$name.js", $publicPath, $sourcePath);
     }
 
-    /*public function coreJs($name)
-    {
-        return $this->_publishFile('script', "$name.js", 'js/core', self::CORE_JS_SOURCE_PATH);
-    }*/
-
     private function _publishFile($tag, $name, $publicPath, $sourcePath = null)
     {
         $publicPath = "{$this->assetsPublicPath}/$publicPath";
@@ -101,11 +96,10 @@ class AssetManager
                 continue;
             }
             $spriteName = md5($spriteName);
-            $filePath = "$publicPath/$spriteName.$ext";
             if (!is_dir($publicPath)) {
                 mkdir($publicPath);
             }
-            if (!is_file($filePath)) {
+            if (!is_file($filePath = "$publicPath/$spriteName.$ext")) {
                 file_put_contents($filePath, $text);
                 file_put_contents("$filePath.gz", gzencode($spriteText, 9));
             }
