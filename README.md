@@ -1,6 +1,7 @@
 # tachyon
 
-Tiny MVC php framework.
+**Tiny MVC php framework**
+It consists of separated components that can be selectively pluged to the page. At the same time, they are all clearified of whitespaces and glued together in one sprite. A compressed gzip version is also created to reduce traffic.
 
 Features:
 - Dependency Injection Container. At initial realisation it used setter methods and xml configuration files, now I changed it for using __constructor() methods and json configuration files. Also it uses controllers actions variables. You can embed dependencies both through class names and through interface names. In this case, the correspondence of interfaces must be specified in file app/config/implementations.php.
@@ -33,7 +34,7 @@ The code was written in compliance with the PSR-2 standard.
 All PHP and JS code, except datepicker is written by me.
 
 
-MVC микро-PHP-фреймворк.
+**MVC микро-PHP-фреймворк**
 
 Это Front Controller с простым (физическим) роутингом.
 Компоненты ядра:
@@ -56,7 +57,7 @@ MVC микро-PHP-фреймворк.
 - виджет для отображения таблиц из массива моделей;
 - отображение флэш-сообщений.
 
-В составе так же есть микро-JS-фреймворк.
+В составе так же есть микро-JS-фреймворк. Он состоит из отдельных компонентов, которые можно выборочно подключать на страницу. При этом все они очищаются от whitespace'ов и склеиваются в один спрайт. Так же создается сжатая gzip версия для снижения трафика. 
 
 От первой версии отличеется наличием Dependency Injection Container, архитектура полностью переписана под это. Удалены "поведения" и магические методы. Все компоненты полностью независимы.
 
