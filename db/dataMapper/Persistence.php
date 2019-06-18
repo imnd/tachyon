@@ -261,7 +261,7 @@ class Persistence
     /**
      * Устанавливает поля выборки.
      * 
-     * @param string $fields
+     * @param array $fields
      * @return Persistence
      */
     public function select($fields)

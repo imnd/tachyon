@@ -6,8 +6,11 @@
  */
 var dom = (function() {
     return {
-        ready : function(a,b,c) {b=document,c='addEventListener';b[c]?b[c]('DOMContentLoaded',a):window.attachEvent('onload',a)},
-
+        ready : function(a, b, c) {
+            b = document,
+            c = 'addEventListener';
+            b[c] ? b[c]('DOMContentLoaded', a) : window.attachEvent('onload', a)
+        },
         find : function (string, doc) {
             if (doc===undefined)
                 doc = document;

@@ -15,6 +15,8 @@ class Config
 
     /**
      * Извлечение опции
+     * @param string $optionName
+     * @return mixed
      */
     public function get($optionName)
     {

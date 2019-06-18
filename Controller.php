@@ -1,14 +1,14 @@
 <?php
 namespace tachyon;
 
-use BadMethodCallException,
+use
     tachyon\exceptions\HttpException,
 
     tachyon\components\Cookie,
     tachyon\components\Csrf,
     tachyon\components\Lang,
     tachyon\components\Message,
-    tachyon\View
+    tachyon\traits\ClassName
 ;
 
 /**
@@ -19,7 +19,7 @@ use BadMethodCallException,
  */
 class Controller
 {
-    use \tachyon\traits\ClassName;
+    use ClassName;
 
     /**
      * Язык сайта
@@ -64,7 +64,7 @@ class Controller
     protected $postActions = array();
     /**
      * Экшны только для аутентифицированных юзеров
-     * @var array $protectedActions
+     * @var mixed $protectedActions
      */
     protected $protectedActions = array();
 
@@ -109,10 +109,9 @@ class Controller
 
     /**
      * Инициализация
-     * 
-     * @param string $actionName
+     *
      * @param array $requestVars
-     * @return void
+     * @return Controller
      * @throws HttpException
      */
     public function start(array $requestVars = array())
@@ -319,6 +318,7 @@ class Controller
     }
 
     /**
+     * @param int $id
      * @return string
      */
     public function setId($id)
@@ -328,9 +328,10 @@ class Controller
     }
 
     /**
+     * @param string $actionName
      * @return string
      */
-    public function setAction($actionName)
+    public function setAction(string $actionName)
     {
         $this->action = $actionName;
         return $this;
@@ -345,7 +346,8 @@ class Controller
     }
 
     /**
-     * @return void
+     * @param string $layout
+     * @return Controller
      */
     public function setLayout(string $layout)
     {

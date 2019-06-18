@@ -2,11 +2,13 @@
 namespace tachyon;
 
 use tachyon\dic\Container,
-    tachyon\Config,
     tachyon\components\AssetManager,
     tachyon\components\Message,
     tachyon\components\html\Html,
-    tachyon\components\Flash;
+    tachyon\components\Flash,
+    tachyon\traits\HasOwner,
+    tachyon\traits\HasProperties
+;
 
 /**
  * class View
@@ -17,8 +19,8 @@ use tachyon\dic\Container,
  */
 class View
 {
-    use \tachyon\traits\HasOwner;
-    use \tachyon\traits\HasProperties;
+    use HasOwner,
+        HasProperties;
 
     /**
      * Контроллер, вызывающий вью
@@ -79,7 +81,11 @@ class View
     protected $layoutVars = array();
 
     /**
-     * @return void
+     * @param Config $config
+     * @param AssetManager $assetManager
+     * @param Message $msg
+     * @param Html $html
+     * @param Flash $flash
      */
     public function __construct(Config $config, AssetManager $assetManager, Message $msg, Html $html, Flash $flash)
     {
@@ -94,10 +100,10 @@ class View
     /**
      * Отображает файл представления $view
      * передавая ему параметры $vars в виде массива
-     * 
-     * @param $view string файл представления
+     *
+     * @param string $viewName
      * @param $vars array переменные представления
-     * @param $return boolean показывать или возвращать 
+     * @param $return boolean показывать или возвращать
      * @return mixed
      */
     public function display($viewName, array $vars=array(), $return=false)
@@ -112,9 +118,9 @@ class View
     /**
      * Отображает файл представления, передавая ему параметры
      * в виде массива в заданном лэйауте
-     * 
-     * @param $view string
-     * @param $vars array 
+     *
+     * @param string $viewsPath
+     * @param array $vars
      * @return void
      */
     public function view($viewsPath, array $vars=array())
@@ -149,7 +155,7 @@ class View
      * @param string $textToReplace
      * @param string $text
      * @param string $tag
-     * @return void
+     * @return string
      */
     private function _replaceTag($textToReplace, $text, $tag)
     {
@@ -225,14 +231,14 @@ class View
 
     /**
      * Подключение js-кода
-     * 
+     *
      * @param string $source текст кода либо путь
      * @param string $mode инлайн либо внешний файл
-     * @return 
+     * @return string
      */
     public function jsCode($source, $mode='inner')
     {
-        $script = "<script";
+        $script = '<script';
         if ($mode==='inner')
             $script .= ">
                 $source

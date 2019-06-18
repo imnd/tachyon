@@ -5,17 +5,13 @@ use
     ReflectionClass,
     tachyon\helpers\ArrayHelper,
     // exceptions
-    Error,
-    ErrorException,
     BadMethodCallException,
     tachyon\exceptions\ContainerException,
     tachyon\exceptions\HttpException,
     // dependencies
     tachyon\dic\Container,
-    tachyon\Config,
     tachyon\cache\Output,
-    tachyon\components\Message,
-    tachyon\View
+    tachyon\components\Message
 ;
 
 /**
@@ -57,7 +53,11 @@ final class Router
     private $defaultController = '\app\controllers\IndexController';
 
     /**
-     * @param boolean string integer array mixed 
+     * @param Config $config
+     * @param Output $cache
+     * @param Message $msg
+     * @param View $view
+     * @param Container $container
      */
     public function __construct(
         Config $config,
@@ -80,6 +80,7 @@ final class Router
     /**
      * Обработка входящего запроса
      * и передача управления соотв. контроллеру
+     * @throws ContainerException
      */
     public function dispatch()
     {
@@ -113,11 +114,9 @@ final class Router
 
     /**
      * Извлечение имени контроллера или экшна
-     * 
+     *
      * @param $requestArr array Массив параметров
-     * @param $default string имя по умолчанию
-     * 
-     * @return string
+     * @return string|null
      */
     private function _getNameFromRequest(array &$requestArr)
     {
@@ -182,6 +181,10 @@ final class Router
 
     /**
      * запускаем контроллер
+     * @param $route
+     * @param $requestVars
+     * @throws ContainerException
+     * @throws \ReflectionException
      */
     private function _startController($route, $requestVars)
     {
@@ -242,10 +245,11 @@ final class Router
     /**
      * Обработчик неправильного запроса
      * Вывод сообщения об ошибке
-     * 
+     *
      * @param integer $code код ошибки
-     * @param string $error текст сообщения
+     * @param string $msg
      * @return void
+     * @throws \ReflectionException
      */
     private function _error($code, $msg)
     {

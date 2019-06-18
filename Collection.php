@@ -10,7 +10,7 @@ use ArrayAccess,
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Collection implements ArrayAccess, Iterator
+abstract class Collection implements ArrayAccess, Iterator
 {
     
 }

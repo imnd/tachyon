@@ -1,9 +1,12 @@
 <?php
 namespace tachyon;
 
-use tachyon\validation\ValidationInterface,
+use
+    tachyon\validation\ValidationInterface,
     tachyon\validation\Validator,
-    tachyon\components\Lang;
+    tachyon\components\Lang,
+    tachyon\traits\ClassName
+;
 
 /**
  * Базовый класс для всех моделей
@@ -13,7 +16,7 @@ use tachyon\validation\ValidationInterface,
  */
 abstract class Model implements ValidationInterface
 {
-    use \tachyon\traits\ClassName;
+    use ClassName;
 
     /**
      * массив [поле => значение]
@@ -53,7 +56,8 @@ abstract class Model implements ValidationInterface
     protected $validator;
 
     /**
-     * @return void
+     * @param Lang $lang
+     * @param Validator $validator
      */
     public function __construct(Lang $lang, Validator $validator)
     {
@@ -80,7 +84,7 @@ abstract class Model implements ValidationInterface
     /**
      * Присваивание значения аттрибуту модели
      *
-     * @param $name string
+     * @param $attribute
      * @param $value string
      * @return Model
      */
@@ -93,7 +97,7 @@ abstract class Model implements ValidationInterface
     /**
      * Извлечение значения аттрибута $name
      *
-     * @param string $attribute
+     * @param string $name
      * @return mixed
      */
     public function getAttribute(string $name)
@@ -297,7 +301,8 @@ abstract class Model implements ValidationInterface
 
     /**
      * возвращает поля для JS валидации
-     * 
+     *
+     * @param null $fields
      * @return string
      */
     public function getValidationFieldsJs($fields=null)
@@ -305,7 +310,7 @@ abstract class Model implements ValidationInterface
         $validationItems = array();
         $modelName = $this->getClassName();
         $rules = $this->rules();
-        foreach ($rules as $fieldName=> $fieldRules) {
+        foreach ($rules as $fieldName => $fieldRules) {
             if (isset($fieldRules['on']) && $fieldRules['on']!==$this->scenario) {
                 continue;
             }

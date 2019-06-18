@@ -93,6 +93,16 @@ abstract class Repository
     /**
      * @inheritdoc
      */
+    public function findOneRaw(array $where = array(), array $sort = array()): array
+    {
+        return $this->persistence
+            ->from($this->tableName)
+            ->findOne($where, $sort);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function findAllRaw(array $where = array(), array $sort = array()): array
     {
         return $this->persistence

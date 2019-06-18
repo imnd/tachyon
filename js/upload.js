@@ -138,7 +138,7 @@ var upload = (function() {
         /**
          * Установка значений параметров
          *
-         * @param {array} options параметры
+         * @param {obj} options параметры
          * @return {void} 
          */
         defaults : function(options) {

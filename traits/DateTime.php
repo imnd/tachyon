@@ -90,7 +90,7 @@ trait DateTime
      * Устанавливает диапазон первый и последний день года.
      * 
      * @param array $conditions
-     * @return void
+     * @return array
      */
     public function setYearBorders(array $conditions = array())
     {
