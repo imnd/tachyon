@@ -159,8 +159,11 @@ class AssetManager
         $specSymb = '[\?{}\(\)\[\],;:|=-]';
         $text = preg_replace("/($specSymb)[ ]/", '$1', $text);
         $text = preg_replace("/[ ]($specSymb)/", '$1', $text);
-        // лишние , и ;
+        // лишние "," и ";"
         $text = preg_replace('/[,;](})/', '$1', $text);
+
+        $keyWords =
+
         return $text;
     }
 
