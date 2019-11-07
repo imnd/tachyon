@@ -1,11 +1,12 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-use tachyon\db\dbal\DbFactory;
+use tachyon\db\dbal\DbFactory,
+    tachyon\traits\HasOwner;
 
 class Persistence
 {
-    use \tachyon\traits\HasOwner;
+    use HasOwner;
 
     /**
      * Имя текущей (главной) таблицы запроса
@@ -143,6 +144,15 @@ class Persistence
             $this->tableName = $tableName;
         }
         return $this->db->delete($this->tableName, ['id' => $pk]);
+    }
+
+    /**
+     * truncates $this->tableName table
+     * @return void
+     */
+    public function clear()
+    {
+        $this->db->truncate($this->tableName);
     }
 
     /**

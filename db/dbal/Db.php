@@ -116,7 +116,8 @@ abstract class Db
         $query = "
             SELECT $fields
             FROM $tblName
-            {$this->join} {$conditions['clause']}
+            {$this->join}
+            {$conditions['clause']}
         "
         . $this->groupByString()
         . $this->orderByString()
@@ -254,7 +255,6 @@ abstract class Db
     public function truncate(string $tblName): bool
     {
         $this->connect();
-
         $stmt = $this->connection->prepare("TRUNCATE `$tblName`");
         return $this->execute($stmt);
     }

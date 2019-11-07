@@ -21,8 +21,8 @@
  * @constructor
  * @this  {upload}
  */
-var upload = (function() {
-    var
+let upload = (function() {
+    let
         /**
          * параметры
          */

@@ -39,7 +39,7 @@ trait Authentication
      */
     public function isAuthorised()
     {
-        if (!$cookie = $this->cookie->getCookie($this->cookieKey)) {
+        if (!$cookie = $this->cookie->get($this->cookieKey)) {
             return false;
         }
         return $cookie===$this->_getCookieValue();
@@ -65,7 +65,7 @@ trait Authentication
     {
         $duration = $remember ? ($this->config->get('remember') ?: $this->remember) : 1;
         $this->cookie->setDuration($duration);
-        $this->cookie->setCookie($this->cookieKey, $this->_getCookieValue());
+        $this->cookie->set($this->cookieKey, $this->_getCookieValue());
     }
 
     /**
@@ -85,6 +85,6 @@ trait Authentication
      */
     protected function _logout()
     {
-        $this->cookie->deleteCookie($this->cookieKey);
+        $this->cookie->delete($this->cookieKey);
     }
 }

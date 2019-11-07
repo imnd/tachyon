@@ -109,13 +109,22 @@ var dom = (function() {
                        objType=="text" 
                     || objType==="password" 
                     || objType==="hidden" 
-                    || objType==="textarea"
                     || objType==="select-one"
                 ) {
                     if (value===undefined) {
                         return obj.value;
                     } else {
                         obj.value = value;
+                    }
+                }
+                if (
+                       objType==="textarea"
+                    || objType==="submit"
+                ) {
+                    if (value===undefined) {
+                        return obj.innerHTML;
+                    } else {
+                        obj.innerHTML = value;
                     }
                 }
             } else if (obj.innerHTML!==undefined) {

@@ -5,7 +5,8 @@ use Iterator,
     tachyon\db\dataMapper\Entity,
     tachyon\db\dataMapper\Persistence,
     tachyon\db\Terms,
-    tachyon\helpers\StringHelper
+    tachyon\helpers\StringHelper,
+    tachyon\traits\ClassName
 ;
 
 /**
@@ -16,7 +17,7 @@ use Iterator,
  */
 abstract class Repository
 {
-    use \tachyon\traits\ClassName;
+    use ClassName;
 
     /**
      * @var \tachyon\db\dataMapper\Persistence
@@ -45,11 +46,11 @@ abstract class Repository
      */
     protected $collection;
 
-    public function __construct(Persistence $persistence, Terms $terms)
+    public function __construct(Persistence $persistence, Terms $terms = null)
     {
         $this->persistence = $persistence;
         $this->persistence->setOwner($this);
-        $this->terms = $terms;
+        $this->terms = $terms ?? new Terms;
 
         if (is_null($this->tableName)) {
             $tableNameArr = preg_split('/(?=[A-Z])/', str_replace('Repository', '', get_called_class()));
@@ -57,7 +58,7 @@ abstract class Repository
             $this->tableName = strtolower(implode('_', $tableNameArr)) . 's';
         }
         if (is_null($this->entityName)) {
-            $this->entityName = lcfirst( str_replace('Repository', '', $this->getClassName()) );
+            $this->entityName = lcfirst(str_replace('Repository', '', $this->getClassName()));
         }
     }
 
@@ -196,5 +197,14 @@ abstract class Repository
     public function addSortBy($field, $order)
     {
         $this->persistence->orderBy($field, $order);
+    }
+
+    /**
+     * truncates table
+     * @return void
+     */
+    public function clear()
+    {
+        $this->persistence->clear();
     }
 }

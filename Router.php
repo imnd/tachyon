@@ -72,15 +72,14 @@ final class Router
         $this->msg = $msg;
         $this->view = $view;
         $this->container = $container;
-
-        $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-        $this->routes = require("$basePath/../app/config/routes.php");
+        $this->routes = $this->config->get('routes');
     }
 
     /**
      * Обработка входящего запроса
      * и передача управления соотв. контроллеру
      * @throws ContainerException
+     * @throws \ReflectionException
      */
     public function dispatch()
     {
@@ -88,20 +87,30 @@ final class Router
         // кеширование
         $this->cache->start($requestUri);
         // разбираем запрос
+
         $urlInfo = parse_url($requestUri);
-        $requestArr = explode('/', $urlInfo['path']);
-        array_shift($requestArr);
-        // Извлекаем имя контроллера и экшна
-        $route = [
-            'controller' => $this->_getNameFromRequest($requestArr),
-            'action' => $this->_getNameFromRequest($requestArr)
-        ];
-        // разбираем массив параметров
-        $requestVars = array_merge_recursive([
+        $path = $urlInfo['path'];
+        // массив параметров
+        $requestVars = [
             'get' => $_GET,
             'post' => $_POST,
             'files' => $_FILES,
-        ], $this->_parseRequest($requestArr));
+        ];
+        if (isset($this->routes[$path])) {
+            $route = $this->_parseRoute($path);
+        } else {
+            $requestArr = explode('/', $path);
+            array_shift($requestArr);
+            // Извлекаем имя контроллера и экшна
+            $route = [
+                'controller' => $this->_getNameFromRequest($requestArr),
+                'action' => $this->_getNameFromRequest($requestArr)
+            ];
+            $route['controller'] = '\app\controllers\\' . ucfirst($route['controller']) . 'Controller';
+            // разбираем массив параметров
+            $inlineVars = $this->_parseRequest($requestArr);
+            $requestVars = array_merge_recursive($requestVars, $inlineVars);
+        }
         // фильтруем
         foreach (['get', 'post', 'inline'] as $key) {
             $requestVars[$key] = $this->_filterVars($requestVars, $key);
@@ -110,6 +119,21 @@ final class Router
         $this->_startController($route, $requestVars);
         // кеширование
         $this->cache->end();
+    }
+
+    /**
+     * Extract controller and action names from conf route
+     * 
+     * @param string $path
+     * @return array
+     */
+    private function _parseRoute($path)
+    {
+        $pathArr = explode('@', $this->routes[$path]);
+        return [
+            'controller' => $pathArr[0],
+            'action' => $pathArr[1]
+        ];
     }
 
     /**
@@ -188,16 +212,12 @@ final class Router
      */
     private function _startController($route, $requestVars)
     {
-        if (isset($this->routes['default'])) {
-            $this->defaultController = $this->routes['default'];
-        }
         try {
-            if (empty($controllerName = $route['controller'])) {
-                $controllerClassName = $this->defaultController;
-            } else {
-                $controllerClassName = $this->routes[$controllerName] ?? '\app\controllers\\' . ucfirst($controllerName) . 'Controller';
+            if (empty($route['controller'])) {
+                throw new HttpException('Wrong url');
             }
-            $controller = $this->container->get($controllerClassName);
+            $controllerClass = $route['controller'];
+            $controller = $this->container->get($controllerClass);
             $controllerName = lcfirst(str_replace('Controller', '', $controller->getClassName()));
             if (empty($actionName = $route['action'])) {
                 $actionName = $controller->getDefaultAction();
@@ -223,7 +243,7 @@ final class Router
             // Защита от XSS. HTTP Only
             ini_set('session.cookie_httponly', 1);
 
-            $actionVars = $this->container->getDependencies($controllerClassName, $actionName);
+            $actionVars = $this->container->getDependencies($controllerClass, $actionName);
             if (!is_null($requestVars['inline'])) {
                 $actionVars[] = $requestVars['inline'];
             }
@@ -255,9 +275,14 @@ final class Router
     {
         http_response_code($code);
 
-        $controllerId = lcfirst(str_replace('Controller', '', (new ReflectionClass($this->defaultController))->getShortName()));
+        if (!isset($this->routes['error'])) {
+            throw new HttpException("$code: $msg");
+        }
+        $route = $this->_parseRoute('error');
+
+        $controllerId = lcfirst(str_replace('Controller', '', (new ReflectionClass($route['controller']))->getShortName()));
         $this->container
-            ->get($this->defaultController)
+            ->get($route['controller'])
             ->setAction('error')
             ->setId($controllerId)
             ->start()

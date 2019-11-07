@@ -32,10 +32,10 @@ class DbFactory
     /**
      * @return void
      */
-    public function __construct(Config $config, Message $msg)
+    public function __construct(Config $config, Message $msg = null)
     {
         $this->config = $config;
-        $this->msg = $msg;
+        $this->msg = $msg ?? new Message;
     }
 
     /**

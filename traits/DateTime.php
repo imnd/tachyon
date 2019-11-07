@@ -11,12 +11,12 @@ trait DateTime
 {
     private $_months = ['ru' => [
         'short' => [
-            'nom' => array('янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'),
-            'gen' => array('янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'),
+            'nom' => ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
+            'gen' => ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
         ],
         'long' => [
-            'nom' => array('январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'),
-            'gen' => array('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря')
+            'nom' => ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'],
+            'gen' => ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
         ]
     ]];
 
@@ -53,6 +53,7 @@ trait DateTime
     public function getMonth($date, $length='long', $case='gen')
     {
         $dateArr = explode('-', $date);
+
         return $this->_months[(new Container)->get('\tachyon\components\Lang')->getLanguage()][$length][$case][(int)$dateArr[1] - 1];
     }
 
@@ -62,6 +63,7 @@ trait DateTime
     public function getYear($date)
     {
         $dateArr = explode('-', $date);
+
         return $dateArr[0];
     }
 
@@ -69,6 +71,7 @@ trait DateTime
     {
         $date = new DateTime;
         $date->setTimestamp($val);
+
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -80,6 +83,7 @@ trait DateTime
     public function getYearBorders()
     {
         $curYear = date('Y');
+
         return [
             'first' => "$curYear-01-01",
             'last' =>"$curYear-12-31",
@@ -106,6 +110,7 @@ trait DateTime
         );
         unset($conditions['dateFrom']);
         unset($conditions['dateTo']);
+
         return array_merge($where, $conditions);
     }
 }

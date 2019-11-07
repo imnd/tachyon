@@ -10,8 +10,19 @@ namespace tachyon;
 class Config
 {
     private $_options;
-    // перенести в services.php
-    private $_fileName = '../app/config/main.php';
+    private $_filePath = '../app/config';
+    private $_fileName = 'main';
+
+    /**
+     * @param string $fileName
+     */
+    public function __construct($fileName = null)
+    {
+        if (!is_null($fileName)) {
+            $this->_fileName = $fileName;
+        }
+        $this->_fileName = "{$this->_filePath}/{$this->_fileName}.php";
+    }
 
     /**
      * Извлечение опции
