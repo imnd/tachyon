@@ -10,7 +10,7 @@ namespace tachyon\components;
 class AssetManager
 {
     /** @const Папка www */
-    const PUBLIC_PATH = __DIR__ . '/../../../public';
+    const PUBLIC_PATH = __DIR__ . '/../../../../public';
     /** @const Путь к исходникам скриптов */
     const CORE_JS_SOURCE_PATH = __DIR__ . '/../js';
     /** @const спец. символы javascript */

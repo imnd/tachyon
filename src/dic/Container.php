@@ -67,7 +67,7 @@ class Container implements ContainerInterface
             }
             $this->_config[$class] = $service;
         }
-        $implementationFile = "$basePath/../../app/config/implementations.php";
+        $implementationFile = "$basePath/../../../app/config/implementations.php";
         if (file_exists($implementationFile)) {
             $this->_implementations = require($implementationFile);
         }
@@ -120,9 +120,10 @@ class Container implements ContainerInterface
     {
         $reflection = new ReflectionClass($name);
         if ($reflection->isInterface()) {
-            if (!$name = $this->getImplementation($name)) {
+            if (!$this->getImplementation($name)) {
                 throw new ContainerException("Interface $name is not instantiable.");
             }
+            $name = $this->getImplementation($name);
             $reflection = new ReflectionClass($name);
         } elseif (!$reflection->isInstantiable()) {
             throw new ContainerException("Class $name is not instantiable.");
@@ -137,8 +138,8 @@ class Container implements ContainerInterface
             $variables = array_merge($variables, $parentVariables);
         }
 
-        $service = empty($dependencies) ? $reflection->newInstance() : $reflection->newInstanceArgs(array_merge($dependencies, compact('params')));
-        
+        $service = empty($dependencies) ? $reflection->newInstanceArgs($params) : $reflection->newInstanceArgs(array_merge($dependencies, compact('params')));
+
         $this->_setVariables($service, $variables);
 
         return $service;

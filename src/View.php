@@ -90,7 +90,7 @@ class View
     public function __construct(Config $config, AssetManager $assetManager, Message $msg, Html $html, Flash $flash)
     {
         $this->config = $config;
-        $this->appViewsPath = $this->viewsPath = $this->config->get('base_path') . '/../app/views';
+        $this->appViewsPath = $this->viewsPath = $this->config->get('base_path') . '/../../app/views';
         $this->assetManager = $assetManager;
         $this->msg = $msg;
         $this->html = $html;
