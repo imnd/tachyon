@@ -48,11 +48,6 @@ final class Router
     private $routes;
 
     /**
-     * @var string контроллер по умолчанию
-     */
-    private $defaultController = '\app\controllers\IndexController';
-
-    /**
      * @param Config $config
      * @param Output $cache
      * @param Message $msg
@@ -106,7 +101,7 @@ final class Router
                 'controller' => $this->_getNameFromRequest($requestArr),
                 'action' => $this->_getNameFromRequest($requestArr)
             ];
-            $route['controller'] = '\app\controllers\\' . ucfirst($route['controller']) . 'Controller';
+            $route['controller'] = 'app\controllers\\' . ucfirst($route['controller']) . 'Controller';
             // разбираем массив параметров
             $inlineVars = $this->_parseRequest($requestArr);
             $requestVars = array_merge_recursive($requestVars, $inlineVars);
