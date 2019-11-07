@@ -1,4 +1,4 @@
-<?php array (
+<?php return [
     // system
     'Wrong address.' => 'Wrong address.',
     'No controller file found.' => 'No controller file found.',
@@ -21,4 +21,4 @@
     'email' => 'The field is not a valid email address.',
     'equals' => 'Field values are not equal.',
     'unique' => 'The field is not unique.',
-);
+];

@@ -1,4 +1,4 @@
-<?php return array (
+<?php return [
     // системные
     'Database error.' => 'Ошибка базы данных.',
     'Unable to connect to database.' => 'Невозможно соединиться с базой данных.',
@@ -48,4 +48,4 @@
     // misc
     'Undefined field name' => 'Не определено имя поля',
     'Property "action" in menu is undetermined.' => 'Свойство "action" в меню не определено.',
-);
+];
