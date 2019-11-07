@@ -10,7 +10,7 @@ namespace tachyon;
 class Config
 {
     private $_options;
-    private $_filePath = '../app/config';
+    private $_filePath = '../../app/config';
     private $_fileName = 'main';
 
     /**
