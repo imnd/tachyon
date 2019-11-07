@@ -138,7 +138,16 @@ class Container implements ContainerInterface
             $variables = array_merge($variables, $parentVariables);
         }
 
-        $service = empty($dependencies) ? $reflection->newInstanceArgs($params) : $reflection->newInstanceArgs(array_merge($dependencies, compact('params')));
+            
+        if (empty($reflection->getConstructor())) {
+            $args = array();
+        } else {
+            $args = compact('params');
+            if (!empty($dependencies)) {
+                $args = array_merge($dependencies, $args);
+            }
+        }
+        $service = $reflection->newInstanceArgs($args);
 
         $this->_setVariables($service, $variables);
 
