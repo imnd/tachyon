@@ -5,11 +5,12 @@ use tachyon\dic\Container;
 
 /**
  * Содержит полезные функции для работы со списками
+ * для моделей Active Record
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-trait ListTrait
+trait ArListTrait
 {
     /**
      * Список для select`а из массива строк таблицы $items
@@ -57,7 +58,7 @@ trait ListTrait
     public function getSelectListFromArr($array, $keyIndexed=false, $emptyVal='...')
     {
         if (is_array($this->valueField)) {
-            throw new \ErrorException($this->msg->i18n('Method ListTrait::getSelectListFromArr is not work if valueField is an array.'));
+            throw new \ErrorException($this->msg->i18n('Method ArListTrait::getSelectListFromArr is not work if valueField is an array.'));
         }
         $items = array();
         foreach ($array as $key => $value) {
