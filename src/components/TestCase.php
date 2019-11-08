@@ -12,21 +12,24 @@ use
 class TestCase extends BaseTestCase
 {
     /**
-     * @var Config $config
+     * @var Container
+     */
+    protected $container;
+    /**
+     * @var \tachyon\Config
      */
     protected $config;
-    /**
-     * @var GuzzleHttp\Client $client
-     */
-    protected $httpClient;
 
     /**
      * @inheritdoc
      */
-    public function __construct()
+    public function __construct($name = null, array $data = [], $dataName = '')
     {
-        $config = (new \tachyon\dic\Container)->get('\tachyon\Config', [
+        $this->container = new Container;
+        $this->config = $this->container->get('\tachyon\Config', [
             'fileName' => 'main-test'
         ]);
+
+        parent::__construct($name, $data, $dataName);
     }
 }
