@@ -1,11 +1,30 @@
 <?php
+use tachyon\Config;
+use tachyon\components\{
+    Cookie,
+    Encrypt,
+    Csrf,
+    Flash,
+    Message,
+    Lang,
+    html\Html
+};
+use tachyon\cache\{
+    Output,
+    Db
+};
+use tachyon\db\{
+    dataMapper\DbContext,
+    dbal\DbFactory
+};
+
 return [
     [
-        'class' => 'tachyon\Config',
+        'class' => Config::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\components\Cookie',
+        'class' => Cookie::class,
         'singleton' => true,
         'properties' => [
             [
@@ -15,7 +34,7 @@ return [
         ]
     ],
     [
-        'class' => 'tachyon\components\Encrypt',
+        'class' => Encrypt::class,
         'singleton' => true,
         'properties' => [
             [
@@ -29,39 +48,39 @@ return [
         ]
     ],
     [
-        'class' => 'tachyon\components\Csrf',
+        'class' => Csrf::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\components\Flash',
+        'class' => Flash::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\cache\Output',
+        'class' => Output::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\cache\Db',
+        'class' => Db::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\components\Message',
+        'class' => Message::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\components\Lang',
+        'class' => Lang::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\components\html\Html',
+        'class' => Html::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\db\dataMapper\DbContext',
+        'class' => DbContext::class,
         'singleton' => true
     ],
     [
-        'class' => 'tachyon\db\dbal\DbFactory',
+        'class' => DbFactory::class,
         'singleton' => true
     ]
 ];
