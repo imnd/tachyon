@@ -16,9 +16,9 @@ class Config
     /**
      * @param string $fileName
      */
-    public function __construct($params = null)
+    public function __construct($fileName = null)
     {
-        if ($fileName = $params['fileName'] ?? null) {
+        if (!is_null($fileName)) {
             $this->_fileName = $fileName;
         }
         $this->_fileName = "{$this->_filePath}/{$this->_fileName}.php";

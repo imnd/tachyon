@@ -53,7 +53,7 @@ class Container implements ContainerInterface
             if (isset($this->_config[$class])) {
                 continue;
             }
-            $service = [
+            $serviceConf = [
                 'variables' => array(),
                 'singleton' => !empty($element['singleton']),
             ];
@@ -61,11 +61,11 @@ class Container implements ContainerInterface
                 foreach ($element['properties'] as $property) {
                     $propName = $property['name'];
                     if (!empty($property['value'])) {
-                        $service['variables'][$propName] = $property['value'];
+                        $serviceConf['variables'][$propName] = $property['value'];
                     }
                 }
             }
-            $this->_config[$class] = $service;
+            $this->_config[$class] = $serviceConf;
         }
         $implementationFile = "$basePath/../../../app/config/implementations.php";
         if (file_exists($implementationFile)) {
@@ -138,16 +138,14 @@ class Container implements ContainerInterface
             $variables = array_merge($variables, $parentVariables);
         }
 
-            
         if (empty($reflection->getConstructor())) {
-            $args = array();
+            $params = array();
         } else {
-            $args = compact('params');
             if (!empty($dependencies)) {
-                $args = array_merge($dependencies, $args);
+                $params = array_merge($dependencies, $params);
             }
         }
-        $service = $reflection->newInstanceArgs($args);
+        $service = $reflection->newInstanceArgs($params);
 
         $this->_setVariables($service, $variables);
 

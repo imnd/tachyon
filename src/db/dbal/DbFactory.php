@@ -55,7 +55,8 @@ class DbFactory
                 'mysql' => 'MySql',
                 'pgsql' => 'PgSql',
             ][$config['engine']];
-            $this->db = (new Container)->get("\\tachyon\\db\\dbal\\$className", $config);
+
+            $this->db = (new Container)->get("\\tachyon\\db\\dbal\\$className", compact('config'));
         }
         return $this->db;
     }
