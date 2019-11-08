@@ -125,6 +125,7 @@ final class Router
     private function _parseRoute($path)
     {
         $pathArr = explode('@', $this->routes[$path]);
+
         return [
             'controller' => $pathArr[0],
             'action' => $pathArr[1]
@@ -145,6 +146,7 @@ final class Router
         ) {
             return;
         }
+
         return array_shift($requestArr);
     }
 
@@ -165,6 +167,7 @@ final class Router
                 }
             }
         }
+
         return $requestVars;
     }
 
@@ -178,6 +181,7 @@ final class Router
         if (!isset($vars[$key])) {
             return;
         }
+
         return $this->_filterVar($vars[$key]);
     }
 

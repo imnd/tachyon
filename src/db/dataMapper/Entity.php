@@ -3,11 +3,13 @@ namespace tachyon\db\dataMapper;
 
 use tachyon\validation\ValidationInterface,
     tachyon\db\dataMapper\DbContext,
-    tachyon\validation\Validator;
+    tachyon\validation\Validator,
+    tachyon\traits\ClassName
+;
 
 abstract class Entity implements EntityInterface, UnitOfWorkInterface, ValidationInterface
 {
-    use \tachyon\traits\ClassName;
+    use ClassName;
     
     /**
      * Имя таблицы БД

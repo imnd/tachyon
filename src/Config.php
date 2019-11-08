@@ -22,6 +22,12 @@ class Config
             $this->_fileName = $fileName;
         }
         $this->_fileName = "{$this->_filePath}/{$this->_fileName}.php";
+
+        $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
+        // все опции
+        $this->_options = require("$basePath/{$this->_fileName}");
+        // base path
+        $this->_options['base_path'] = $basePath;
     }
 
     /**
@@ -31,14 +37,6 @@ class Config
      */
     public function get($optionName)
     {
-        if (is_null($this->_options)) {
-            $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-            // все опции
-            $this->_options = require("$basePath/{$this->_fileName}");
-            // base path
-            $this->_options['base_path'] = $basePath;
-        }
-
-        return $this->_options[$optionName] ?? $this->_options['site_vars'][$optionName] ?? null;
+        return $this->_options[$optionName] ?? null;
     }
 }
