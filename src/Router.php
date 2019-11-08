@@ -82,7 +82,6 @@ final class Router
         // кеширование
         $this->cache->start($requestUri);
         // разбираем запрос
-
         $urlInfo = parse_url($requestUri);
         $path = $urlInfo['path'];
         // массив параметров

@@ -14,7 +14,7 @@ class PgSql extends Db
      */
     protected function getDsn(): string
     {
-        return "pgsql:host={$this->config['host']};port=5432;dbname={$this->config['dbname']}";
+        return "pgsql:host={$this->config['host']};port=5432;dbname={$this->config['name']}";
     }
 
     /**

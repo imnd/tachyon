@@ -33,7 +33,7 @@ class TestCase extends BaseTestCase
     {
         $this->container = new Container;
         $this->config = $this->container->get(Config::class, [
-            'fileName' => 'main-test'
+            'env' => 'test'
         ]);
         $this->httpClient = new HttpClient([
             'base_uri' => $this->config->get('base_url'),
