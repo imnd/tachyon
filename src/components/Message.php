@@ -24,7 +24,7 @@ class Message
     {
         $basePath = $config->get('base_path');
         $lng = $lang->getLanguage();
-        $this->loadMessages("$basePath/tachyon/lang/$lng.php");
+        $this->loadMessages("$basePath/src/lang/$lng.php");
         $this->loadMessages("$basePath/../../app/config/lang/$lng.php");
     }
 

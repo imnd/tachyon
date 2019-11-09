@@ -27,7 +27,7 @@ abstract class Cache
     {
         $type = strtolower((new ReflectionClass($this))->getShortName());
         $cache = $config->get('cache');
-        if ($config->get('mode')!=='production' || !isset($cache[$type])) {
+        if ($config->get('env')!=='production' || !isset($cache[$type])) {
             return;
         }
         $options = $cache[$type];

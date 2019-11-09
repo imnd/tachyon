@@ -5,6 +5,7 @@ use
     ReflectionClass,
     tachyon\helpers\ArrayHelper,
     // exceptions
+    ReflectionException,
     BadMethodCallException,
     tachyon\exceptions\ContainerException,
     tachyon\exceptions\HttpException,
@@ -84,6 +85,12 @@ final class Router
         // разбираем запрос
         $urlInfo = parse_url($requestUri);
         $path = $urlInfo['path'];
+        if (substr($path, 0, 1)==='/' && $path!=='/') {
+            $path = substr($path, 1 - strlen($path));
+        }
+        if (substr($path, -1)==='/' && $path!=='/') {
+            $path = substr($path, 0, -1);
+        }
         // массив параметров
         $requestVars = [
             'get' => $_GET,
@@ -94,7 +101,6 @@ final class Router
             $route = $this->_parseRoute($path);
         } else {
             $requestArr = explode('/', $path);
-            array_shift($requestArr);
             // Извлекаем имя контроллера и экшна
             $route = [
                 'controller' => $this->_getNameFromRequest($requestArr),
@@ -234,6 +240,7 @@ final class Router
             if (!$controller->beforeAction()) {
                 throw new HttpException($this->msg->i18n('Method "beforeAction" returned false'), HttpException::BAD_REQUEST);
             }
+
             // всё в порядке, отдаём страницу
             header('HTTP/1.1 200 OK');
             // защита от кликджекинга
@@ -247,7 +254,7 @@ final class Router
             }
             $controller->$actionName(...$actionVars);
             $controller->afterAction();
-        } catch (BadMethodCallException $e) {
+        } catch (BadMethodCallException | ReflectionException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
@@ -272,7 +279,8 @@ final class Router
     private function _error($code, $msg)
     {
         http_response_code($code);
-
+        header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
+        
         if (!isset($this->routes['error'])) {
             throw new HttpException("$code: $msg");
         }

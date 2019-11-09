@@ -10,27 +10,22 @@ namespace tachyon;
 class Config
 {
     private $_options;
-    private $_filePath = '../../app/config';
-    private $_fileName = 'main';
-    private $_env = 'debug';
+    private $_filePath = '../../app/config/main.php';
 
     /**
      * @param string $fileName
      */
     public function __construct($env = null)
     {
-        if (!is_null($env)) {
-            $this->_env = $env;
-        }
-        $this->_fileName = "{$this->_filePath}/{$this->_fileName}.php";
-
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         // все опции
-        $this->_options = require("$basePath/{$this->_fileName}");
+        $this->_options = require("$basePath/{$this->_filePath}");
         // base path
         $this->_options['base_path'] = $basePath;
-        // read .env
-        $envFile = ($this->_env==='test') ? '.env-test' : '.env';
+        // environment
+        $this->_options['env'] = defined('APP_ENV') ? APP_ENV : $env ?? 'debug';
+        // read .env file
+        $envFile = ($this->_options['env']==='test') ? '.env-test' : '.env';
         if (!$env = file("$basePath/../../$envFile")) {
             throw new \ErrorException("File $envFile not found");
         }
@@ -40,7 +35,7 @@ class Config
             }
             $arr = explode(':', $string);
             $key = trim($arr[0]);
-            if (1==strpos($key, '#')) {
+            if (0===strpos($key, '#')) {
                 continue;
             }
             $val = trim($arr[1]);
@@ -52,13 +47,14 @@ class Config
                 $key1 = substr($key, $point+1);
                 $this->_options[$key0][$key1] = $val;
             } else
-                $this->_options[] = $val;
+                $this->_options[$key] = $val;
         }
     }
 
     /**
-     * Извлечение опции
+     * Извлечение значения по ключу
      * @param string $optionName
+     * 
      * @return mixed
      */
     public function get($optionName)

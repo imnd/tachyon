@@ -2,6 +2,7 @@
 namespace tachyon\dic;
 
 use ReflectionClass,
+    ErrorException,
     tachyon\exceptions\NotFoundException,
     tachyon\exceptions\ContainerException
 ;
@@ -145,7 +146,11 @@ class Container implements ContainerInterface
                 $params = array_merge($dependencies, $params);
             }
         }
-        $service = $reflection->newInstanceArgs($params);
+        try {
+            $service = $reflection->newInstanceArgs($params);
+        } catch (ErrorException $e) {
+            throw new NotFoundException($e->getMessage());
+        }
 
         $this->_setVariables($service, $variables);
 

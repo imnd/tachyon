@@ -177,7 +177,7 @@ class View
             $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
             if (
                    // в debug mode скомпиленные шаблоны переписываются всегда
-                   $this->config->get('mode')!=='production'
+                   $this->config->get('env')!=='production'
                 || !file_exists($tempViewFilePath)
             ) {
                 while (false!==$echoPos = strpos($buffer, '{{')) {

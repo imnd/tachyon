@@ -32,12 +32,18 @@ class TestCase extends BaseTestCase
     public function __construct($name = null, array $data = [], $dataName = '')
     {
         $this->container = new Container;
-        $this->config = $this->container->get(Config::class, [
-            'env' => 'test'
-        ]);
+
+        defined('APP_ENV') or define('APP_ENV', 'test');
+        $this->config = $this->container->get(Config::class);
+        
+        $baseUrl = $this->config->get('base_url');
+        if (substr($baseUrl, -1)!=='/') {
+            $baseUrl = "$baseUrl/";
+        }
         $this->httpClient = new HttpClient([
-            'base_uri' => $this->config->get('base_url'),
-            'timeout' => 2.0,
+            'base_uri' => $baseUrl,
+            'timeout' => 10,
+            'http_errors' => false,
         ]);
 
         parent::__construct($name, $data, $dataName);

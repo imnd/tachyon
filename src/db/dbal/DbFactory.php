@@ -50,7 +50,6 @@ class DbFactory
             if (!isset($config['engine'])) {
                 throw new DBALException('Не задан параметр конфигурации "engine"');
             }
-            $config['mode'] = $this->config->get('mode');
             $className = [
                 'mysql' => 'MySql',
                 'pgsql' => 'PgSql',

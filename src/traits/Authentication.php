@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\traits;
 
+use tachyon\exceptions\HttpException;
+
 /**
  * Трейт аутентификации
  * 
@@ -19,7 +21,7 @@ trait Authentication
      * @var integer $remember
      */
     private $remember = 7;
-    private $loginUrl = '/index/login';
+    private $loginUrl = 'login';
 
     /**
      * Перенаправляет пользователя на адрес логина
@@ -30,6 +32,16 @@ trait Authentication
     {
         $this->setReferer();
         $this->redirect($this->loginUrl);
+    }
+
+    /**
+     * Юзер не авторизован
+     * 
+     * @return void
+     */
+    public function unauthorised($msg)
+    {
+        throw new HttpException($msg, HttpException::UNAUTHORIZED);
     }
 
     /**
