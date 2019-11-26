@@ -59,14 +59,14 @@ class AssetManager
     private function _publishFile($name, $ext, $publicPath, $sourcePath = null)
     {
         $publicPath = "{$this->assetsPublicPath}/$publicPath";
-        $filePath = "$publicPath/$name";
+        $filePath = "$publicPath/$name.$ext";
         if (!isset(self::$files[$filePath])) {
             if (!is_null($sourcePath) && !is_file($filePath)) {
                 $text = $this->_readFile($name, $ext, $sourcePath);
                 $this->_writeFile($name, $ext, $text, $publicPath);
             }
             $tag = self::TAGS[$ext];
-            return self::$files[$filePath] = $this->$tag($filePath);
+            return self::$files[$filePath] = $this->$tag("$filePath");
         }
         return '';
     }
@@ -90,14 +90,15 @@ class AssetManager
     {
         $text = file_get_contents("$sourcePath/$name.$ext");
         $text = $this->_clearify($text);
-        /*if ($ext==='js' && strpos($name, '.min')===false) {
-            $text = $this->_minimize($text, $name);
-        }*/
+        if ($ext==='js' && strpos($name, '.min')===false) {
+//            $text = $this->_minimize($text, $name);
+        }
         return $text;
     }
 
     private function _clearify($text)
     {
+        $text = str_replace(['https://', 'http://'], '', $text);
         // многострочные комменты
         $text = preg_replace('!/\*.*?\*/!s', '', $text);
         // однострочные комменты

@@ -44,7 +44,7 @@ abstract class Repository
      * Массив сущностей
      * @var array
      */
-    protected $collection;
+    protected $collection = [];
 
     public function __construct(Persistence $persistence, Terms $terms = null)
     {

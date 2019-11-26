@@ -14,7 +14,8 @@ class PgSql extends Db
      */
     protected function getDsn(): string
     {
-        return "pgsql:host={$this->config['host']};port=5432;dbname={$this->config['name']}";
+        $port = $this->config['port'] ?? '5432';
+        return "pgsql:host={$this->config['host']};port=$port;dbname={$this->config['name']}";
     }
 
     /**
@@ -38,6 +39,14 @@ class PgSql extends Db
     public function orderByCast(string $colName): string
     {
         return "$colName::int";
+    }
+
+    protected function prepareField($field)
+    {
+        if (preg_match('/[.( ]/', $field)===0) {
+            $field = trim($field);
+        }
+        return $field;
     }
 
     /**
@@ -68,7 +77,7 @@ class PgSql extends Db
             fwrite($file, $output);
             fclose($file);
         } catch (\Exception $e) {
-            throw new \tachyon\exceptions\DBALException('');
+            throw new \tachyon\exceptions\DBALException($e->getMessage());
         }
     }
 }

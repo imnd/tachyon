@@ -14,7 +14,8 @@ class MySql extends Db
      */
     protected function getDsn(): string
     {
-        return "mysql:host={$this->config['host']};dbname={$this->config['name']}";
+        $port = $this->config['port'] ?? '3306';
+        return "mysql:host={$this->config['host']};port=$port;dbname={$this->config['name']}";
     }
 
     /**

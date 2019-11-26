@@ -254,9 +254,9 @@ final class Router
             }
             $controller->$actionName(...$actionVars);
             $controller->afterAction();
-        } catch (BadMethodCallException | ReflectionException $e) {
+        } catch (BadMethodCallException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
-        } catch (HttpException $e) {
+        } catch (HttpException | ReflectionException $e) {
             $this->_error($e->getCode(), $e->getMessage());
         }/* catch (ContainerException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));

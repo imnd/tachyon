@@ -56,8 +56,7 @@ abstract class Db
     {
         $this->msg = $msg;
         $this->config = $config;
-
-        if ($this->explain = $this->config['explain']) {
+        if ($this->explain = ($this->config['explain'] ?? APP_ENV==='debug')) {
             $this->explainPath = $this->config['explain_path'] ?? '../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
@@ -83,10 +82,10 @@ abstract class Db
                 $this->config['user'],
                 $this->config['password']
             );
-            $this->connection->exec("SET NAMES {$this->config['charset']}");
         } catch (PDOException $e) {
             throw new DBALException($this->msg->i18n('Unable to connect to database.') . "\n{$e->getMessage()}");
         }
+        $this->connection->exec("SET NAMES {$this->config['charset']}");
     }
 
     /**
@@ -136,6 +135,7 @@ abstract class Db
             $this->explain($query, $conditions);
         }
         $stmt = $this->connection->prepare($query);
+
         return $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : array();
     }
 
@@ -498,7 +498,7 @@ abstract class Db
                 } elseif (preg_match('/<=|<|>=|>/', $field, $matches)!==0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . ' ?';
                 } else {
-                    $clauseArr[] = $this->quoteField($field) . $operator;
+                    $clauseArr[] = $this->prepareField($field) . $operator;
                 }
                 $vals[] = $val;
             }
@@ -511,7 +511,7 @@ abstract class Db
     {
         $field = str_replace($text, '', $field);
         $field = trim($field);
-        return $this->quoteField($field);
+        return $this->prepareField($field);
     }
 
     protected function prepareFields(array $fields)
@@ -523,13 +523,13 @@ abstract class Db
             if (!is_numeric($key)) {
                 $field = "$key AS $field";
             } else {
-                $field = $this->quoteField($field);
+                $field = $this->prepareField($field);
             }
         }
         return implode(',', $fields);
     }
 
-    protected function quoteField($field)
+    protected function prepareField($field)
     {
         if (preg_match('/[.( ]/', $field)===0) {
             $field = "`" . trim($field) . "`";

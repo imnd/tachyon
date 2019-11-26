@@ -34,6 +34,7 @@ class Container implements ContainerInterface
     public function __construct()
     {
         $this->_loadConfig();
+        defined('APP_ENV') or define('APP_ENV', 'prod');
     }
 
     /**
