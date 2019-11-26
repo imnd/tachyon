@@ -9,7 +9,7 @@ use tachyon\exceptions\HttpException;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */ 
-trait Authentication
+trait AuthActions
 {
     /**
      * Имя переменной куки
@@ -21,7 +21,7 @@ trait Authentication
      * @var integer $remember
      */
     private $remember = 7;
-    private $loginUrl = 'login';
+    private $loginUrl = '/login';
 
     /**
      * Перенаправляет пользователя на адрес логина
