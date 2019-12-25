@@ -3,7 +3,6 @@ namespace tachyon;
 
 use 
     ReflectionClass,
-    tachyon\helpers\ArrayHelper,
     // exceptions
     ReflectionException,
     BadMethodCallException,
@@ -11,7 +10,7 @@ use
     tachyon\exceptions\HttpException,
     // dependencies
     tachyon\dic\Container,
-    tachyon\cache\Output,
+    tachyon\cache\Output as OutputCache,
     tachyon\components\Message
 ;
 
@@ -28,7 +27,7 @@ final class Router
      */
     private $config;
     /**
-     * @var \tachyon\cache\Output $cache
+     * @var OutputCache $cache
      */
     private $cache;
     /**
@@ -50,14 +49,14 @@ final class Router
 
     /**
      * @param Config $config
-     * @param Output $cache
+     * @param OutputCache $cache
      * @param Message $msg
      * @param View $view
      * @param Container $container
      */
     public function __construct(
         Config $config,
-        Output $cache,
+        OutputCache $cache,
         Message $msg,
         View $view,
         Container $container
@@ -79,44 +78,25 @@ final class Router
      */
     public function dispatch()
     {
-        $requestUri = $_SERVER['REQUEST_URI'];
         // кеширование
-        $this->cache->start($requestUri);
+        $this->cache->start($_SERVER['REQUEST_URI']);
+
+        Request::set('get', $_GET);
+        Request::set('post', $_POST);
+        Request::set('files', $_FILES);
         // разбираем запрос
-        $urlInfo = parse_url($requestUri);
-        $path = $urlInfo['path'];
-        if (substr($path, 0, 1)==='/' && $path!=='/') {
-            $path = substr($path, 1 - strlen($path));
-        }
-        if (substr($path, -1)==='/' && $path!=='/') {
-            $path = substr($path, 0, -1);
-        }
-        // массив параметров
-        $requestVars = [
-            'get' => $_GET,
-            'post' => $_POST,
-            'files' => $_FILES,
-        ];
-        if (isset($this->routes[$path])) {
-            $route = $this->_parseRoute($path);
-        } else {
+        $path = Request::getPath();
+        if (!$this->_parseRoute($path)) {
             $requestArr = explode('/', $path);
             // Извлекаем имя контроллера и экшна
-            $route = [
-                'controller' => $this->_getNameFromRequest($requestArr),
-                'action' => $this->_getNameFromRequest($requestArr)
-            ];
-            $route['controller'] = 'app\controllers\\' . ucfirst($route['controller']) . 'Controller';
+            Request::set('controller', 'app\controllers\\' . ucfirst($this->_getNameFromRequest($requestArr)) . 'Controller');
+            Request::set('action', $this->_getNameFromRequest($requestArr));
             // разбираем массив параметров
-            $inlineVars = $this->_parseRequest($requestArr);
-            $requestVars = array_merge_recursive($requestVars, $inlineVars);
+            $this->_parseRequest($requestArr);
         }
-        // фильтруем
-        foreach (['get', 'post', 'inline'] as $key) {
-            $requestVars[$key] = $this->_filterVars($requestVars, $key);
-        }
-        // запускаем соотв. контроллер
-        $this->_startController($route, $requestVars);
+        // запускаем контроллер
+        $this->_startController();
+
         // кеширование
         $this->cache->end();
     }
@@ -129,12 +109,15 @@ final class Router
      */
     private function _parseRoute($path)
     {
+        if (!isset($this->routes[$path])) {
+           return false;
+        }
         $pathArr = explode('@', $this->routes[$path]);
 
-        return [
-            'controller' => $pathArr[0],
-            'action' => $pathArr[1]
-        ];
+        Request::set('controller', $pathArr[0]);
+        Request::set('action', $pathArr[1]);
+
+        return true;
     }
 
     /**
@@ -156,74 +139,42 @@ final class Router
     }
 
     /**
+     * разбираем массив параметров
+     * 
      * @param $requestArr array
      * 
      * @return array
      */
     private function _parseRequest(array $requestArr)
     {
-        $requestVars = array('get' => array());
         if (!empty($requestArr)) {
-            $requestVars['inline'] = array_shift($requestArr);
+            Request::set('inline', array_shift($requestArr));
             $requestArr = array_chunk($requestArr, 2);
             foreach ($requestArr as $pair) {
                 if (isset($pair[1])) {
-                    $requestVars['get'][$pair[0]] = urldecode($pair[1]);
+                    Request::add('get', [$pair[0] => urldecode($pair[1])]);
                 }
             }
-        }
-
-        return $requestVars;
-    }
-
-    /**
-     * Защита от XSS и SQL injection
-     * @param array $vars
-     * @return mixed
-     */
-    private function _filterVars($vars, $key)
-    {
-        if (!isset($vars[$key])) {
-            return;
-        }
-
-        return $this->_filterVar($vars[$key]);
-    }
-
-    /**
-     * Защита от XSS и SQL injection
-     * @param mixed $arr
-     * @return mixed
-     */
-    private function _filterVar($arr)
-    {
-        if (is_string($arr)) {
-            return ArrayHelper::filterText($arr);
-        } elseif (is_array($arr)) {
-            foreach ($arr as &$val) {
-                $val = $this->_filterVar($val);
-            }
-            return array_filter($arr);
         }
     }
 
     /**
      * запускаем контроллер
-     * @param $route
+     * 
      * @param $requestVars
+     * 
      * @throws ContainerException
      * @throws \ReflectionException
      */
-    private function _startController($route, $requestVars)
+    private function _startController()
     {
         try {
-            if (empty($route['controller'])) {
+            if (!$controllerClass = Request::get('controller')) {
                 throw new HttpException('Wrong url');
             }
-            $controllerClass = $route['controller'];
             $controller = $this->container->get($controllerClass);
             $controllerName = lcfirst(str_replace('Controller', '', $controller->getClassName()));
-            if (empty($actionName = $route['action'])) {
+            if (empty($actionName = Request::get('action'))) {
                 $actionName = $controller->getDefaultAction();
             }
             if (!method_exists($controller, $actionName)) {
@@ -233,7 +184,7 @@ final class Router
                 ->setAction($actionName)
                 ->setId($controllerName)
                 // запускаем
-                ->start($requestVars)
+                ->start()
                 // инициализация
                 ->init();
 
@@ -249,8 +200,8 @@ final class Router
             ini_set('session.cookie_httponly', 1);
 
             $actionVars = $this->container->getDependencies($controllerClass, $actionName);
-            if (!is_null($requestVars['inline'])) {
-                $actionVars[] = $requestVars['inline'];
+            if (!is_null($inline = Request::get('inline'))) {
+                $actionVars[] = $inline;
             }
             $controller->$actionName(...$actionVars);
             $controller->afterAction();
@@ -281,14 +232,15 @@ final class Router
         http_response_code($code);
         header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
         
-        if (!isset($this->routes['error'])) {
-            throw new HttpException("$code: $msg");
+        if (!$this->_parseRoute('error')) {
+            echo "Error $code: $msg";
+            die;
         }
-        $route = $this->_parseRoute('error');
 
-        $controllerId = lcfirst(str_replace('Controller', '', (new ReflectionClass($route['controller']))->getShortName()));
+        $controllerName = Request::get('controller');
+        $controllerId = lcfirst(str_replace('Controller', '', (new ReflectionClass($controllerName))->getShortName()));
         $this->container
-            ->get($route['controller'])
+            ->get($controllerName)
             ->setAction('error')
             ->setId($controllerId)
             ->start()

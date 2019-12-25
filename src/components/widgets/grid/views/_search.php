@@ -5,8 +5,11 @@
     }
 </style>
 <?php
-use tachyon\dic\Container,
-    tachyon\components\html\FormBuilder;
+use tachyon\{
+    dic\Container,
+    components\html\FormBuilder,
+    Request
+};
 
 if (!empty($searchFields)) {
     (new Container)->get(FormBuilder::class)
@@ -20,6 +23,6 @@ if (!empty($searchFields)) {
             ],
             'model' => $model,
             'fields' => $searchFields,
-            'fieldValues' => $widget->getController()->getGet(),
+            'fieldValues' => Request::getGet(),
         ]);
 }

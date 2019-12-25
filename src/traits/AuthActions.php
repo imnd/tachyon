@@ -1,7 +1,8 @@
 <?php
 namespace tachyon\traits;
 
-use tachyon\exceptions\HttpException;
+use tachyon\exceptions\HttpException,
+    tachyon\Request;
 
 /**
  * Трейт аутентификации
@@ -30,7 +31,7 @@ trait AuthActions
      */
     public function accessDenied()
     {
-        $this->setReferer();
+        Request::setReferer();
         $this->redirect($this->loginUrl);
     }
 

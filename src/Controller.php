@@ -3,7 +3,6 @@ namespace tachyon;
 
 use
     tachyon\exceptions\HttpException,
-
     tachyon\components\Cookie,
     tachyon\components\Csrf,
     tachyon\components\Lang,
@@ -45,28 +44,18 @@ class Controller
      * @var string $defaultAction
      */
     protected $defaultAction = 'index';
-
-    # Переменные запроса
-
     /**
-     * @var array $get
+     * Экшны только для $_POST запросов
+     * @var mixed
      */
-    protected $get;
-    /**
-     * @var array $post
-     */
-    protected $post;
-    /**
-     * @var array $files
-     */
-    protected $files;
-
     protected $postActions = array();
     /**
      * Экшны только для аутентифицированных юзеров
-     * @var mixed $protectedActions
+     * @var mixed
      */
     protected $protectedActions = array();
+
+    # Компоненты
 
     /**
      * @var Message $msg
@@ -110,18 +99,13 @@ class Controller
     /**
      * Инициализация
      *
-     * @param array $requestVars
      * @return Controller
      * @throws HttpException
      */
-    public function start(array $requestVars = array())
+    public function start()
     {
-        // переменные запроса
-        foreach (['get', 'post', 'files'] as $name) {
-            $this->$name = $requestVars[$name] ?? null;
-        }
         // проверка на isRequestPost по списку экшнов
-        if (in_array($this->action, $this->postActions) && !$this->isRequestPost()) {
+        if (in_array($this->action, $this->postActions) && !Request::isPost()) {
             throw new HttpException($this->msg->i18n('Action %action allowed only through post request.', ['action' => $this->action]), HttpException::BAD_REQUEST);
         }
         // проверка CSRF токена
@@ -211,84 +195,6 @@ class Controller
     # Getters and setters
 
     /**
-     * Страница, с которой редиректились
-     * 
-     * @return string
-     */
-    public function getReferer()
-    {
-        return $_COOKIE['referer'] ?? '/';
-    }
-
-    /**
-     * Запоминаем страницу, с которой редиректимся
-     * 
-     * @return void
-     */
-    public function setReferer()
-    {
-        setcookie('referer', $_SERVER['REQUEST_URI'], 0, '/');
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isRequestPost(): bool
-    {
-        return $_SERVER['REQUEST_METHOD']==='POST';
-    }
-
-    /**
-     * Шорткат
-     * 
-     * @param $queryType string
-     * @return array
-     */
-    public function getQuery(string $queryType = null): array
-    {
-        if (is_null($queryType)) {
-            $queryType = 'get';
-        }
-        return $this->$queryType;
-    }
-
-    /**
-     * Шорткат для $_GET
-     * 
-     * @param $index string
-     * @return mixed
-     */
-    public function getGet(string $index = null)
-    {
-        if (!is_null($index)) {
-            return $this->get[$index] ?? null;
-        }
-        return $this->get;
-    }
-
-    /**
-     * Шорткат для $_POST
-     * 
-     * @param $index string
-     * @return mixed
-     */
-    public function getPost(string $index = null)
-    {
-        if (!is_null($index)) {
-            return $this->post[$index] ?? null;
-        }
-        return $this->post;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRoute(): string
-    {
-        return htmlspecialchars($_SERVER['REQUEST_URI']);
-    }
-
-    /**
      * @return string
      */
     public function getId(): string
@@ -353,7 +259,7 @@ class Controller
     /**
      * @return string
      */
-    public function getLanguage()//: ?string
+    public function getLanguage(): ?string
     {
         return $this->language;
     }
