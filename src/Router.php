@@ -1,7 +1,7 @@
 <?php
 namespace tachyon;
 
-use 
+use
     ReflectionClass,
     // exceptions
     ReflectionException,
@@ -9,14 +9,14 @@ use
     tachyon\exceptions\ContainerException,
     tachyon\exceptions\HttpException,
     // dependencies
-    tachyon\dic\Container,
+    app\ServiceContainer,
     tachyon\cache\Output as OutputCache,
     tachyon\components\Message
 ;
 
 /**
  * Front Controller приложения
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
@@ -59,7 +59,7 @@ final class Router
         OutputCache $cache,
         Message $msg,
         View $view,
-        Container $container
+        ServiceContainer $container
     )
     {
         $this->config = $config;
@@ -84,16 +84,26 @@ final class Router
         Request::set('get', $_GET);
         Request::set('post', $_POST);
         Request::set('files', $_FILES);
+
         // разбираем запрос
-        $path = Request::getPath();
+        $path = Request::parseUri();
         if (!$this->_parseRoute($path)) {
             $requestArr = explode('/', $path);
             // Извлекаем имя контроллера и экшна
             Request::set('controller', 'app\controllers\\' . ucfirst($this->_getNameFromRequest($requestArr)) . 'Controller');
             Request::set('action', $this->_getNameFromRequest($requestArr));
-            // разбираем массив параметров
-            $this->_parseRequest($requestArr);
+            // Разбираем массив параметров
+            if (!empty($requestArr)) {
+                Request::set('inline', array_shift($requestArr));
+                $requestArr = array_chunk($requestArr, 2);
+                foreach ($requestArr as $pair) {
+                    if (isset($pair[1])) {
+                        Request::add('get', [$pair[0] => urldecode($pair[1])]);
+                    }
+                }
+            }
         }
+        $this->container->boot();
         // запускаем контроллер
         $this->_startController();
 
@@ -103,7 +113,7 @@ final class Router
 
     /**
      * Extract controller and action names from conf route
-     * 
+     *
      * @param string $path
      * @return array
      */
@@ -134,35 +144,14 @@ final class Router
         ) {
             return;
         }
-
         return array_shift($requestArr);
     }
 
     /**
-     * разбираем массив параметров
-     * 
-     * @param $requestArr array
-     * 
-     * @return array
-     */
-    private function _parseRequest(array $requestArr)
-    {
-        if (!empty($requestArr)) {
-            Request::set('inline', array_shift($requestArr));
-            $requestArr = array_chunk($requestArr, 2);
-            foreach ($requestArr as $pair) {
-                if (isset($pair[1])) {
-                    Request::add('get', [$pair[0] => urldecode($pair[1])]);
-                }
-            }
-        }
-    }
-
-    /**
      * запускаем контроллер
-     * 
+     *
      * @param $requestVars
-     * 
+     *
      * @throws ContainerException
      * @throws \ReflectionException
      */
@@ -207,7 +196,9 @@ final class Router
             $controller->afterAction();
         } catch (BadMethodCallException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
-        } catch (HttpException | ReflectionException $e) {
+        } catch (ReflectionException $e) {
+            $this->_error(HttpException::INTERNAL_SERVER_ERROR, $e->getMessage());
+        } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
         }/* catch (ContainerException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Controller "%controllerName" is not found.', compact('controllerName')));
@@ -231,7 +222,7 @@ final class Router
     {
         http_response_code($code);
         header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
-        
+
         if (!$this->_parseRoute('error')) {
             echo "Error $code: $msg";
             die;

@@ -4,8 +4,7 @@ namespace tachyon\dic;
 use ReflectionClass,
     ErrorException,
     tachyon\exceptions\NotFoundException,
-    tachyon\exceptions\ContainerException
-;
+    tachyon\exceptions\ContainerException;
 
 /**
  * Dependency Injection Container
@@ -17,28 +16,33 @@ class Container implements ContainerInterface
 {
     /**
      * Массив инстанциированных компонентов
-     * @var $_services array
+     * @var array
      */
-    private $_services = array();
+    protected $services = array();
     /**
      * Конфигурация компонентов и их параметров
-     * @var $_config array
+     * @var array
      */
-    private $_config = array();
+    protected $config = array();
     /**
      * Сопоставление интерфейсов и их реализаций
-     * @var $_implementations array
+     * @var array
      */
-    private $_implementations;
+    protected $implementations;
 
     public function __construct()
     {
         $this->_loadConfig();
+
         defined('APP_ENV') or define('APP_ENV', 'prod');
     }
 
+    public function boot()
+    {
+    }
+
     /**
-     * Загружаем компоненты и параметры компонентов в массив $_config
+     * Загружаем компоненты и параметры компонентов в массив $config
      */
     private function _loadConfig()
     {
@@ -52,7 +56,7 @@ class Container implements ContainerInterface
         }
         foreach ($elements as $element) {
             $class = $element['class'];
-            if (isset($this->_config[$class])) {
+            if (isset($this->config[$class])) {
                 continue;
             }
             $serviceConf = [
@@ -67,11 +71,7 @@ class Container implements ContainerInterface
                     }
                 }
             }
-            $this->_config[$class] = $serviceConf;
-        }
-        $implementationFile = "$basePath/../../../app/config/implementations.php";
-        if (file_exists($implementationFile)) {
-            $this->_implementations = require($implementationFile);
+            $this->config[$class] = $serviceConf;
         }
     }
 
@@ -89,17 +89,17 @@ class Container implements ContainerInterface
                 $config = $this->_getVariables($className)
             and !empty($config['singleton'])
         ) {
-            if (!isset($this->_services[$className])) {
-                $this->_services[$className] = $this->resolve($className, $params);
+            if (!isset($this->services[$className])) {
+                $this->services[$className] = $this->resolve($className, $params);
             }
-            return $this->_services[$className];
+            return $this->services[$className];
         }
         return $this->resolve($className, $params);
     }
 
     public function has($id)
     {
-        return isset($this->_services[$name]);
+        return isset($this->services[$name]);
     }
 
     /**
@@ -107,7 +107,7 @@ class Container implements ContainerInterface
      */
     public function getImplementation($interface)
     {
-        return $this->_implementations[$interface] ?? null;
+        return $this->implementations[$interface] ?? null;
     }
 
     /**
@@ -205,8 +205,8 @@ class Container implements ContainerInterface
      */
     private function _getVariables($className)
     {
-        if (isset($this->_config[$className])) {
-            return $this->_config[$className];
+        if (isset($this->config[$className])) {
+            return $this->config[$className];
         }
         return array();
     }

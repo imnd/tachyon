@@ -6,16 +6,17 @@ use Iterator,
     tachyon\db\dataMapper\Persistence,
     tachyon\db\Terms,
     tachyon\helpers\StringHelper,
-    tachyon\traits\ClassName
+    tachyon\traits\ClassName,
+    app\interfaces\RepositoryInterface
 ;
 
 /**
  * EntityManager является центральной точкой доступа к функциональности DataMapper ORM.
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-abstract class Repository
+abstract class Repository implements RepositoryInterface
 {
     use ClassName;
 
@@ -29,7 +30,7 @@ abstract class Repository
     protected $terms;
 
     // ВЫПИЛИТЬ или перенести вниз по иерархии
-    
+
     /**
      * Имя таблицы БД
      * @var string
@@ -55,10 +56,13 @@ abstract class Repository
         if (is_null($this->tableName)) {
             $tableNameArr = preg_split('/(?=[A-Z])/', str_replace('Repository', '', get_called_class()));
             array_shift($tableNameArr);
-            $this->tableName = strtolower(implode('_', $tableNameArr)) . 's';
+            $this->tableName = strtolower(implode('_', $tableNameArr));
         }
         if (is_null($this->entityName)) {
             $this->entityName = lcfirst(str_replace('Repository', '', $this->getClassName()));
+            if (substr($this->entityName, -1)==='s') {
+                $this->entityName = substr($this->entityName, 0, -1);
+            }
         }
     }
 
@@ -134,7 +138,7 @@ abstract class Repository
 
     /**
      * Получить сущность по первичному ключу и поместить в $this->collection.
-     * 
+     *
      * @param int $pk
      * @return Entity
      */
@@ -148,7 +152,7 @@ abstract class Repository
 
     /**
      * Получить сущность из БД по первичному ключу.
-     * 
+     *
      * @param int $pk
      * @return Entity
      */
@@ -164,7 +168,7 @@ abstract class Repository
 
     /**
      * Устанавливает условие выборки.
-     * 
+     *
      * @param array $where
      * @return void
      */
@@ -175,7 +179,7 @@ abstract class Repository
 
     /**
      * Устанавливает условия сортировки для хранилища
-     * 
+     *
      * @param array $attrs
      * @return Repository
      */
@@ -189,7 +193,7 @@ abstract class Repository
 
     /**
      * Добавляет условия сортировки для хранилища к уже существующим
-     * 
+     *
      * @param string $field
      * @param string $order
      * @return void
