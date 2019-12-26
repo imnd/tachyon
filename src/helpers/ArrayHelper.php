@@ -10,17 +10,6 @@ namespace tachyon\helpers;
  */
 class ArrayHelper
 {
-    /**
-     * @param string $value
-     * @return string
-     */
-    public static function filterText($value)
-    {
-        $value = htmlentities($value);
-        //$value = str_replace(['|', '&', ';', '$', '%', '@', "\\'", "'", '\\"', '"', '\\', '<', '>', '(', ')', ',', "\x27", "\x22", "\x60", "\t", "\n", "\r"], '', $value);
-        return $value;
-    }
-
     public static function convertObjToArr($object)
     {
         $tmpArr = array();
@@ -43,9 +32,9 @@ class ArrayHelper
     public static function sum($array, $key)
     {
         $result = 0;
-        foreach ($array as $item)
+        foreach ($array as $item) {
             $result += is_array($item) ? $item[$key] : $item->$key;
-
+        }
         return $result;
     }
 
@@ -59,9 +48,9 @@ class ArrayHelper
         if (is_array($key)) {
             $ind = key($key);
             $key = current($key);
-        } else
+        } else {
             $i = 0;
-
+        }
         foreach ($array as $item)
             if ($value = self::_extractValue($item, $key)) {
                 $resultKey = isset($i) ? $i++ : self::_extractValue($item, $ind);
