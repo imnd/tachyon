@@ -77,7 +77,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function create($mark = true)
+    public function create($mark = true): ?Entity
     {
         $entity = clone($this->{$this->entityName});
         if ($mark) {
@@ -142,7 +142,7 @@ abstract class Repository implements RepositoryInterface
      * @param int $pk
      * @return Entity
      */
-    public function findByPk($pk)
+    public function findByPk($pk): ?Entity
     {
         if (!isset($this->collection[$pk])) {
             $this->collection[$pk] = $this->getByPk($pk);
