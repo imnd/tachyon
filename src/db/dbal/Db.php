@@ -8,7 +8,7 @@ use PDO,
 
 /**
  * DBAL (на PDO)
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
@@ -68,7 +68,7 @@ abstract class Db
     /**
      * Подключаем ДБ
      * Lazy loading
-     * 
+     *
      * return void;
      */
     protected function connect()
@@ -97,7 +97,7 @@ abstract class Db
 
     /**
      * Извлекает поля $fields записей из таблицы $tblName по условию $where
-     * 
+     *
      * @param string $tblName имя таблицы
      * @param array $where условие поиска
      * @param array $fields имена полей
@@ -141,7 +141,7 @@ abstract class Db
 
     /**
      * Извлекает поля $fields записи из таблицы $tblName по условию $where
-     * 
+     *
      * @param string $tblName имя таблицы
      * @param array $where условие поиска
      * @param array $fields имена полей
@@ -181,7 +181,7 @@ abstract class Db
 
     /**
      * Вставляет записи со значениями $fieldValues
-     * 
+     *
      * @param string $tblName имя таблицы
      * @param array $fieldValues массив: [имена => значения] полей
      * @return mixed
@@ -205,7 +205,7 @@ abstract class Db
 
     /**
      * Обновляет поля $fieldValues записей по условию $where
-     * 
+     *
      * @param string $tblName имя таблицы
      * @param array $fieldValues массив: [имена => значения] полей
      * @param array $where условие поиска
@@ -229,7 +229,7 @@ abstract class Db
 
     /**
      * Удаляет записи по условию $where
-     * 
+     *
      * @param string $tblName имя таблицы
      * @param array $where условие поиска
      * @return boolean
@@ -242,13 +242,13 @@ abstract class Db
         $whereConditions = $this->prepareConditions($where, 'where');
         $stmt = $this->connection->prepare("DELETE FROM `$tblName` {$whereConditions['clause']}");
         $this->clearWhere();
-        
+
         return $this->execute($stmt, $whereConditions['vals']);
     }
 
     /**
      * Быстро очищает таблицу $tblName
-     * 
+     *
      * @param string $tblName имя таблицы
      * @return boolean
      */
@@ -284,7 +284,7 @@ abstract class Db
 
     /**
      * Устанавливает условие выборки
-     * 
+     *
      * @param array $where
      * @return void
      */
@@ -362,7 +362,7 @@ abstract class Db
 
     /**
      * Добавляет в массив orderBy новый эт-т
-     * 
+     *
      * @param string $field
      * @param string $order
      * @return void
@@ -418,7 +418,7 @@ abstract class Db
     public function setLimit($limit, $offset = null)
     {
         $this->limit = $limit;
-        
+
         if (!is_null($offset)) {
             $this->limit = " $offset, {$this->limit}";
         }
@@ -464,7 +464,7 @@ abstract class Db
     {
         if ($this->groupBy!=='')
             return " GROUP BY {$this->groupBy} ";
-        
+
         return '';
     }
 
@@ -543,7 +543,7 @@ abstract class Db
 
         return implode(',', $plholdArr);
     }
-    
+
     protected function getOneRow($rows)
     {
         if (count($rows)>0) {

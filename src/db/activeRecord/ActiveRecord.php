@@ -14,7 +14,7 @@ use tachyon\Model,
 
 /**
  * Класс модели Active Record
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
@@ -80,7 +80,7 @@ abstract class ActiveRecord extends Model
     protected $entityNames = array();
     /**
      * СВЯЗАННЫЕ Ч/З ВНЕШНИЕ КЛЮЧИ МОДЕЛИ
-     * 
+     *
      * 'has_one': связь "один к одному" вида
      * array('название объекта' => array(
      *      'внешняя модель',
@@ -88,31 +88,31 @@ abstract class ActiveRecord extends Model
      *      'внешний ключ данной таблицы, указывающий на первичный ключ внешней таблицы',
      *      array(список интересующих полей)(optional, если пропущен, выбираются все поля, объявленные в св-ве $attributes внешней модели)
      * ));
-     * 
+     *
      * 'has_many': связь "один ко многим" вида
      * array('название объекта' => array(
      *      'внешняя модель',
      *      'has_many',
      *      'внешний ключ внешней таблицы, указывающий на первичный ключ данной таблицы',
-     *      array(список интересующих полей) (optional, если пропущен, выбираются все поля, объявленные в св-ве $attributes внешней модели) 
+     *      array(список интересующих полей) (optional, если пропущен, выбираются все поля, объявленные в св-ве $attributes внешней модели)
      * ));
-     * 
+     *
      * 'many_to_many': связь "многие ко многим" вида
      * array('название объекта' => array(
      *      'внешняя модель',
      *      'many_to_many',
      *      array(
-     *          'модель связи', 'внешний ключ расшивочной таблицы, указывающий на первичный ключ таблицы модели', 'внешний ключ расшивочной таблицы, указывающий на первичный ключ внешней таблицы', array(список интересующих полей расшивочной таблицы)(optional) 
+     *          'модель связи', 'внешний ключ расшивочной таблицы, указывающий на первичный ключ таблицы модели', 'внешний ключ расшивочной таблицы, указывающий на первичный ключ внешней таблицы', array(список интересующих полей расшивочной таблицы)(optional)
      *      )
-     *      array(список интересующих полей)(optional, если пропущен, выбираются все поля, объявленные в св-ве $attributes внешней модели) 
+     *      array(список интересующих полей)(optional, если пропущен, выбираются все поля, объявленные в св-ве $attributes внешней модели)
      * ));
-     * 
+     *
      * 'join': подзапрос. связь "один ко многим" вида
      * array('название объекта' => array(
      *      'внешняя модель',
      *      'join',
      *      'внешний ключ внешней таблицы, указывающий на первичный ключ данной таблицы',
-     *      array(список интересующих полей) (optional, если пропущен, выбираются все поля, объявленные в св-ве $attributes внешней модели) 
+     *      array(список интересующих полей) (optional, если пропущен, выбираются все поля, объявленные в св-ве $attributes внешней модели)
      * ));
      */
     protected $relations = array();
@@ -188,7 +188,7 @@ abstract class ActiveRecord extends Model
                 // приделываем алиасы первичных ключей связанной таблицы
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->getAlias()->getPrimKeyAliasArr($with, $relationModel->getPkName()));
             }
-            
+
             /**
              * @var ActiveRecord $relModel
              */
@@ -234,7 +234,7 @@ abstract class ActiveRecord extends Model
                         ->where(array("$thisTableName.$pk"=> $this->$pk))
                         ->findAll();
                 break;
-                
+
                 case 'belongs_to':
                     // внешний ключ данной таблицы, указывающий на первичный ключ внешней таблицы
                     $relFk = $relationParams[2];
@@ -297,6 +297,7 @@ abstract class ActiveRecord extends Model
         $items = $this->getDb()->select($tableName);
         $this->clearSelect();
         $this->clearAlias();
+
         return $items;
     }
 
@@ -314,14 +315,11 @@ abstract class ActiveRecord extends Model
 
     /**
      * Возвращает набор строк по условию
-     * 
+     *
      * @return array
      */
     public function findAll($conditions = array())
     {
-        if (!empty($conditions)) {
-            $this->addWhere($conditions);
-        }
         // кеширование
         $cacheKey = json_encode($this->getTableName())
                   . json_encode($this->getSelect())
@@ -333,6 +331,9 @@ abstract class ActiveRecord extends Model
 
         if ($items = $this->cache->start($cacheKey)) {
             return $items;
+        }
+        if (!empty($conditions)) {
+            $this->addWhere($conditions);
         }
         $this->setDefaultSortBy();
 
@@ -346,7 +347,7 @@ abstract class ActiveRecord extends Model
             $relation->joinWith($this);
         }
         // поля данной модели (без присоединенных ч/з JOIN)
-        // алиасим имена таблиц в массиве полей для выборки, заданный $this->select() 
+        // алиасим имена таблиц в массиве полей для выборки, заданный $this->select()
         $this->alias->aliasSelectTableNames($tableAliases, $this);
         // устанавливаем массив полей для выборки
         $this->setSelect();
@@ -473,7 +474,7 @@ abstract class ActiveRecord extends Model
 
     /**
      * shortcut
-     * @return \tachyon\db\activeRecord\ActiveRecord
+     * @return ActiveRecord
      */
     public function findByPk($pk)
     {
@@ -489,7 +490,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @return \tachyon\db\activeRecord\ActiveRecord
+     * @return ActiveRecord
      */
     public function findOne($conditions = array())
     {
@@ -511,7 +512,7 @@ abstract class ActiveRecord extends Model
 
     /**
      * Сохраняет модель в БД. При вставке строки возвращает $pk модели
-     * 
+     *
      * @param $validate boolean производить ли валидацию
      * @return integer
      */
@@ -530,7 +531,7 @@ abstract class ActiveRecord extends Model
     /**
      * saveAttrs
      * Сохраняет набор полей модели в БД
-     * 
+     *
      * @param $attrs array массив поле=>значение
      * @param $validate boolean производить ли валидацию
      * @return integer
@@ -556,7 +557,7 @@ abstract class ActiveRecord extends Model
 
     /**
      * вставляет модель в БД возвращает $pk модели
-     * 
+     *
      * @return mixed
      */
     public function insert()
@@ -569,7 +570,7 @@ abstract class ActiveRecord extends Model
 
     /**
      * Сохраняет модель в БД
-     * 
+     *
      * @return integer
      */
     public function update()
@@ -585,7 +586,7 @@ abstract class ActiveRecord extends Model
         }
         return $this->getDb()->update(static::$tableName, $this->fieldAttributes(), $condition);
     }
-    
+
     /**
      * удаляет модель из БД
      */
@@ -602,7 +603,7 @@ abstract class ActiveRecord extends Model
     /**
      * deleteAllByAttrs
      * Удаляет все модели, соотв. условиям
-     * 
+     *
      * @param $attrs array массив поле=>значение
      * @return boolean
      */
@@ -624,7 +625,7 @@ abstract class ActiveRecord extends Model
 
     /**
      * Присваивание значений аттрибутам модели
-     * @param $arr array 
+     * @param $arr array
      */
     public function setAttributes(array $attributes)
     {
@@ -651,38 +652,20 @@ abstract class ActiveRecord extends Model
 
     public function where($where)
     {
-        $this->getDb()->setWhere($this->_prepareWhere($where));
+        $this->getDb()->setWhere($where);
         return $this;
     }
 
     public function addWhere($where)
     {
-        $this->getDb()->addWhere($this->_prepareWhere($where));
+        $this->getDb()->addWhere($where);
         return $this;
     }
 
     /**
-     * @param $where array 
-     * @return array
-     */
-    private function _prepareWhere(array $where)
-    {
-        foreach ($where as $field => &$value) {
-            if (!isset($this->fieldTypes[$field])) {
-                continue;
-            }
-            $type = $this->fieldTypes[$field];
-            if (strpos($type, 'text')!==false) {
-                $value = "'$value'";
-            }
-        }
-        return $where;
-    }
-
-    /**
      * Устанавливает условия поиска для модели
-     * 
-     * @param $where array 
+     *
+     * @param $where array
      * @return ActiveRecord
      */
     public function setSearchConditions(array $conditions=array())
@@ -705,8 +688,8 @@ abstract class ActiveRecord extends Model
 
     /**
      * Устанавливает условие LIKE
-     * 
-     * @param $where array 
+     *
+     * @param $where array
      * @param $field string
      */
     public function like(array $where, $field)
@@ -732,9 +715,9 @@ abstract class ActiveRecord extends Model
     {
         $colName = $this->_orderByCast($colName);
         $this->getDb()->orderBy($colName, $order);
-        return $this; 
+        return $this;
     }
-    
+
     /**
      * сортировка выбранных записей только по полю $sortBy
      */
@@ -781,25 +764,25 @@ abstract class ActiveRecord extends Model
         }
         return $colName;
     }
-    
+
     # LIMIT
-    
+
     /**
      * ограничение числа выбранных записей
      */
     public function limit($limit, $offset=null)
     {
         $this->getDb()->setLimit($limit, $offset);
-        return $this; 
+        return $this;
     }
-    
+
     public function getLimit()
     {
         return $this->getDb()->getLimit();
     }
 
     # GROUP BY
-    
+
     /**
      * группировка выбранных записей по полю $fieldName
      */
@@ -871,7 +854,7 @@ abstract class ActiveRecord extends Model
     public function clearSelect()
     {
         $this->selectFields = array();
-    }    
+    }
 
     # JOIN
 
@@ -960,7 +943,7 @@ abstract class ActiveRecord extends Model
     {
         $on = $this->_getJoinCond($join);
         $join = $this->_getJoin($join);
-        return $this->leftJoin($join, $on); 
+        return $this->leftJoin($join, $on);
     }
 
     # JOIN шорткаты
@@ -976,7 +959,7 @@ abstract class ActiveRecord extends Model
             $tblName = $this->getTableAlias();
         }
         $this->join->innerJoin($join, $on, $tblName);
-        return $this; 
+        return $this;
     }
 
     public function leftJoin($join, $on=array(), $tblName=null)
@@ -985,7 +968,7 @@ abstract class ActiveRecord extends Model
             $tblName = $this->getTableAlias();
         }
         $this->join->leftJoin($join, $on, $tblName);
-        return $this; 
+        return $this;
     }
 
     public function rightJoin($join, $on=array(), $tblName=null)
@@ -994,7 +977,7 @@ abstract class ActiveRecord extends Model
             $tblName = $this->getTableAlias();
         }
         $this->join->rightJoin($join, $on, $tblName);
-        return $this; 
+        return $this;
     }
 
     public function outerJoin($join, $on=array(), $tblName=null)
@@ -1003,12 +986,12 @@ abstract class ActiveRecord extends Model
             $tblName = $this->getTableAlias();
         }
         $this->join->outerJoin($join, $on, $tblName);
-        return $this; 
+        return $this;
     }
 
     /**
      * Устанавливает алиас текущей (главной) таблицы запроса.
-     * 
+     *
      * @param string $alias
      * @return ActiveRecord
      */
@@ -1024,10 +1007,10 @@ abstract class ActiveRecord extends Model
     public function clearAlias()
     {
         $this->tableAlias = null;
-    }    
+    }
 
     /**
-     * добавляем внешний(е) ключ(и) если его(их) 
+     * добавляем внешний(е) ключ(и) если его(их)
      * нет в массиве полей для выборки
      */
     public function addPkToSelect()
@@ -1037,7 +1020,7 @@ abstract class ActiveRecord extends Model
         $pk = $this->pkName;
         if (is_array($pk)) {
             foreach ($pk as $key)
-                if (!in_array($key, $modelFields)) 
+                if (!in_array($key, $modelFields))
                     $modelFields[] = $key;
         } elseif (!in_array($pk, $modelFields)) {
             $modelFields[] = $pk;
@@ -1049,8 +1032,8 @@ abstract class ActiveRecord extends Model
 
     /**
      * Возвращает название аттрибута модели
-     * 
-     * @param $key string 
+     *
+     * @param $key string
      * @return array
      */
     public function getAttributeName($key)
