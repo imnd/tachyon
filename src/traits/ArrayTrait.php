@@ -1,5 +1,5 @@
 <?php
-namespace tachyon\helpers;
+namespace tachyon\traits;
 
 /**
  * class ArrayHelper
@@ -8,9 +8,9 @@ namespace tachyon\helpers;
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class ArrayHelper
+trait ArrayTrait
 {
-    public static function convertObjToArr($object)
+    public function convertObjToArr($object)
     {
         $tmpArr = array();
         $object = (array)$object;
@@ -29,7 +29,7 @@ class ArrayHelper
     /**
      * Суммирует значения, извлекаемые из ассоциативного массива по ключу $key
      */
-    public static function sum($array, $key)
+    public function sum($array, $key)
     {
         $result = 0;
         foreach ($array as $item) {
@@ -42,7 +42,7 @@ class ArrayHelper
      * Превращает массив ассоциативных массивов в обычный, извлекая из ассоциативных
      * массивов значения по ключу $key
      */
-    public static function flatten($array, $key)
+    public function flatten($array, $key)
     {
         $result = array();
         if (is_array($key)) {
@@ -52,15 +52,15 @@ class ArrayHelper
             $i = 0;
         }
         foreach ($array as $item)
-            if ($value = self::_extractValue($item, $key)) {
-                $resultKey = isset($i) ? $i++ : self::_extractValue($item, $ind);
+            if ($value = $this->_extractValue($item, $key)) {
+                $resultKey = isset($i) ? $i++ : $this->_extractValue($item, $ind);
                 $result[$resultKey] = $value;
             }
 
         return $result;
     }
 
-    private static function _extractValue($item, $key)
+    private function _extractValue($item, $key)
     {
         return is_array($item) ? $item[$key] : $item->$key;
     }
@@ -71,7 +71,7 @@ class ArrayHelper
      * @param mixed $to
      * @return void
      */
-    public static function changeKey(&$arr, $from, $to)
+    public function changeKey(&$arr, $from, $to)
     {
         $arr[$to] = $arr[$from];
         unset($arr[$from]);
@@ -80,7 +80,7 @@ class ArrayHelper
     /**
      * Выбирает максимальное значение поля $key массива $array
      */
-    public static function max($array, $key)
+    public function max($array, $key)
     {
         $array = self::flatten($array, $key);
         return max($array);
@@ -89,13 +89,13 @@ class ArrayHelper
     /**
      * Выбирает минимальное значение поля $key массива $array
      */
-    public static function min($array, $key)
+    public function min($array, $key)
     {
         $array = self::flatten($array, $key);
         return min($array);
     }
 
-    public static function transposeArray($array)
+    public function transposeArray($array)
     {
         $transposed = array();
         foreach ($array as $key => $params) {
