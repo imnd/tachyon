@@ -1,11 +1,12 @@
 <?php
 namespace tachyon\traits;
 
-use tachyon\dic\Container;
+use tachyon\dic\Container,
+    ErrorException;
 
 /**
  * Содержит полезные функции для работы со списками для Repository
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
@@ -17,84 +18,89 @@ trait RepositoryListTrait
      */
     public function getAllSelectList()
     {
-        $model = (new Container)->get(get_called_class());
-        return $model->getSelectList($model->findAllRaw());
+        return $this->getSelectList($this->findAllRaw());
     }
 
     /**
      * Список для select`а из массива строк таблицы $items
-     * 
+     *
      * @param $items array Массив строк таблицы
      * @return array
      */
-    public function getSelectList($items)
+    public function getSelectList($items, $emptyVal='...')
     {
+        $pkField = $this->pkField ?? 'id';
+        $valueKey = $this->valueField ?? 'value';
         $retArr = array();
-        if ($this->emptyVal!==false) {
+        if ($emptyVal!==false) {
             $retArr[] = [
-                'value' => '',
-                'contents' => $this->emptyVal
+                $pkField => '',
+                $valueKey => $emptyVal
             ];
         }
         foreach ($items as $item) {
             $retArr[] = [
-                'value' => $item[$this->pkField],
-                'contents' => $this->_getItemValue($item)
+                $pkField => $item[$pkField],
+                $valueKey => $this->_getItemValue($item)
             ];
         }
         return $retArr;
     }
-    
+
     /**
      * Список для select`а из произвольного массива $array
-     * 
+     *
      * @param $array array
      * @param $keyIndexed boolean индексировать ключами или значениями массива
-     * 
+     *
      * @return array
      * @throws ErrorException
      */
     public function getSelectListFromArr($array, $keyIndexed=false, $emptyVal='...')
     {
-        if (is_array($this->valueField)) {
-            throw new \ErrorException($this->msg->i18n('Method RepositoryListTrait::getSelectListFromArr is not work if valueField is an array.'));
+        $pkField = $this->pkField ?? 'id';
+        $valueKey = $this->valueField ?? 'value';
+        if (is_array($valueKey)) {
+            throw new ErrorException($this->msg->i18n('Method RepositoryListTrait::getSelectListFromArr is not work if valueField is an array.'));
         }
         $items = array();
         foreach ($array as $key => $value) {
             $items[] = [
-                $this->pkField => $keyIndexed ? $key : $value,
-                $this->valueField => $value,
+                $pkField => $keyIndexed ? $key : $value,
+                $valueKey => $value,
             ];
         }
-        $this->emptyVal = $emptyVal;
-        return $this->getSelectList($items);
+
+        return $items;
     }
 
     /**
      * Список значений да/нет для select`а
-     * 
+     *
      * @return array
      */
     public function getYesNoListData()
     {
+        $valueKey = $this->valueField ?? 'value';
+        $pkField = $this->pkField ?? 'id';
         return $this->getSelectList([
             [
-                $this->pkField => true,
-                $this->valueField => 'да',
+                $pkField => true,
+                $valueKey => 'да',
             ],
             [
-                $this->pkField => false,
-                $this->valueField => 'нет',
+                $pkField => false,
+                $valueKey => 'нет',
             ],
         ]);
     }
 
     /**
      * Список значений поля $fieldName из массива $items
-     * 
+     *
      * @param $items array
      * @param $fieldName string
-     * 
+     *
      * @return array
      */
     public function getValsList($items, $fieldName)
@@ -107,19 +113,21 @@ trait RepositoryListTrait
     }
 
     /**
-     * @param $item array 
+     * @param $item array
      * @return array
      */
     private function _getItemValue($item)
     {
-        if (is_array($this->valueField)) {
+        $valueField = $this->valueField ?? 'name';
+        $valsGlue = $this->valsGlue ?? ',';
+        if (is_array($valueField)) {
             $retArr = array();
-            foreach ($this->valueField as $fieldName) {
+            foreach ($valueField as $fieldName) {
                 $retArr[] = $item[$fieldName];
             }
-            return implode($this->valsGlue, $retArr);
+            return implode($valsGlue, $retArr);
         } else {
-            return $item[$this->valueField];
+            return $item[$valueField];
         }
     }
 

@@ -2,12 +2,12 @@
 namespace tachyon\db;
 
 /**
- * Класс отвечающий за генерацию SQL выражений условий выборки
+ * Трейт отвечающий за генерацию SQL выражений условий выборки
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
-class Terms
+trait Terms
 {
     /**
      * Устанавливает условие больше чем
@@ -19,7 +19,7 @@ class Terms
      * 
      * @return ActiveRecord
      */
-    public function gt($where, $field, $arrKey, $precise=false): array
+    public function gt($where, $field, $arrKey, $precise = false): array
     {
         if (!empty($where[$arrKey])) {
             return array("$field>" . ($precise ? '' : '=') => $where[$arrKey]);
@@ -37,7 +37,7 @@ class Terms
      * 
      * @return ActiveRecord
      */
-    public function lt($where, $field, $arrKey, $precise=false): array
+    public function lt($where, $field, $arrKey, $precise = false): array
     {
         if (!empty($where[$arrKey])) {
             return array("$field<" . ($precise ? '' : '=') => $where[$arrKey]);

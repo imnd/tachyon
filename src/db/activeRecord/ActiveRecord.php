@@ -20,6 +20,8 @@ use tachyon\Model,
  */
 abstract class ActiveRecord extends Model
 {
+    use Terms;
+    
     /**
      * @var DbCache $cache
      */
@@ -36,10 +38,6 @@ abstract class ActiveRecord extends Model
      * @var Join $join
      */
     protected $join;
-    /**
-     * @var \tachyon\db\Terms $terms
-     */
-    protected $terms;
 
     /**
      * Имя таблицы в БД или алиаса
@@ -156,7 +154,6 @@ abstract class ActiveRecord extends Model
         $this->dbFactory = $dbFactory;
         $this->join = $join;
         $this->join->setOwner($this);
-        $this->terms = $terms;
 
         if (is_null(static::$tableName)) {
             throw new ModelException($this->msg->i18n('Property "tableName" is not set'));
@@ -676,13 +673,13 @@ abstract class ActiveRecord extends Model
 
     public function gt(array &$where, $field, $arrKey, $precise=false)
     {
-        $this->getDb()->addWhere($this->terms->gt($where, $field, $arrKey, $precise));
+        $this->getDb()->addWhere($this->gt($where, $field, $arrKey, $precise));
         return $this;
     }
 
     public function lt(array &$where, $field, $arrKey, $precise=false)
     {
-        $this->getDb()->addWhere($this->terms->lt($where, $field, $arrKey, $precise));
+        $this->getDb()->addWhere($this->lt($where, $field, $arrKey, $precise));
         return $this;
     }
 
@@ -694,7 +691,7 @@ abstract class ActiveRecord extends Model
      */
     public function like(array $where, $field)
     {
-        $this->getDb()->addWhere($this->terms->like($where, $field));
+        $this->getDb()->addWhere($this->like($where, $field));
         return $this;
     }
 

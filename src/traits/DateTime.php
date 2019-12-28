@@ -27,8 +27,9 @@ trait DateTime
      * @param $mode string (long | short)
      * @return string
      */
-    public function convDateToReadable($date, $glue=' ', $length='long', $case='gen'): string
+    public function convDateToReadable($date = null, $glue=' ', $length='long', $case='gen'): string
     {
+        $date = $date ?? $this->date;
         if (empty($date)) {
             return '';
         }
@@ -42,9 +43,9 @@ trait DateTime
     /**
      * @return string
      */
-    public function getDay($date)
+    public function getDay($date = null)
     {
-        $dateArr = explode('-', $date);
+        $dateArr = explode('-', $date ?? $this->date);
 
         return $dateArr[2];
     }
@@ -52,9 +53,9 @@ trait DateTime
     /**
      * @return string
      */
-    public function getMonth($date, $length='long', $case='gen')
+    public function getMonth($date = null, $length='long', $case='gen')
     {
-        $dateArr = explode('-', $date);
+        $dateArr = explode('-', $date ?? $this->date);
 
         return $this->_months[(new Container)->get('\tachyon\components\Lang')->getLanguage()][$length][$case][(int)$dateArr[1] - 1];
     }
@@ -62,17 +63,17 @@ trait DateTime
     /**
      * @return string
      */
-    public function getYear($date)
+    public function getYear($date = null)
     {
-        $dateArr = explode('-', $date);
+        $dateArr = explode('-', $date ?? $this->date);
 
         return $dateArr[0];
     }
 
-    public function timestampToDateTime($val)
+    public function timestampToDateTime($timestamp)
     {
         $date = new DateTime;
-        $date->setTimestamp($val);
+        $date->setTimestamp($timestamp);
 
         return $date->format('Y-m-d H:i:s');
     }
@@ -107,8 +108,8 @@ trait DateTime
             $conditions['dateTo'] = $this->getYearBorders()['last'];
         }
         $where = array_merge(
-            $this->terms->gt($conditions, 'date', 'dateFrom'),
-            $this->terms->lt($conditions, 'date', 'dateTo')
+            $this->gt($conditions, 'date', 'dateFrom'),
+            $this->lt($conditions, 'date', 'dateTo')
         );
         unset($conditions['dateFrom']);
         unset($conditions['dateTo']);

@@ -7,7 +7,8 @@ use Iterator,
     tachyon\db\Terms,
     tachyon\helpers\StringHelper,
     tachyon\traits\ClassName,
-    app\interfaces\RepositoryInterface
+    tachyon\db\dataMapper\EntityInterface,
+    tachyon\db\dataMapper\RepositoryInterface
 ;
 
 /**
@@ -18,18 +19,12 @@ use Iterator,
  */
 abstract class Repository implements RepositoryInterface
 {
-    use ClassName;
+    use ClassName, Terms;
 
     /**
-     * @var \tachyon\db\dataMapper\Persistence
+     * @var Persistence
      */
     protected $persistence;
-    /**
-     * @var \tachyon\Terms $terms
-     */
-    protected $terms;
-
-    // ВЫПИЛИТЬ или перенести вниз по иерархии
 
     /**
      * Имя таблицы БД
@@ -40,29 +35,22 @@ abstract class Repository implements RepositoryInterface
      * Имя класса сущности
      * @var string
      */
-    protected $entityName;
+    protected $entity;
     /**
      * Массив сущностей
      * @var array
      */
     protected $collection = [];
 
-    public function __construct(Persistence $persistence, Terms $terms = null)
+    public function __construct(Persistence $persistence)
     {
         $this->persistence = $persistence;
         $this->persistence->setOwner($this);
-        $this->terms = $terms ?? new Terms;
 
         if (is_null($this->tableName)) {
             $tableNameArr = preg_split('/(?=[A-Z])/', str_replace('Repository', '', get_called_class()));
             array_shift($tableNameArr);
             $this->tableName = strtolower(implode('_', $tableNameArr));
-        }
-        if (is_null($this->entityName)) {
-            $this->entityName = lcfirst(str_replace('Repository', '', $this->getClassName()));
-            if (substr($this->entityName, -1)==='s') {
-                $this->entityName = substr($this->entityName, 0, -1);
-            }
         }
     }
 
@@ -79,7 +67,7 @@ abstract class Repository implements RepositoryInterface
      */
     public function create($mark = true): ?Entity
     {
-        $entity = clone($this->{$this->entityName});
+        $entity = clone($this->entity);
         if ($mark) {
             $entity->markNew();
         }
@@ -112,7 +100,7 @@ abstract class Repository implements RepositoryInterface
      */
     protected function convertData($data): Entity
     {
-        $entity = $this->{$this->entityName}->fromState($data);
+        $entity = $this->entity->fromState($data);
 
         return $this->collection[$entity->getPk()] = $entity;
     }
@@ -153,7 +141,7 @@ abstract class Repository implements RepositoryInterface
     protected function convertArrayData($arrayData): Iterator
     {
         foreach ($arrayData as $data) {
-            $entity = $this->{$this->entityName}->fromState($data);
+            $entity = $this->entity->fromState($data);
             yield $this->collection[$entity->getPk()] = $entity;
         }
     }
@@ -184,7 +172,7 @@ abstract class Repository implements RepositoryInterface
             ->persistence
             ->setTableName($this->tableName)
             ->findByPk($pk)) {
-            return $this->{$this->entityName}->fromState($data);
+            return $this->entity->fromState($data);
         }
         return null;
     }
