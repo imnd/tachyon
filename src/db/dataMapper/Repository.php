@@ -98,11 +98,33 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function findOneRaw(array $where = array(), array $sort = array()): array
+    public function findOne(array $where = array()): ?Entity
+    {
+        if (!$entity = $this->findOneRaw($where)) {
+            return null;
+        }
+        return $this->convertData($entity);
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    protected function convertData($data): Entity
+    {
+        $entity = $this->{$this->entityName}->fromState($data);
+
+        return $this->collection[$entity->getPk()] = $entity;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function findOneRaw(array $where = array()): ?Entity
     {
         return $this->persistence
             ->from($this->tableName)
-            ->findOne($where, $sort);
+            ->findOne($where);
     }
 
     /**
@@ -156,14 +178,15 @@ abstract class Repository implements RepositoryInterface
      * @param int $pk
      * @return Entity
      */
-    protected function getByPk($pk): Entity
+    protected function getByPk($pk): ?Entity
     {
-        $data = $this
+        if ($data = $this
             ->persistence
             ->setTableName($this->tableName)
-            ->findByPk($pk);
-
-        return $this->{$this->entityName}->fromState($data);
+            ->findByPk($pk)) {
+            return $this->{$this->entityName}->fromState($data);
+        }
+        return null;
     }
 
     /**

@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\traits;
 
+use tachyon\dic\Container;
+
 /**
  * Трейт аутентификации
  * 

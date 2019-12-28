@@ -37,7 +37,7 @@ class Persistence
 
     /**
      * Находит все записи по условию $where, отсортированные по $sort
-     * 
+     *
      * @param array $where
      * @param array $fields
      * @param array $sort
@@ -69,12 +69,12 @@ class Persistence
 
     /**
      * Находит все записи по условию $where, отсортированные по $sort
-     * 
+     *
      * @param array $where
      * @param array $fields
      * @param string $tableName
      */
-    public function findOne(array $where = [], array $fields = [], $tableName = null): array
+    public function findOne(array $where = [], array $fields = [], $tableName = null): ?array
     {
         if (!is_null($tableName)) {
             $this->tableName = $tableName;
@@ -95,7 +95,7 @@ class Persistence
 
     /**
      * Находит запись по первичному ключу
-     * 
+     *
      * return mixed;
      */
     public function findByPk($pk, $tableName = null)
@@ -108,7 +108,7 @@ class Persistence
 
     /**
      * Обновляет запись по первичному ключу
-     * 
+     *
      * @return boolean
      */
     public function updateByPk($pk, array $fieldValues, $tableName = null)
@@ -121,7 +121,7 @@ class Persistence
 
     /**
      * Сохраняет запись в хранилище
-     * 
+     *
      * @return boolean
      */
     public function insert(array $fieldValues, $tableName = null)
@@ -173,7 +173,7 @@ class Persistence
 
     /**
      * Устанавливаем какие таблицы джойнить
-     * 
+     *
      * @param array $with
      * @param array $on
      * @return Persistence
@@ -203,7 +203,7 @@ class Persistence
 
     /**
      * Устанавливает условие выборки.
-     * 
+     *
      * @param array $where
      * @return void
      */
@@ -214,7 +214,7 @@ class Persistence
 
     /**
      * Устанавливает LIMIT.
-     * 
+     *
      * @param string $limit
      * @return Persistence
      */
@@ -226,7 +226,7 @@ class Persistence
 
     /**
      * Устанавливает поля сортировки.
-     * 
+     *
      * @param mixed $field
      * @param string $order
      * @return Persistence
@@ -246,7 +246,7 @@ class Persistence
 
     /**
      * Устанавливает поля сортировки.
-     * 
+     *
      * @param string $fields
      * @return Persistence
      */
@@ -258,7 +258,7 @@ class Persistence
 
     /**
      * Устанавливает поля сортировки.
-     * 
+     *
      * @param string $fields
      * @return Persistence
      */
@@ -270,7 +270,7 @@ class Persistence
 
     /**
      * Устанавливает поля выборки.
-     * 
+     *
      * @param array $fields
      * @return Persistence
      */
@@ -302,7 +302,7 @@ class Persistence
 
     /**
      * Устанавливает алиас текущей (главной) таблицы запроса
-     * 
+     *
      * @param string $alias
      * @return Persistence
      */
