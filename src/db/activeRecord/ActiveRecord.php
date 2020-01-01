@@ -20,7 +20,11 @@ use tachyon\Model,
  */
 abstract class ActiveRecord extends Model
 {
-    use Terms;
+    use Terms {
+        Terms::gt as _gt;
+        Terms::lt as _lt;
+        Terms::lt as _like;
+    }
     
     /**
      * @var DbCache $cache
@@ -142,7 +146,6 @@ abstract class ActiveRecord extends Model
         Alias $alias,
         DbFactory $dbFactory,
         Join $join,
-        Terms $terms,
         ...$params
     )
     {
@@ -673,13 +676,13 @@ abstract class ActiveRecord extends Model
 
     public function gt(array &$where, $field, $arrKey, $precise=false)
     {
-        $this->getDb()->addWhere($this->gt($where, $field, $arrKey, $precise));
+        $this->getDb()->addWhere($this->_gt($where, $field, $arrKey, $precise));
         return $this;
     }
 
     public function lt(array &$where, $field, $arrKey, $precise=false)
     {
-        $this->getDb()->addWhere($this->lt($where, $field, $arrKey, $precise));
+        $this->getDb()->addWhere($this->_lt($where, $field, $arrKey, $precise));
         return $this;
     }
 
@@ -691,7 +694,7 @@ abstract class ActiveRecord extends Model
      */
     public function like(array $where, $field)
     {
-        $this->getDb()->addWhere($this->like($where, $field));
+        $this->getDb()->addWhere($this->_like($where, $field));
         return $this;
     }
 

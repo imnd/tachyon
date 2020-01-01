@@ -19,7 +19,7 @@ trait Terms
      * 
      * @return ActiveRecord
      */
-    public function gt($where, $field, $arrKey, $precise = false): array
+    protected function gt($where, $field, $arrKey, $precise = false): array
     {
         if (!empty($where[$arrKey])) {
             return array("$field>" . ($precise ? '' : '=') => $where[$arrKey]);
@@ -37,7 +37,7 @@ trait Terms
      * 
      * @return ActiveRecord
      */
-    public function lt($where, $field, $arrKey, $precise = false): array
+    protected function lt($where, $field, $arrKey, $precise = false): array
     {
         if (!empty($where[$arrKey])) {
             return array("$field<" . ($precise ? '' : '=') => $where[$arrKey]);
@@ -51,7 +51,7 @@ trait Terms
      * @param $where array 
      * @param $field string
      */
-    public function like($where, $field): array
+    protected function like($where, $field): array
     {
         if (!empty($where[$field])) {
             return array("$field LIKE" => $where[$field]);
