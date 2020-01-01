@@ -73,18 +73,6 @@ abstract class Cache
         return;
     }
 
-    /*protected function getContents()
-    {
-        ob_start();
-        require($this->cacheFile);
-        $contents = ob_get_contents();
-        if ($this->serialize) {
-            $contents = unserialize($contents);
-        }
-        ob_end_clean();
-        return $contents;
-    }*/
-
     protected function setKey($key)
     {
         $this->key = md5($key);

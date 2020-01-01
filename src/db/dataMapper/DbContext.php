@@ -138,6 +138,7 @@ class DbContext
         $this->newEntities = $this->dirtyEntities = $this->deletedEntities = array();
 
         $this->persistence->endTransaction();
+
         return $success;
     }
 }

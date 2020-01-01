@@ -214,32 +214,6 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         return $this;
     }
 
-    /**
-     * Сохранение одиночной сущности.
-     * 
-     * @return boolean
-     */
-    public function save()
-    {
-        return
-                $this->validate()
-            and $this->getDbContext()->commit()
-        ;
-    }
-
-    /**
-     * Удаление одиночной сущности.
-     * 
-     * @return boolean
-     */
-    public function delete()
-    {
-        return
-                $this->markDeleted()
-            and $this->getDbContext()->commit()
-        ;
-    }
-
     # Validation
 
     /**
