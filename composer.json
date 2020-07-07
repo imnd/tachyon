@@ -4,14 +4,15 @@
     "type": "project",
     "version": "2.0.0",
     "autoload": {
-        "psr-0": {
-            "app\\": ""
+        "psr-4": {
+            "tachyon\\": "src/"
         }
     },
     "require": {
         "php": ">=7.2.10",
         "ext-gd": "*",
         "ext-dom": "*",
-        "ext-xsl": "*"
+        "ext-xsl": "*",
+        "guzzlehttp/guzzle": "^6.4"
     }
 }
