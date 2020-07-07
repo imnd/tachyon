@@ -2,20 +2,27 @@
 namespace tachyon\traits;
 
 use tachyon\dic\Container;
+use ErrorException;
 
 /**
- * Содержит полезные функции для работы со списками
+ * Содержит полезные функции для работы со списками для моделей Active Record
  * 
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-trait ListTrait
+trait ActiveRecordListTrait
 {
+    protected $pkField = 'id';
+    protected $valueField = 'id';
+    protected $emptyVal = '...';
+    protected $valsGlue = ',';
+
     /**
      * Список для select`а из массива строк таблицы $items
+     *
      * @return array
      */
-    public static function getAllSelectList()
+    public static function getAllSelectList(): array
     {
         $model = (new Container)->get(get_called_class());
         return $model->getSelectList($model->findAllRaw());
@@ -24,10 +31,10 @@ trait ListTrait
     /**
      * Список для select`а из массива строк таблицы $items
      * 
-     * @param $items array Массив строк таблицы
+     * @param array $items Массив строк таблицы
      * @return array
      */
-    public function getSelectList($items)
+    public function getSelectList(array $items): array
     {
         $retArr = array();
         if ($this->emptyVal!==false) {
@@ -48,16 +55,21 @@ trait ListTrait
     /**
      * Список для select`а из произвольного массива $array
      * 
-     * @param $array array
-     * @param $keyIndexed boolean индексировать ключами или значениями массива
-     * 
+     * @param array   $array
+     * @param boolean $keyIndexed индексировать ключами или значениями массива
+     * @param string  $emptyVal
+     *
      * @return array
      * @throws ErrorException
      */
-    public function getSelectListFromArr($array, $keyIndexed=false, $emptyVal='...')
+    public function getSelectListFromArr(
+        array $array,
+        bool $keyIndexed=false,
+        string $emptyVal='...'
+    ): array
     {
         if (is_array($this->valueField)) {
-            throw new \ErrorException($this->msg->i18n('Method ListTrait::getSelectListFromArr is not work if valueField is an array.'));
+            throw new ErrorException($this->msg->i18n('Method ActiveRecordListTrait::getSelectListFromArr is not work if valueField is an array.'));
         }
         $items = array();
         foreach ($array as $key => $value) {
@@ -75,15 +87,15 @@ trait ListTrait
      * 
      * @return array
      */
-    public function getYesNoListData()
+    public function getYesNoListData(): array
     {
         return $this->getSelectList([
             [
-                $this->pkField => true,
+                $this->pkField    => true,
                 $this->valueField => 'да',
             ],
             [
-                $this->pkField => false,
+                $this->pkField    => false,
                 $this->valueField => 'нет',
             ],
         ]);
@@ -92,12 +104,12 @@ trait ListTrait
     /**
      * Список значений поля $fieldName из массива $items
      * 
-     * @param $items array
-     * @param $fieldName string
+     * @param array  $items
+     * @param string $fieldName
      * 
      * @return array
      */
-    public function getValsList($items, $fieldName)
+    public function getValsList(array $items, string $fieldName): array
     {
         $retArr = array();
         foreach ($items as $item) {
@@ -107,10 +119,10 @@ trait ListTrait
     }
 
     /**
-     * @param $item array 
+     * @param array $item
      * @return array
      */
-    private function _getItemValue($item)
+    private function _getItemValue(array $item): array
     {
         if (is_array($this->valueField)) {
             $retArr = array();
@@ -129,7 +141,7 @@ trait ListTrait
      * @param string $valueField
      * @return void
      */
-    public function setValueField($valueField)
+    public function setValueField(string $valueField): void
     {
         $this->valueField = $valueField;
     }
@@ -138,7 +150,7 @@ trait ListTrait
      * @param string $valsGlue
      * @return void
      */
-    public function setValsGlue($valsGlue)
+    public function setValsGlue(string $valsGlue): void
     {
         $this->valsGlue = $valsGlue;
     }
@@ -147,7 +159,7 @@ trait ListTrait
      * @param string $pkField
      * @return void
      */
-    public function setPkField($pkField)
+    public function setPkField(string $pkField): void
     {
         $this->pkField = $pkField;
     }
@@ -156,7 +168,7 @@ trait ListTrait
      * @param string $emptyVal
      * @return void
      */
-    public function setEmptyVal($emptyVal)
+    public function setEmptyVal(string $emptyVal): void
     {
         $this->emptyVal = $emptyVal;
     }

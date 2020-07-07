@@ -5,7 +5,7 @@ use Iterator,
     tachyon\db\dataMapper\Entity,
     tachyon\db\dataMapper\Persistence,
     tachyon\db\Terms,
-    tachyon\helpers\StringHelper
+    tachyon\traits\ClassName
 ;
 
 /**
@@ -16,18 +16,18 @@ use Iterator,
  */
 abstract class Repository
 {
-    use \tachyon\traits\ClassName;
+    use ClassName;
 
     /**
-     * @var \tachyon\db\dataMapper\Persistence
+     * @var Persistence
      */
     protected $persistence;
     /**
-     * @var \tachyon\Terms $terms
+     * @var Terms $terms
      */
     protected $terms;
 
-    // ВЫПИЛИТЬ или перенести вниз по иерархии
+    // TODO: ВЫПИЛИТЬ или перенести вниз по иерархии
     
     /**
      * Имя таблицы БД
@@ -45,11 +45,11 @@ abstract class Repository
      */
     protected $collection;
 
-    public function __construct(Persistence $persistence, Terms $terms)
+    public function __construct(Persistence $persistence, Terms $terms = null)
     {
         $this->persistence = $persistence;
         $this->persistence->setOwner($this);
-        $this->terms = $terms;
+        $this->terms = $terms ?? new Terms;
 
         if (is_null($this->tableName)) {
             $tableNameArr = preg_split('/(?=[A-Z])/', str_replace('Repository', '', get_called_class()));
@@ -137,7 +137,7 @@ abstract class Repository
      * @param int $pk
      * @return Entity
      */
-    public function findByPk($pk)
+    public function findByPk($pk): Entity
     {
         if (!isset($this->collection[$pk])) {
             $this->collection[$pk] = $this->getByPk($pk);
@@ -196,5 +196,14 @@ abstract class Repository
     public function addSortBy($field, $order)
     {
         $this->persistence->orderBy($field, $order);
+    }
+
+    /**
+     * truncates table
+     * @return void
+     */
+    public function clear()
+    {
+        $this->persistence->clear();
     }
 }

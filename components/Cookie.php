@@ -13,7 +13,7 @@ use tachyon\helpers\ArrayHelper,
 class Cookie
 {
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
     protected $config;
 
@@ -36,17 +36,17 @@ class Cookie
         $this->config = $config;
     }
 
-    public function getCookie($key)
+    public function get($key)
     {
         return $_COOKIE[$key] ?? null;
     }
     
-    public function setCookie($key, $val, $path = '/')
+    public function set($key, $val, $path = '/')
     {
         setcookie($key, ArrayHelper::filterText($val), time() + 30 * 24 * 60 * $this->duration, $path, $this->config->get('domain') ?? '', $this->secure, true);
     }
 
-    public function deleteCookie($key, $path = '/')
+    public function delete($key, $path = '/')
     {
         setcookie($key, null, -1, $path);
     }

@@ -1,14 +1,14 @@
 <?php
 namespace tachyon\dic;
 
+use ErrorException;
 use ReflectionClass,
     tachyon\exceptions\NotFoundException,
-    tachyon\exceptions\ContainerException
-;
+    tachyon\exceptions\ContainerException;
 
 /**
  * Dependency Injection Container
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
@@ -75,7 +75,7 @@ class Container implements ContainerInterface
 
     /**
      * Создает экземпляр сервиса
-     * 
+     *
      * @param string $name
      * @param mixed $owner объект "хозяин" сервиса
      * @param array $params динамически назначаемые параметры
@@ -95,7 +95,7 @@ class Container implements ContainerInterface
         return $this->resolve($className, $params);
     }
 
-    public function has($id)
+    public function has($name)
     {
         return isset($this->_services[$name]);
     }
@@ -110,7 +110,7 @@ class Container implements ContainerInterface
 
     /**
      * Создает экземпляр сервиса
-     * 
+     *
      * @param array $config
      * @param array $params
      * @return void
@@ -118,7 +118,11 @@ class Container implements ContainerInterface
      */
     private function resolve(string $name, array $params = array())
     {
-        $reflection = new ReflectionClass($name);
+        try {
+            $reflection = new ReflectionClass($name);
+        } catch (ErrorException $e) {
+            throw new ContainerException($e->getMessage());
+        }
         if ($reflection->isInterface()) {
             if (!$name = $this->getImplementation($name)) {
                 throw new ContainerException("Interface $name is not instantiable.");
@@ -138,7 +142,7 @@ class Container implements ContainerInterface
         }
 
         $service = empty($dependencies) ? $reflection->newInstance() : $reflection->newInstanceArgs(array_merge($dependencies, compact('params')));
-        
+
         $this->_setVariables($service, $variables);
 
         return $service;
@@ -185,7 +189,7 @@ class Container implements ContainerInterface
 
     /**
      * Извлечение конфигурации по полному имени класса
-     * 
+     *
      * @param string $className
      * @return array
      */
@@ -199,7 +203,7 @@ class Container implements ContainerInterface
 
     /**
      * устанавливает св-ва
-     * 
+     *
      * @param string $name
      * @return void
      */

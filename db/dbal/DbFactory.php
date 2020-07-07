@@ -21,21 +21,21 @@ class DbFactory
     private $db;
 
     /**
-     * @var tachyon\components\Message $msg
+     * @var Message $msg
      */
     protected $msg;
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
     protected $config;
 
     /**
      * @return void
      */
-    public function __construct(Config $config, Message $msg)
+    public function __construct(Config $config, Message $msg = null)
     {
         $this->config = $config;
-        $this->msg = $msg;
+        $this->msg = $msg ?? new Message;
     }
 
     /**

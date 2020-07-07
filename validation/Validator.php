@@ -1,8 +1,10 @@
 <?php
 namespace tachyon\validation;
 
-use tachyon\exceptions\ValidationException,
-    tachyon\components\Message;
+use tachyon\{
+    exceptions\ValidationException,
+    components\Message
+};
 
 /**
  * Класс содержащий правила валидации
@@ -13,14 +15,11 @@ use tachyon\exceptions\ValidationException,
 class Validator
 {
     /**
-     * @var tachyon\components\Message $msg
+     * @var Message $msg
      */
     protected $msg;
     private $_errors = array();
 
-    /**
-     * @return void
-     */
     public function __construct(Message $msg)
     {
         $this->msg = $msg;
@@ -114,8 +113,10 @@ class Validator
     /**
      * @param $fieldName string
      * @param $message string
+     * 
+     * @return void
      */
-    public function addError($fieldName, $message)
+    public function addError($fieldName, $message): void
     {
         if (empty($this->_errors[$fieldName])) {
             $this->_errors[$fieldName] = [];
@@ -123,7 +124,7 @@ class Validator
         $this->_errors[$fieldName][] = $message;
     }
 
-    public function getRules($object, $fieldName)
+    public function getRules($object, $fieldName): array
     {
         $rulesArray = array();
         $rules = $object->rules();
@@ -148,7 +149,7 @@ class Validator
      * 
      * @throws ValidationException
      */
-    public function validate($object, array $attrs = null)
+    public function validate($object, array $attrs = null): array
     {
         // перебираем все поля
         $attrsArray = $object->getAttributes();
@@ -203,7 +204,7 @@ class Validator
      * @param array $rule
      * @return boolean
      */
-    private function _on(&$rule, $object)
+    private function _on(&$rule, $object): bool
     {
         if (isset($rule['on'])) {
             // если правило не применимо к сценарию
@@ -219,7 +220,7 @@ class Validator
     /**
      * @return array
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->_errors;
     }
@@ -227,9 +228,9 @@ class Validator
     /**
      * Сообщение об ошибках
      * 
-     * @return array
+     * @return string
      */
-    public function getErrorsSummary($object)
+    public function getErrorsSummary($object): string
     {
         $summary = '';
         foreach ($this->_errors as $attribute => $errors) {

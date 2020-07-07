@@ -1,53 +1,53 @@
 /**
  * Компонент валидации
- * 
+ *
  * @constructor
  * @this  {validation}
  */
- var validation = (function() {
+var validation = (function () {
     var
         // переменные
 
         checkRules = {
-            minlength3 : {
-                rule : '[а-яёА-ЯЁa-zA-Z0-9_-]{3,}',
-                msg : 'должно быть не менее 3 символов',
+            minlength3: {
+                rule: '[а-яёА-ЯЁa-zA-Z0-9_-]{3,}',
+                msg: 'должно быть не менее 3 символов',
             },
-            minlength6 : {
-                rule : '[а-яёА-ЯЁa-zA-Z0-9_-]{6,}',
-                msg : 'должно быть не менее 6 символов',
+            minlength6: {
+                rule: '[а-яёА-ЯЁa-zA-Z0-9_-]{6,}',
+                msg: 'должно быть не менее 6 символов',
             },
-            password : {
-                rule : '^[a-z0-9]+$|i',
-                msg : 'содержит недопустимые символы',
+            password: {
+                rule: '^[a-z0-9]+$|i',
+                msg: 'содержит недопустимые символы',
             },
-            alpha : {
-                rule : '^[а-яёa-z]+$|i',
-                msg : '— текстовое поле',
+            alpha: {
+                rule: '^[а-яёa-z]+$|i',
+                msg: '— текстовое поле',
             },
-            alphaExt : {
-                rule : '^[а-яёa-z- ]+$|i',
-                msg : '— текстовое поле',
+            alphaExt: {
+                rule: '^[а-яёa-z- ]+$|i',
+                msg: '— текстовое поле',
             },
-            numeric : {
-                rule : '\d+',
-                msg : '— числовое поле',
+            numeric: {
+                rule: '\d+',
+                msg: '— числовое поле',
             },
-            telephone : {
-                rule : '(\d{3,5})\d{5,7}',
-                msg : 'неправильно заполнено',
+            telephone: {
+                rule: '(\d{3,5})\d{5,7}',
+                msg: 'неправильно заполнено',
             },
-            fax : {
-                rule : '\d{5,7}',
-                msg : 'неправильно заполнено',
+            fax: {
+                rule: '\d{5,7}',
+                msg: 'неправильно заполнено',
             },
-            mobile : {
-                rule : '\d{10,11}',
-                msg : 'неправильно заполнено',
+            mobile: {
+                rule: '\d{10,11}',
+                msg: 'неправильно заполнено',
             },
-            email : {
-                rule : '([a-z0-9_\.-]{1,20})@([a-z0-9\.-]{1,20}).([a-z]{2,4})|i',
-                msg : 'неправильно заполнено',
+            email: {
+                rule: '([a-z0-9_\.-]{1,20})@([a-z0-9\.-]{1,20}).([a-z]{2,4})|i',
+                msg: 'неправильно заполнено',
             },
         },
         msgContainer = null,
@@ -70,25 +70,25 @@
                 for (var checkItmKey in fieldMetadata.check) {
                     var checkItm = fieldMetadata.check[checkItmKey];
                     // обязательные для заполненнения поля
-                    if (checkItm=='required') {
+                    if (checkItm == 'required') {
                         if (
-                            fieldMetadata.type=='checkbox' && fieldData==false 
+                            fieldMetadata.type == 'checkbox' && fieldData == false
                             || (
-                                (fieldMetadata.type=='input' || 'text' || 'textarea') 
-                                && (fieldData=='' || fieldData===undefined)
+                                (fieldMetadata.type == 'input' || 'text' || 'textarea')
+                                && (fieldData == '' || fieldData === undefined)
                             )
                         ) {
                             invalidFields.push({
-                                field: fieldMetadata.name, 
+                                field: fieldMetadata.name,
                                 message: 'поле "' + fieldMetadata.title + '" обязательно для заполнения.'
                             }); // TODO: закинуть сообщение в конфиг
                         }
                     } else if (obj.isObject(checkItm)) {
                         // сравнение полей на идентичность
                         if (compareField = checkItm.compare) {
-                            if (fieldData!==this.data[compareField]) {
+                            if (fieldData !== this.data[compareField]) {
                                 invalidFields.push({
-                                    field: fieldMetadata.name, 
+                                    field: fieldMetadata.name,
                                     message: 'поле "' + fieldMetadata.title + '" не совпадает с ' + 'полем "' + this.metadata[compareField]['title']
                                 });
                             }
@@ -97,14 +97,14 @@
                         // проверяем по остальным критериям
                         for (var checkKey in this.checkRules) {
                             var checkRule = this.checkRules[checkKey];
-                            if (checkItm!==checkKey)
+                            if (checkItm !== checkKey)
                                 continue;
                             this.checkData(dataKey, checkKey, checkItm, checkRule['rule'], checkRule['msg'], invalidFields);
                         }
                     }
                 }
             }
-            
+
             return invalidFields;
         },
 
@@ -120,7 +120,7 @@
                 regExpr = new RegExp(pattern, flags);
             else
                 regExpr = new RegExp(pattern);
-            
+
             if (!regExpr.test(this.data[dataKey])) {
                 var fieldMetadata = this.metadata[dataKey];
                 invalidFields.push({
@@ -139,7 +139,7 @@
                 var fieldName = field.name;
                 this.metadata[fieldName] = field;
                 var data = dom.val(fieldName);
-                if (data!==undefined) {
+                if (data !== undefined) {
                     this.data[fieldName] = data;
                 }
             }
@@ -148,59 +148,65 @@
         /**
          * отображение сообщения
          */
-        showMessage = function(messageData, type) {
-            var message = '';
+        showMessage = function (messageData, type) {
+            var i, message = '';
             this.msgContainer = dom.findById(this.msgContainerId);
-            if (this.msgContainer===null) {
-                if (type=='error') 
+            if (this.msgContainer === null) {
+                if (type === 'error')
                     message += 'Внимание! ';
 
                 if (obj.isArray(messageData)) {
-                    for (var i=0; i<messageData.length; i++)
+                    for (i = 0; i < messageData.length; i++) {
                         message += messageData[i].message + '; ';
-                } else
-                    message+=messageData;
-                
+                    }
+                } else {
+                    message += messageData;
+                }
+
                 alert(message);
                 return;
-            }            
-            
-            if (type=='error') 
+            }
+
+            if (type === 'error') {
                 message += '<b>Внимание</b>';
+            }
 
-            if (obj.isArray(messageData)===true) {
+            if (obj.isArray(messageData) === true) {
                 message += '<ul>';
-                for (var i=0; i<messageData.length; i++)
+                for (i = 0; i < messageData.length; i++) {
                     message += '<li>' + messageData[i].message + '</li>';
+                }
 
-                message+='</ul>';
-            } else if (obj.isObject(messageData)===true) {
+                message += '</ul>';
+            } else if (obj.isObject(messageData) === true) {
                 message += '<ul>';
-                for (var key in messageData)
+                for (var key in messageData) {
                     message += '<li>' + key + ": " + messageData[key] + '</li>';
-                    
-                message+='</ul>';
-            } else
-                message+=messageData;
+                }
+
+                message += '</ul>';
+            } else {
+                message += messageData;
+            }
 
             this.msgContainer.className = type;
             this.msgContainer.innerHTML = '<div class="' + type + '">' + message + '</div>';
-        },
+        }
     ;
 
-	return {
-        msgContainerId : 'errors_list',
+    return {
+        msgContainerId: 'errors_list',
 
-		run : function (fields) {
+        run: function (fields) {
             this.msgContainer = dom.findById(this.msgContainerId);
-			this.msgContainer.innerHTML = '';
+            this.msgContainer.innerHTML = '';
             this.setData(fields);
-			var invalidFields = this.validateData();
-			if (invalidFields.length>0) {
-				this.showMessage(invalidFields, 'error');
-				return false;
-			}
-			return true;
-		},
-	};
+            var invalidFields = this.validateData();
+            if (invalidFields.length > 0) {
+                this.showMessage(invalidFields, 'error');
+                return false;
+            }
+            return true;
+        },
+    };
 })();

@@ -1,31 +1,63 @@
 <?php
+
 namespace tachyon\traits;
+
+use tachyon\dic\Container;
 
 /**
  * Трейт аутентификации
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
- */ 
+ */
 trait DateTime
 {
-    private $_months = ['ru' => [
-        'short' => [
-            'nom' => array('янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'),
-            'gen' => array('янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'),
+    private $_months = [
+        'ru' => [
+            'short' => [
+                'nom' => ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
+                'gen' => ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
+            ],
+            'long'  => [
+                'nom' => [
+                    'январь',
+                    'февраль',
+                    'март',
+                    'апрель',
+                    'май',
+                    'июнь',
+                    'июль',
+                    'август',
+                    'сентябрь',
+                    'октябрь',
+                    'ноябрь',
+                    'декабрь',
+                ],
+                'gen' => [
+                    'января',
+                    'февраля',
+                    'марта',
+                    'апреля',
+                    'мая',
+                    'июня',
+                    'июля',
+                    'августа',
+                    'сентября',
+                    'октября',
+                    'ноября',
+                    'декабря',
+                ],
+            ],
         ],
-        'long' => [
-            'nom' => array('январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'),
-            'gen' => array('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря')
-        ]
-    ]];
+    ];
 
     /**
      * @param $glue string
      * @param $mode string (long | short)
+     *
      * @return string
      */
-    public function convDateToReadable($date, $glue=' ', $length='long', $case='gen'): string
+    public function convDateToReadable($date, $glue = ' ', $length = 'long', $case = 'gen'): string
     {
         if (empty($date)) {
             return '';
@@ -33,7 +65,6 @@ trait DateTime
         $dateArr = explode('-', $date);
         $dateArr = array_reverse($dateArr);
         $dateArr[1] = $this->_months[(new Container)->get('\tachyon\components\Lang')->getLanguage()][$length][$case][(int)$dateArr[1] - 1];
-
         return implode($glue, $dateArr) . ' г.';
     }
 
@@ -43,14 +74,13 @@ trait DateTime
     public function getDay($date)
     {
         $dateArr = explode('-', $date);
-
         return $dateArr[2];
     }
 
     /**
      * @return string
      */
-    public function getMonth($date, $length='long', $case='gen')
+    public function getMonth($date, $length = 'long', $case = 'gen')
     {
         $dateArr = explode('-', $date);
         return $this->_months[(new Container)->get('\tachyon\components\Lang')->getLanguage()][$length][$case][(int)$dateArr[1] - 1];
@@ -67,14 +97,14 @@ trait DateTime
 
     public function timestampToDateTime($val)
     {
-        $date = new DateTime;
+        $date = new \DateTime;
         $date->setTimestamp($val);
         return $date->format('Y-m-d H:i:s');
     }
 
     /**
      * Возвращает первый и последний день года.
-     * 
+     *
      * @return array
      */
     public function getYearBorders()
@@ -82,17 +112,18 @@ trait DateTime
         $curYear = date('Y');
         return [
             'first' => "$curYear-01-01",
-            'last' =>"$curYear-12-31",
+            'last'  => "$curYear-12-31",
         ];
     }
 
     /**
      * Устанавливает диапазон первый и последний день года.
-     * 
+     *
      * @param array $conditions
+     *
      * @return array
      */
-    public function setYearBorders(array $conditions = array())
+    public function setYearBorders(array $conditions = [])
     {
         if (!isset($conditions['dateFrom'])) {
             $conditions['dateFrom'] = $this->getYearBorders()['first'];

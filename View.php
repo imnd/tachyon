@@ -1,94 +1,109 @@
 <?php
+
 namespace tachyon;
 
-use tachyon\dic\Container,
-    tachyon\components\AssetManager,
-    tachyon\components\Message,
-    tachyon\components\html\Html,
-    tachyon\components\Flash,
-    tachyon\traits\HasOwner,
-    tachyon\traits\HasProperties
-;
+use tachyon\dic\Container;
+use tachyon\components\{
+    AssetManager,
+    Message,
+    html\Html,
+    Flash
+};
+use tachyon\traits\{
+    HasOwner,
+    HasProperties
+};
 
 /**
  * class View
  * Компонент отображения
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
 class View
 {
-    use HasOwner,
-        HasProperties;
+    use HasOwner, HasProperties;
 
     /**
      * Контроллер, вызывающий вью
+     *
      * @var Controller $controller
      */
     protected $controller;
     /**
      * Путь к отображениям
-     * @var string $rootViewsPath
-     */
-    protected $rootViewsPath;
-    /**
-     * Путь к отображениям
+     *
      * @var string $rootViewsPath
      */
     protected $viewsPath;
     /**
+     * Путь к отображениям
+     *
+     * @var string $rootViewsPath
+     */
+    protected $appViewsPath;
+    /**
      * Путь к папке лэйаута
+     *
      * @var string $layoutPath
      */
     protected $layoutPath;
     /**
      * Имя лэйаута
+     *
      * @var string $layoutPath
      */
     protected $layout;
     /**
      * Заголовок страницы
+     *
      * @var string $pageTitle
      */
     protected $pageTitle;
 
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
     protected $config;
     /**
-     * @var \tachyon\components\AssetManager $assetManager
+     * @var AssetManager $assetManager
      */
     protected $assetManager;
     /**
-     * @var \tachyon\components\Message $msg
+     * @var Message $msg
      */
     protected $msg;
     /**
      * Компонент построителя html-кода
-     * @var \tachyon\components\html\Html $html
+     *
+     * @var Html $html
      */
     protected $html;
     /**
-     * @var tachyon\components\Flash
+     * @var Flash
      */
     protected $flash;
 
     /**
      * Сохраняем переменные между отрисовкой наследуемых лэйаутов
      */
-    protected $layoutVars = array();
+    protected $layoutVars = [];
 
     /**
-     * @param Config $config
+     * @param Config       $config
      * @param AssetManager $assetManager
-     * @param Message $msg
-     * @param Html $html
-     * @param Flash $flash
+     * @param Message      $msg
+     * @param Html         $html
+     * @param Flash        $flash
      */
-    public function __construct(Config $config, AssetManager $assetManager, Message $msg, Html $html, Flash $flash)
-    {
+    public function __construct(
+        Config $config,
+        AssetManager $assetManager,
+        Message $msg,
+        Html $html,
+        Flash $flash
+    ) {
         $this->config = $config;
         $this->appViewsPath = $this->viewsPath = $this->config->get('base_path') . '/../app/views';
         $this->assetManager = $assetManager;
@@ -101,13 +116,17 @@ class View
      * Отображает файл представления $view
      * передавая ему параметры $vars в виде массива
      *
-     * @param string $viewName
-     * @param $vars array переменные представления
-     * @param $return boolean показывать или возвращать
+     * @param string  $viewName
+     * @param array   $vars переменные представления
+     * @param boolean $return показывать или возвращать
+     *
      * @return mixed
      */
-    public function display($viewName, array $vars=array(), $return=false)
-    {
+    public function display(
+        string $viewName,
+        array $vars = [],
+        bool $return = false
+    ) {
         $contents = $this->_view("{$this->viewsPath}/$viewName", $vars);
         if ($return) {
             return $contents;
@@ -120,20 +139,20 @@ class View
      * в виде массива в заданном лэйауте
      *
      * @param string $viewsPath
-     * @param array $vars
+     * @param array  $vars
+     *
      * @return void
      */
-    public function view($viewsPath, array $vars=array())
+    public function view(string $viewsPath, array $vars = []): void
     {
         $this->layoutPath = "{$this->appViewsPath}/layouts";
         echo $this->_displayLayout($this->display($viewsPath, $vars, true), $vars);
     }
 
-    private function _displayLayout($viewContents, $vars)
+    private function _displayLayout(string $viewContents, array $vars)
     {
         $layoutHtml = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
-
-        if (false!==$extendsPos = strpos($layoutHtml, '@extends')) {
+        if (false !== $extendsPos = strpos($layoutHtml, '@extends')) {
             $start = $extendsPos + strlen('@extends') + 2;
             $end = strpos($layoutHtml, "'", $start);
             // устанавливаем родительский лэйаут
@@ -145,25 +164,25 @@ class View
         }
         $layoutHtml = $this->_replaceTag($layoutHtml, $viewContents, '@contents');
         $this->assetManager->finalize($layoutHtml);
-
         return $layoutHtml;
     }
 
     /**
      * Заменяет текст тэга $tag в тексте $textToReplace на $text
-     * 
+     *
      * @param string $textToReplace
      * @param string $text
      * @param string $tag
+     *
      * @return string
      */
-    private function _replaceTag($textToReplace, $text, $tag)
+    private function _replaceTag(string $textToReplace, string $text, string $tag): string
     {
         $tagPos = strpos($textToReplace, $tag);
         return substr($textToReplace, 0, $tagPos) . $text . substr($textToReplace, $tagPos + strlen($tag) + 1);
     }
 
-    private function _view($filePath, array $vars=array())
+    private function _view($filePath, array $vars = [])
     {
         $filePath = "$filePath.php";
         if (!file_exists($filePath)) {
@@ -171,41 +190,37 @@ class View
             echo "<div class='error'>$error</div>";
             die;
         }
-        
         $buffer = file_get_contents($filePath);
-        if (false!==strpos($buffer, '{{')) {
+        if (false !== strpos($buffer, '{{')) {
             $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
             if (
-                   // в debug mode скомпиленные шаблоны переписываются всегда
-                   $this->config->get('mode')!=='production'
+                // в debug mode скомпиленные шаблоны переписываются всегда
+                $this->config->get('mode') !== 'production'
                 || !file_exists($tempViewFilePath)
             ) {
-                while (false!==$echoPos = strpos($buffer, '{{')) {
+                while (false !== $echoPos = strpos($buffer, '{{')) {
                     $start = $echoPos + 2;
                     $end = strpos($buffer, '}}', $start);
                     $text = substr($buffer, $start, $end - $start);
-                    $buffer = substr($buffer, 0, $echoPos) . '<?=trim($this->escape(' . $text . '))?>' . substr($buffer, $end + 2);
+                    $buffer = substr($buffer, 0, $echoPos) . '<?=trim($this->escape(' . $text . '))?>' . substr($buffer,
+                            $end + 2);
                 }
                 file_put_contents($tempViewFilePath, $buffer);
             }
             $filePath = $tempViewFilePath;
         }
-
         ob_start();
-
         extract($vars);
-
-        if ('_displayLayout'===debug_backtrace()[1]['function']) {
+        if ('_displayLayout' === debug_backtrace()[1]['function']) {
             // отрисовка лэйаута
             require($filePath);
-
             $layoutVars = get_defined_vars();
             foreach ($layoutVars as $name => $var) {
                 if (isset($vars[$name])) {
                     unset($layoutVars[$name]);
                 }
             }
-            foreach (array('filePath', 'buffer', 'vars', 'this') as $varName) {
+            foreach (['filePath', 'buffer', 'vars', 'this'] as $varName) {
                 unset($layoutVars[$varName]);
             }
             // переписываем значения переменных в дочерних лэйаутах
@@ -219,13 +234,10 @@ class View
         } else {
             // отрисовка вью
             extract($this->layoutVars);
-
             require($filePath);
         }
-
         $contents = ob_get_contents();
         ob_end_clean();
-        
         return $contents;
     }
 
@@ -234,18 +246,19 @@ class View
      *
      * @param string $source текст кода либо путь
      * @param string $mode инлайн либо внешний файл
+     *
      * @return string
      */
-    public function jsCode($source, $mode='inner')
+    public function jsCode(string $source, string $mode = 'inner'): string
     {
         $script = '<script';
-        if ($mode==='inner')
+        if ($mode === 'inner') {
             $script .= ">
                 $source
             ";
-        else
+        } else {
             $script .= " src=\"$source\">";
-
+        }
         return "$script</script>";
     }
 
@@ -253,10 +266,11 @@ class View
      * widget
      * Запуск виджета на странице
      *
-     * @param $params array
+     * @param array $params
+     *
      * @return mixed
      */
-    public function widget($params)
+    public function widget(array $params)
     {
         $class = $params['class'];
         unset($params['class']);
@@ -270,33 +284,36 @@ class View
 
     /**
      * Выводит переведенные сообщения
-     * 
-     * @param string 
+     *
+     * @param string
+     *
      * @return string
      */
-    public function i18n($msg)
+    public function i18n(string $msg): string
     {
         return $this->msg->i18n($msg);
     }
 
     /**
      * Экранирование вывода
-     * 
+     *
      * @param string $text
+     *
      * @return string
      */
-    public function escape($text)
+    public function escape(string $text = null): string
     {
-        return htmlspecialchars($text);
+        return htmlspecialchars($text ?: '');
     }
 
     # Геттеры и сеттеры
 
     /**
      * @param string $path
+     *
      * @return View
      */
-    public function setViewsPath($path): View
+    public function setViewsPath(string $path): View
     {
         $this->viewsPath = $path;
         return $this;
@@ -320,9 +337,10 @@ class View
 
     /**
      * @param string $layout
+     *
      * @return View
      */
-    public function setLayout($layout): View
+    public function setLayout(string $layout): View
     {
         $this->layout = $layout;
         return $this;
@@ -338,9 +356,10 @@ class View
 
     /**
      * @param string $pageTitle
+     *
      * @return View
      */
-    public function setPageTitle($pageTitle): View
+    public function setPageTitle(string $pageTitle): View
     {
         $this->pageTitle = $pageTitle;
         return $this;
@@ -348,6 +367,7 @@ class View
 
     /**
      * @param Controller $controller
+     *
      * @return View
      */
     public function setController(Controller $controller): View

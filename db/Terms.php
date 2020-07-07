@@ -1,9 +1,10 @@
 <?php
+
 namespace tachyon\db;
 
 /**
  * Класс отвечающий за генерацию SQL выражений условий выборки
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
@@ -11,51 +12,65 @@ class Terms
 {
     /**
      * Устанавливает условие больше чем
-     * 
-     * @param $where array массив условий
-     * @param $field string поле на котором устанавливается условие
-     * @param $arrKey string ключ массива условий
-     * @param $precise "меньше" или "меньше или равно"
-     * 
-     * @return ActiveRecord
+     *
+     * @param array   $where массив условий
+     * @param string  $field поле на котором устанавливается условие
+     * @param string  $arrKey ключ массива условий
+     * @param boolean $precise "меньше" или "меньше или равно"
+     *
+     * @return array
      */
-    public function gt($where, $field, $arrKey, $precise=false): array
+    public function gt(
+        array $where,
+        string $field,
+        string $arrKey,
+        bool $precise = false
+    ): array
     {
         if (!empty($where[$arrKey])) {
-            return array("$field>" . ($precise ? '' : '=') => $where[$arrKey]);
+            return [
+                "$field>" . ($precise ? '' : '=') => $where[$arrKey],
+            ];
         }
-        return array();
+        return [];
     }
 
     /**
      * Устанавливает условие меньше чем
-     * 
-     * @param $where array массив условий
-     * @param $field string поле на котором устанавливается условие
-     * @param $arrKey string ключ массива условий
-     * @param $precise "меньше" или "меньше или равно"
-     * 
-     * @return ActiveRecord
+     *
+     * @param array   $where массив условий
+     * @param string  $field поле на котором устанавливается условие
+     * @param string  $arrKey ключ массива условий
+     * @param boolean $precise "меньше" или "меньше или равно"
+     *
+     * @return array
      */
-    public function lt($where, $field, $arrKey, $precise=false): array
+    public function lt(
+        array $where,
+        string $field,
+        string $arrKey,
+        bool $precise = false
+    ): array
     {
         if (!empty($where[$arrKey])) {
-            return array("$field<" . ($precise ? '' : '=') => $where[$arrKey]);
+            return ["$field<" . ($precise ? '' : '=') => $where[$arrKey]];
         }
-        return array();
+        return [];
     }
 
     /**
      * Устанавливает условие LIKE
-     * 
-     * @param $where array 
-     * @param $field string
+     *
+     * @param array  $where
+     * @param string $field
      */
-    public function like($where, $field): array
+    public function like(array $where, string $field): array
     {
         if (!empty($where[$field])) {
-            return array("$field LIKE" => $where[$field]);
+            return [
+                "$field LIKE" => $where[$field],
+            ];
         }
-        return array();
+        return [];
     }
 }

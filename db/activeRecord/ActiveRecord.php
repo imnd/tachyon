@@ -1,16 +1,21 @@
 <?php
 namespace tachyon\db\activeRecord;
 
-use tachyon\Model,
-    tachyon\dic\Container,
-    tachyon\exceptions\ModelException,
-    tachyon\components\Message,
-    tachyon\cache\Db as DbCache,
-    tachyon\db\Alias,
-    tachyon\db\dbal\DbFactory,
-    tachyon\db\activeRecord\Join,
-    tachyon\db\Terms
-;
+use tachyon\db\{
+    Alias,
+    dbal\DbFactory,
+    activeRecord\Join,
+    Terms,
+};
+
+use tachyon\{
+    Model,
+    dic\Container,
+    exceptions\ModelException,
+    components\Message,
+    cache\Db as DbCache,
+    traits\DateTime
+};
 
 /**
  * Класс модели Active Record
@@ -20,16 +25,18 @@ use tachyon\Model,
  */
 abstract class ActiveRecord extends Model
 {
+    use DateTime;
+
     /**
      * @var DbCache $cache
      */
     protected $cache;
     /**
-     * @var \tachyon\db\dbal\DbFactory
+     * @var DbFactory
      */
     protected $dbFactory;
     /**
-     * @var \tachyon\db\Alias $alias
+     * @var Alias $alias
      */
     protected $alias;
     /**
@@ -37,9 +44,13 @@ abstract class ActiveRecord extends Model
      */
     protected $join;
     /**
-     * @var \tachyon\db\Terms $terms
+     * @var Terms $terms
      */
     protected $terms;
+    /**
+     * @var Message $msg
+     */
+    protected $msg;
 
     /**
      * Имя таблицы в БД или алиаса
@@ -189,9 +200,7 @@ abstract class ActiveRecord extends Model
                 $relationParams[3] = array_merge($relationParams[3], $relationModel->getAlias()->getPrimKeyAliasArr($with, $relationModel->getPkName()));
             }
             
-            /**
-             * @var ActiveRecord $relModel
-             */
+            /** @var ActiveRecord $relModel */
             $relModel = $container->get("\\app\\models\\{$relationParams[0]}");
             $type = $relationParams[1];
             // первичный ключ внешней таблицы
@@ -248,7 +257,7 @@ abstract class ActiveRecord extends Model
                     $relTableName = $relModel->getTableName();
                     $pk = $this->pkName;
                     $thisTableName = $this->getTableName();
-                    $this->getDb()->setJoin("{$relModel->getSource()} AS $relTableName", "$relTableName.$linkKey=$thisTableName.$pk");
+                    $this->getDb()->addJoin("{$relModel->getSource()} AS $relTableName", "$relTableName.$linkKey=$thisTableName.$pk");
                     $this->getDb()->setFields($relationParams[3]);
                     return $this->getDb()->selectOne($thisTableName, array("$thisTableName.$pk" => $this->$pk));
                 break;
@@ -256,6 +265,7 @@ abstract class ActiveRecord extends Model
                 default: break;
             }
         }
+
         return parent::__get($var);
     }
 
@@ -441,7 +451,7 @@ abstract class ActiveRecord extends Model
                     $fieldType = $relationFields[$key];
                     switch ($fieldType) {
                         case 'timestamp':
-                            return \tachyon\helpers\DateTimeHelper::timestampToDateTime($val);
+                            return $this->timestampToDateTime($val);
                         default:
                             return $val;
                     }
@@ -456,7 +466,7 @@ abstract class ActiveRecord extends Model
      * search
      * Поиск записей в соотв с заданными св-вами модели
      */
-    public function search($fields=null)
+    public function search($fields = null)
     {
         $where = array();
         $tableName = $this->getTableName();
@@ -1045,7 +1055,7 @@ abstract class ActiveRecord extends Model
         $this->select($modelFields);
     }
 
-    # ГЕТТЕРЫ И СЕТТЕРЫ
+    # Геттеры и сеттеры
 
     /**
      * Возвращает название аттрибута модели
@@ -1175,7 +1185,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @return tachyon\db\Alias
+     * @return \tachyon\db\Alias
      */
     public function getAlias()
     {

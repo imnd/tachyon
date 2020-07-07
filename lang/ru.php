@@ -43,9 +43,10 @@
     'Controller "%controllerName" is not found.' => 'Контроллер "%controllerName" не найден.',
     'Invalid request type.' => 'Недопустимый тип запроса.',
     'Wrong CSRF token.' => 'Неверный CSRF токен.',
-    'Method "beforeAction" returned false' => 'Не соблюдены условия в методе beforeAction',
+    'Not found' => 'Пть не найден',
 
     // misc
+    'Method "beforeAction" returned false' => 'Не соблюдены условия в методе beforeAction',
     'Undefined field name' => 'Не определено имя поля',
     'Property "action" in menu is undetermined.' => 'Свойство "action" в меню не определено.',
 );

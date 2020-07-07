@@ -117,8 +117,8 @@ class Controller
     public function start(array $requestVars = array())
     {
         // переменные запроса
-        foreach (['get', 'post', 'files'] as $key) {
-            $this->_setRequestVar($requestVars, $key);
+        foreach (['get', 'post', 'files'] as $name) {
+            $this->$name = $requestVars[$name] ?? null;
         }
         // проверка на isRequestPost по списку экшнов
         if (in_array($this->action, $this->postActions) && !$this->isRequestPost()) {
@@ -162,19 +162,6 @@ class Controller
     }
 
     /**
-     * Устанавливает переменную запроса $name
-     * 
-     * @param array $requestVars
-     * @param string $name
-     */
-    private function _setRequestVar($requestVars, $name)
-    {
-        if (isset($requestVars[$name])) {
-            $this->$name = $requestVars[$name];
-        }
-    }
-
-    /**
      * Отображает файл представления $view
      * передавая ему параметры $vars в виде массива
      * 
@@ -197,9 +184,9 @@ class Controller
      * 
      * @param $view string
      * @param $vars array 
-     * @return string
+     * @return void
      */
-    public function view($view=null, array $vars=array())
+    public function view($view=null, array $vars=array()): void
     {
         $this->view->setLayout($this->layout);
 
@@ -274,7 +261,7 @@ class Controller
     public function getGet(string $index = null)
     {
         if (!is_null($index)) {
-            return $this->get[$index] ?? '';
+            return $this->get[$index] ?? null;
         }
         return $this->get;
     }
@@ -288,7 +275,7 @@ class Controller
     public function getPost(string $index = null)
     {
         if (!is_null($index)) {
-            return $this->post[$index] ?? '';
+            return $this->post[$index] ?? null;
         }
         return $this->post;
     }

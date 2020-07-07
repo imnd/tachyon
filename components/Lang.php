@@ -13,11 +13,11 @@ use tachyon\Config,
 class Lang
 {
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
     protected $config;
     /**
-     * @var tachyon\components\Cookie $cookie
+     * @var Cookie $cookie
      */
     protected $cookie;
 
@@ -36,9 +36,9 @@ class Lang
     public function getLanguage()
     {
         // установка и текущего языка из cookie
-        if (!$lang = $this->cookie->getCookie('lang')) {
+        if (!$lang = $this->cookie->get('lang')) {
             $lang = $this->config->get('lang');
-            $this->cookie->setCookie('lang', $lang);
+            $this->cookie->set('lang', $lang);
         }
         return $lang;
     }

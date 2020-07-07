@@ -21,8 +21,8 @@
  * @constructor
  * @this  {upload}
  */
-var upload = (function() {
-    var
+let upload = (function() {
+    let
         /**
          * параметры
          */
@@ -84,13 +84,14 @@ var upload = (function() {
                     "json",
                     "multipart/form-data"
                 );
-            }
+            };
+            var blob;
             if (file.slice) {
-                var blob = file.slice(start, stop);
+                blob = file.slice(start, stop);
             } else if (file.webkitSlice) {
-                var blob = file.webkitSlice(start, stop);
+                blob = file.webkitSlice(start, stop);
             } else if (file.mozSlice) {
-                var blob = file.mozSlice(start, stop);
+                blob = file.mozSlice(start, stop);
             }
             reader.readAsDataURL(blob);
         },

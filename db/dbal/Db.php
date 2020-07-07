@@ -1,4 +1,5 @@
 <?php
+
 namespace tachyon\db\dbal;
 
 use PDO,
@@ -7,8 +8,8 @@ use PDO,
     tachyon\components\Message;
 
 /**
- * DBAL (на PDO)
- * 
+ * DBAL
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2019 IMND
  */
@@ -16,47 +17,80 @@ abstract class Db
 {
     /**
      * параметры БД
+     *
+     * @var array
      */
     protected $config;
     /**
-     * соединение с БД (PDO)
+     * соединение с БД
+     *
+     * @var PDO
      */
     protected $connection;
     /**
      * Компонент msg
-     * @var tachyon\components\Message $msg
+     *
+     * @var Message
      */
     protected $msg;
     /**
      * Выводить ли анализ запросов в файл
+     *
+     * @var boolean
      */
     protected $explain;
     /**
      * поля для выборки/вставки/обновления
+     *
+     * @var array
      */
-    protected $fields = array();
+    protected $fields = [];
     /**
      * условия для выборки
+     *
+     * @var array
      */
-    protected $where = array();
+    protected $where = [];
+    /**
+     * @var string
+     */
     protected $join = '';
+    /**
+     * Поле группировки
+     *
+     * @var string
+     */
     protected $groupBy = '';
-    protected $orderBy = array();
+    /**
+     * Поля сортировки
+     *
+     * @var array
+     */
+    protected $orderBy = [];
+    /**
+     * LIMIT
+     *
+     * @var string
+     */
     protected $limit = '';
 
     /**
-     * путь к файлу где лежит explain.xls
+     * Путь к файлу где лежит explain.xls
+     *
+     * @var string
      */
     protected $explainPath;
 
     /**
+     * @param Message $msg
+     * @param array   $config настройки
+     *
      * @return void
      */
     public function __construct(Message $msg, array $config)
     {
         $this->msg = $msg;
         $this->config = $config;
-
         if ($this->explain = $this->config['explain']) {
             $this->explainPath = $this->config['explain_path'] ?? '../runtime/explain.xls';
             // удаляем файл
@@ -69,8 +103,8 @@ abstract class Db
     /**
      * Подключаем ДБ
      * Lazy loading
-     * 
-     * return void;
+     *
+     * @return void
      */
     protected function connect()
     {
@@ -90,38 +124,49 @@ abstract class Db
     }
 
     /**
-     * @return PDO
+     * Возвращаетстроку соединения
+     *
+     * @return string
      */
     abstract protected function getDsn(): string;
 
+    /**
+     * Проверка существования таблицы $tableName
+     *
+     * @param string $tableName
+     *
+     * @return boolean
+     */
     abstract public function isTableExists(string $tableName): bool;
 
     /**
      * Извлекает поля $fields записей из таблицы $tblName по условию $where
-     * 
+     *
      * @param string $tblName имя таблицы
-     * @param array $where условие поиска
-     * @param array $fields имена полей
+     * @param array  $where условие поиска
+     * @param array  $fields имена полей
+     *
      * @return array
      */
-    public function select(string $tblName, array $where=array(), array $fields=array()): array
-    {
+    public function select(
+        string $tblName,
+        array $where = [],
+        array $fields = []
+    ): array {
         $this->connect();
-
         $where = array_merge($where, $this->where);
         $conditions = $this->prepareConditions($where, 'where');
         $fields = array_merge($fields, $this->fields);
         $fields = $this->prepareFields($fields);
-
         $query = "
             SELECT $fields
             FROM $tblName
-            {$this->join} {$conditions['clause']}
+            {$this->join}
+            {$conditions['clause']}
         "
-        . $this->groupByString()
-        . $this->orderByString()
-        . $this->limit;
-
+            . $this->groupByString()
+            . $this->orderByString()
+            . $this->limit;
         // очищаем переменные
         $this
             ->clearOrderBy()
@@ -135,27 +180,34 @@ abstract class Db
             $this->explain($query, $conditions);
         }
         $stmt = $this->connection->prepare($query);
-        return $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : array();
+        return $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : [];
     }
 
     /**
      * Извлекает поля $fields записи из таблицы $tblName по условию $where
-     * 
+     *
      * @param string $tblName имя таблицы
-     * @param array $where условие поиска
-     * @param array $fields имена полей
+     * @param array  $where условие поиска
+     * @param array  $fields имена полей
+     *
      * @return array
      */
-    public function selectOne(string $tblName, array $where=array(), array $fields=array())
+    public function selectOne(string $tblName, array $where = [], array $fields = []): array
     {
         $rows = $this->setLimit(1)->select($tblName, $where, $fields);
         return $this->getOneRow($rows);
     }
 
+    /**
+     * Выполняет запрос $query
+     *
+     * @param string $query
+     *
+     * @return mixed
+     */
     public function query(string $query)
     {
         $this->connect();
-
         $stmt = $this->connection->prepare($query);
         if (!$this->execute($stmt)) {
             return false;
@@ -163,15 +215,27 @@ abstract class Db
         return $stmt;
     }
 
-    public function queryAll(string $query)
+    /**
+     * Выполняет запрос $query и возвращает результат в виде массива записей
+     * 
+     * @param string $query
+     * @return array
+     */
+    public function queryAll(string $query): array
     {
         if ($stmt = $this->query($query)) {
             return $this->prepareRows($stmt->fetchAll());
         }
-        return array();
+        return [];
     }
 
-    public function queryOne(string $query)
+    /**
+     * Выполняет запрос $query и возвращает одну запись в виде массива
+     * 
+     * @param string $query
+     * @return array
+     */
+    public function queryOne(string $query): array
     {
         if ($stmt = $this->query($query)) {
             return $this->prepareRows($stmt->fetch());
@@ -179,23 +243,22 @@ abstract class Db
     }
 
     /**
-     * Вставляет записи со значениями $fieldValues
-     * 
+     * Вставляет записи со значениями $fieldValues в таблицу $tblName
+     *
      * @param string $tblName имя таблицы
-     * @param array $fieldValues массив: [имена => значения] полей
+     * @param array  $fieldValues массив: [имена => значения] полей
+     *
      * @return mixed
      */
-    public function insert(string $tblName, array $fieldValues=array())
+    public function insert(string $tblName, array $fieldValues = [])
     {
         $this->connect();
-
         $fieldValues = array_merge($fieldValues, $this->fields);
         $conditions = $this->prepareConditions($fieldValues, 'insert');
         $placeholder = $this->getPlaceholder($fieldValues);
         $query = "INSERT INTO `$tblName` ({$conditions['clause']}) VALUES ($placeholder)";
         $stmt = $this->connection->prepare($query);
         $this->clearFields();
-
         if ($this->execute($stmt, $conditions['vals'])) {
             return $this->connection->lastInsertId();
         }
@@ -203,17 +266,20 @@ abstract class Db
     }
 
     /**
-     * Обновляет поля $fieldValues записей по условию $where
-     * 
+     * Обновляет поля таблицы $tblName $fieldValues записей по условию $where
+     *
      * @param string $tblName имя таблицы
-     * @param array $fieldValues массив: [имена => значения] полей
-     * @param array $where условие поиска
+     * @param array  $fieldValues массив: [имена => значения] полей
+     * @param array  $where условие поиска
+     *
      * @return boolean
      */
-    public function update(string $tblName, array $fieldValues=array(), array $where=array()): bool
-    {
+    public function update(
+        string $tblName,
+        array $fieldValues = [],
+        array $where = []
+    ): bool {
         $this->connect();
-
         $where = array_merge($where, $this->where);
         $fieldValues = array_merge($fieldValues, $this->fields);
         $updateConditions = $this->prepareConditions($fieldValues, 'update');
@@ -222,49 +288,57 @@ abstract class Db
         $stmt = $this->connection->prepare($query);
         $this->clearWhere();
         $this->clearFields();
-
         return $this->execute($stmt, array_merge($updateConditions['vals'], $whereConditions['vals']));
     }
 
     /**
-     * Удаляет записи по условию $where
-     * 
+     * Удаляет записи из таблицы $tblName по условию $where
+     *
      * @param string $tblName имя таблицы
-     * @param array $where условие поиска
+     * @param array  $where условие поиска
+     *
      * @return boolean
      */
-    public function delete(string $tblName, array $where=array()): bool
+    public function delete(string $tblName, array $where = []): bool
     {
         $this->connect();
-
         $where = array_merge($where, $this->where);
         $whereConditions = $this->prepareConditions($where, 'where');
         $stmt = $this->connection->prepare("DELETE FROM `$tblName` {$whereConditions['clause']}");
         $this->clearWhere();
-        
         return $this->execute($stmt, $whereConditions['vals']);
     }
 
     /**
      * Быстро очищает таблицу $tblName
-     * 
+     *
      * @param string $tblName имя таблицы
+     *
      * @return boolean
      */
     public function truncate(string $tblName): bool
     {
         $this->connect();
-
         $stmt = $this->connection->prepare("TRUNCATE `$tblName`");
         return $this->execute($stmt);
     }
 
-    public function beginTransaction()
+    /**
+     * Инициирует транзакцию
+     * 
+     * @return void
+     */
+    public function beginTransaction(): void
     {
         $this->connect();
         $this->connection->beginTransaction();
     }
 
+    /**
+     * Оканчивает транзакцию
+     * 
+     * @return void
+     */
     public function endTransaction()
     {
         $this->connection->commit();
@@ -274,201 +348,299 @@ abstract class Db
 
     /**
      * Добавляет условие
+     * 
+     * @param array $where условия
+     * 
+     * @return Db
      */
-    public function addWhere($where = null)
+    public function addWhere(array $where = null): Db
     {
         if (!empty($where)) {
             $this->where = array_merge($this->where, $where);
         }
+        return $this;
     }
 
     /**
      * Устанавливает условие выборки
-     * 
-     * @param array $where
-     * @return void
+     *
+     * @param array $where условия
+     *
+     * @return Db
      */
-    public function setWhere($where)
+    public function setWhere(array $where): Db
     {
         $this->where = $where;
         return $this;
     }
 
     /**
-     * возвращает условие
+     * Возвращает условие
+     * 
+     * @return string
      */
-    public function getWhere()
+    public function getWhere(): string
     {
         return $this->where;
     }
 
     /**
-     * очищает условие
+     * Очищает условие
+     * 
+     * @return Db
      */
-    protected function clearWhere()
+    protected function clearWhere(): Db
     {
-        $this->where = array();
+        $this->where = [];
         return $this;
     }
 
     /**
-     * Добавляет поля для выборки.
+     * Добавляет поля для выборки
+     * 
+     * @return Db
      */
-    public function addFields($fieldNames)
+    public function addFields(array $fieldNames): Db
     {
         $this->fields = array_merge($this->fields, $fieldNames);
+        return $this;
     }
 
     /**
-     * Устанавливает поля для выборки.
+     * Устанавливает поля для выборки
+     * 
+     * @return Db
      */
-    public function setFields($fieldNames)
+    public function setFields(array $fieldNames): Db
     {
         $this->fields = $fieldNames;
         return $this;
     }
 
     /**
-     * возвращает поля для выборки
+     * Возвращает поля для выборки
+     * 
+     * @return array
      */
-    public function getFields()
+    public function getFields(): array
     {
         return $this->fields;
     }
 
     /**
-     * очищает поля выборки
+     * Очищает поля выборки
+     * 
+     * @return Db
      */
-    protected function clearFields()
+    protected function clearFields(): Db
     {
-        $this->fields = array();
+        $this->fields = [];
         return $this;
     }
 
-    public function setJoin($tblName, $onCond, $joinMode='LEFT')
+    /**
+     * Устанавливает строку для JOIN
+     * 
+     * @param string $tblName
+     * @param string $onCond
+     * @param string $joinMode
+     * @return Db
+     */
+    public function setJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): Db
+    {
+        $this->join = " $joinMode JOIN $tblName ON $onCond ";
+        return $this;
+    }
+
+    /**
+     * Добавляет строку для JOIN
+     * 
+     * @param string $tblName
+     * @param string $onCond
+     * @param string $joinMode
+     * @return Db
+     */
+    public function addJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): Db
     {
         $this->join .= " $joinMode JOIN $tblName ON $onCond ";
         return $this;
     }
 
     /**
-     * очищает join
+     * Очищает join
+     * @return Db
      */
-    protected function clearJoin()
+    protected function clearJoin(): Db
     {
         $this->join = '';
         return $this;
     }
 
     /**
-     * Добавляет в массив orderBy новый эт-т
-     * 
+     * Добавляет в массив orderBy новый элемент
+     *
      * @param string $field
      * @param string $order
-     * @return void
+     *
+     * @return Db
      */
-    public function orderBy($fieldName, $order = 'ASC')
+    public function orderBy(string $fieldName, string $order = 'ASC'): Db
     {
         $this->orderBy[$fieldName] = $order;
+        return $this;
     }
 
     /**
-     * устанавливает orderBy
+     * Устанавливает orderBy
+     * @return Db
      */
-    public function setOrderBy($orderBy)
+    public function setOrderBy($orderBy): Db
     {
         $this->orderBy = $orderBy;
         return $this;
     }
 
     /**
-     * возвращает orderBy
+     * Возвращает orderBy
+     * @return string
      */
-    public function getOrderBy()
+    public function getOrderBy(): string
     {
         return $this->orderBy;
     }
 
     /**
-     * очищает orderBy
+     * Очищает orderBy
+     * @return Db
      */
-    protected function clearOrderBy()
+    protected function clearOrderBy(): Db
     {
-        $this->orderBy = array();
+        $this->orderBy = [];
         return $this;
     }
 
     /**
      * Строка order by cast
+     * 
+     * @param string $colName
+     * 
+     * @return string
      */
     abstract public function orderByCast(string $colName): string;
 
-    protected function orderByString()
+    /**
+     * Возвращает форматированную строку ORDER BY
+     * 
+     * @return string
+     */
+    private function orderByString(): string
     {
-        if (count($this->orderBy)===0) {
+        if (count($this->orderBy) === 0) {
             return '';
         }
-        $orderBy = array();
+        $orderBy = [];
         foreach ($this->orderBy as $fieldName => $order) {
             $orderBy[] = "$fieldName $order";
         }
+
         return ' ORDER BY ' . implode(',', $orderBy);
     }
 
-    public function setLimit($limit, $offset = null)
+    /**
+     * Устанавливает форматированную строку LIMIT
+     * 
+     * @param numeric $limit
+     * @param numeric $offset
+     * 
+     * @return Db
+     */
+    public function setLimit($limit, $offset = null): Db
     {
         $this->limit = $limit;
-        
         if (!is_null($offset)) {
             $this->limit = " $offset, {$this->limit}";
         }
         $this->limit = " LIMIT {$this->limit} ";
+
         return $this;
     }
 
-    public function getLimit()
+    /**
+     * Возвращает limit
+     * 
+     * @return string
+     */
+    public function getLimit(): string
     {
         return $this->limit;
     }
 
     /**
-     * очищает limit
+     * Очищает limit
+     * 
+     * @return Db
      */
-    protected function clearLimit()
+    protected function clearLimit(): Db
     {
         $this->limit = '';
         return $this;
     }
 
-    public function setGroupBy($fieldName)
+    /**
+     * Устанавливает groupBy
+     * 
+     * @return Db
+     */
+    public function setGroupBy(string $fieldName): Db
     {
         $this->groupBy = $fieldName;
         return $this;
     }
 
-    public function getGroupBy()
+    /**
+     * Возвращает groupBy
+     * 
+     * @return string
+     */
+    public function getGroupBy(): string
     {
         return $this->groupBy;
     }
 
     /**
-     * очищает GroupBy
+     * Очищает groupBy
+     * 
+     * @return Db
      */
-    protected function clearGroupBy()
+    protected function clearGroupBy(): Db
     {
         $this->groupBy = '';
         return $this;
     }
 
-    protected function groupByString()
+    /**
+     * Возвращает форматированную строку GROUP BY
+     * 
+     * @return string
+     */
+    private function groupByString(): string
     {
-        if ($this->groupBy!=='')
+        if ($this->groupBy !== '') {
             return " GROUP BY {$this->groupBy} ";
-        
+        }
         return '';
     }
 
-    protected function prepareConditions($conditions, $type, $operator='=')
+    /**
+     * Форматирует условия для выборки, вставки или удаления
+     * 
+     * @param array $conditions
+     * @param string $type
+     * @param string $operator
+     * 
+     * @return string
+     */
+    protected function prepareConditions(array $conditions, string $type, string $operator = '='): string
     {
         switch ($type) {
             case 'where':
@@ -478,24 +650,34 @@ abstract class Db
             case 'insert':
                 return $this->createConditions($conditions, '', '', ',');
             default:
-                return null;
+                return '';
         }
     }
 
-    protected function createConditions($conditions, $keyword, $operator, $glue)
+    /**
+     * Форматирует условия для выборки, вставки или удаления
+     * 
+     * @param array  $conditions
+     * @param string $keyword
+     * @param string $operator
+     * @param string $glue
+     * 
+     * @return string
+     */
+    protected function createConditions(array $conditions, string $keyword, string $operator, string $glue): string
     {
         $clause = '';
-        $vals = array();
-        if (count($conditions)!==0) {
-            $clauseArr = array();
+        $vals = [];
+        if (count($conditions) !== 0) {
+            $clauseArr = [];
             foreach ($conditions as $field => $val) {
-                if (preg_match('/ IN/', $field, $matches)!==0) {
+                if (preg_match('/ IN/', $field, $matches) !== 0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = '(' . implode(',', $val) . ')';
-                } elseif (preg_match('/ LIKE/', $field, $matches)!==0) {
+                } elseif (preg_match('/ LIKE/', $field, $matches) !== 0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = "%$val%";
-                } elseif (preg_match('/<=|<|>=|>/', $field, $matches)!==0) {
+                } elseif (preg_match('/<=|<|>=|>/', $field, $matches) !== 0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . ' ?';
                 } else {
                     $clauseArr[] = $this->quoteField($field) . $operator;
@@ -507,16 +689,30 @@ abstract class Db
         return compact('clause', 'vals');
     }
 
-    protected function clearifyField($field, $text)
+    /**
+     * Очистка поля
+     * 
+     * @param string $field
+     * @param string $text
+     * @return string
+     */
+    protected function clearifyField(string $field, string $text): string
     {
         $field = str_replace($text, '', $field);
         $field = trim($field);
+
         return $this->quoteField($field);
     }
 
-    protected function prepareFields(array $fields)
+    /**
+     * Подготовка поля
+     * 
+     * @param array $fields
+     * @return string
+     */
+    protected function prepareFields(array $fields): string
     {
-        if (count($fields)==0) {
+        if (count($fields) == 0) {
             return '*';
         }
         foreach ($fields as $key => &$field) {
@@ -529,30 +725,51 @@ abstract class Db
         return implode(',', $fields);
     }
 
-    protected function quoteField($field)
+    /**
+     * Снабжение поля кавычками
+     * 
+     * @param string $field
+     * @return string
+     */
+    protected function quoteField(string $field): string
     {
-        if (preg_match('/[.( ]/', $field)===0) {
+        if (preg_match('/[.( ]/', $field) === 0) {
             $field = "`" . trim($field) . "`";
         }
         return $field;
     }
 
-    protected function getPlaceholder($fields)
+    /**
+     * @param array $fields
+     * @return string
+     */
+    protected function getPlaceholder(array $fields): string
     {
-        $plholdArr = array_fill(0, count($fields), '?');
-
-        return implode(',', $plholdArr);
+        $placeholderArr = array_fill(0, count($fields), '?');
+        return implode(',', $placeholderArr);
     }
-    
-    protected function getOneRow($rows)
+
+    /**
+     * Возвращение одного поля из извлеченного массива строк
+     * 
+     * @param array $rows
+     * @return 
+     */
+    protected function getOneRow(array $rows = []): array
     {
-        if (count($rows)>0) {
-            $rows =  $this->prepareRows($rows);
+        if (count($rows) > 0) {
+            $rows = $this->prepareRows($rows);
             return $rows[0];
         }
     }
 
-    protected function prepareRows($rows=array())
+    /**
+     * Подготовка извлеченного массива строк, удаление лишнего
+     * 
+     * @param array $rows
+     * @return array
+     */
+    protected function prepareRows(array $rows = []): array
     {
         foreach ($rows as &$row) {
             foreach ($row as $key => $value) {
@@ -564,7 +781,17 @@ abstract class Db
         return $rows;
     }
 
-    protected function execute($stmt, $fields=null): bool
+    /**
+     * Выполнение запроса
+     * 
+     * @param PDOStatemnt $stmt
+     * @param array $fields
+     * 
+     * @return boolean
+     * 
+     * @throws DBALException
+     */
+    protected function execute($stmt, $fields = null): bool
     {
         if (!$stmt->execute($fields)) {
             throw new DBALException($this->msg->i18n('Database error.'));

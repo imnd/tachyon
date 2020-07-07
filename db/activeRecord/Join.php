@@ -1,13 +1,15 @@
 <?php
 namespace tachyon\db\activeRecord;
 
+use tachyon\traits\HasOwner;
+
 /**
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
 class Join
 {
-    use \tachyon\traits\HasOwner;
+    use HasOwner;
 
     public function innerJoin($join, $on, $alias)
     {
@@ -30,7 +32,6 @@ class Join
     }
     
     /**
-     * setJoin
      * Устанавливает джойн таблицы
      * 
      * @param $join string | array
@@ -53,7 +54,7 @@ class Join
         }
         $onCond = is_array($on) ? " $alias.{$on[0]}=$tblName.{$on[1]} " : " $on ";
 
-        $this->owner->getDb()->setJoin($expr, $onCond, $mode);
+        $this->owner->getDb()->addJoin($expr, $onCond, $mode);
 
         return $this;
     }

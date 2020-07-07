@@ -4,7 +4,9 @@ namespace tachyon\components\widgets\grid;
 use tachyon\dic\Container,
     tachyon\Config,
     tachyon\components\Message,
-    tachyon\components\Csrf;
+    tachyon\components\Csrf,
+    tachyon\components\widgets\Widget
+;
 
 /**
  * Отображает в виде таблицы результат выборки
@@ -12,7 +14,7 @@ use tachyon\dic\Container,
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
-class Grid extends \tachyon\components\widgets\Widget
+class Grid extends Widget
 {
     /**
      * @var \tachyon\db\activeRecord\ActiveRecord $model
@@ -68,15 +70,15 @@ class Grid extends \tachyon\components\widgets\Widget
     protected $modelName;
 
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
     protected $config;
     /**
-     * @var tachyon\components\Message $msg
+     * @var Message $msg
      */
     protected $msg;
     /**
-     * @var tachyon\components\Csrf $csrf
+     * @var Csrf $csrf
      */
     protected $csrf;
 

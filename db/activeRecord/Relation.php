@@ -1,8 +1,11 @@
 <?php
 namespace tachyon\db\activeRecord;
 
-use tachyon\components\Message,
-    tachyon\db\Alias;
+use tachyon\{
+    components\Message,
+    db\Alias,
+    dic\Container
+};
 
 /**
  * class Relation
@@ -14,11 +17,11 @@ use tachyon\components\Message,
 abstract class Relation
 {
     /**
-     * @var tachyon\components\Message $msg
+     * @var Message $msg
      */
     protected $msg;
     /**
-     * @var \tachyon\db\Alias $Alias
+     * @var Alias $Alias
      */
     protected $alias;
 
@@ -40,7 +43,7 @@ abstract class Relation
         $this->alias = $alias;
 
         $this->modelName = $params['modelName'];
-        $model = (new \tachyon\dic\Container)->get($this->modelName);
+        $model = (new Container)->get($this->modelName);
         $this->tableName = $model::getTableName();
         $this->pkName = $model->getPkName();
         $this->linkKey = $params['linkKey'];
@@ -94,7 +97,7 @@ abstract class Relation
         return $this;
     }
 
-    /*public function getFields()
+    public function getFields()
     {
         return $this->fields;
     }
@@ -103,7 +106,7 @@ abstract class Relation
     {
         $this->fields = $fields;
         return $this;
-    }*/
+    }
 
     public function getTableAlias()
     {

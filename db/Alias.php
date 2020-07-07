@@ -1,8 +1,11 @@
 <?php
 namespace tachyon\db;
 
-use tachyon\exceptions\ModelException,
-    tachyon\components\Message;
+use tachyon\{
+    exceptions\ModelException,
+    components\Message,
+    traits\HasOwner
+};
 
 /**
  * Класс отвечающий за подбор псевдонимов таблиц
@@ -12,7 +15,7 @@ use tachyon\exceptions\ModelException,
  */
 class Alias
 {
-    use \tachyon\traits\HasOwner;
+    use HasOwner;
 
     const PK_GLUE = '____';
     /**
@@ -22,7 +25,7 @@ class Alias
     const PK_MARKER = '_pk';
 
     /**
-     * @var tachyon\components\Message $msg
+     * @var Message $msg
      */
     protected $msg;
 

@@ -1,13 +1,16 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-use tachyon\validation\ValidationInterface,
-    tachyon\db\dataMapper\DbContext,
-    tachyon\validation\Validator;
+use tachyon\{
+    validation\ValidationInterface,
+    db\dataMapper\DbContext,
+    validation\Validator,
+    traits\ClassName
+};
 
 abstract class Entity implements EntityInterface, UnitOfWorkInterface, ValidationInterface
 {
-    use \tachyon\traits\ClassName;
+    use ClassName;
     
     /**
      * Имя таблицы БД
@@ -15,11 +18,11 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      */
     protected $tableName;
     /**
-     * @var tachyon\db\dataMapper\DbContext
+     * @var DbContext
      */
     protected $dbContext;
     /**
-     * @var tachyon\validation\Validator $validator
+     * @var Validator $validator
      */
     protected $validator;
 

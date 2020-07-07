@@ -14,5 +14,5 @@ spl_autoload_register(function($className) {
             return;
         }
     }
-    throw new ErrorException("Класс $className не найден.");
+    throw new ErrorException("The class $className dosn`t exist");
 });

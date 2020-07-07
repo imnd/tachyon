@@ -1,4 +1,5 @@
 <?php
+
 namespace tachyon\components;
 
 use tachyon\components\Encrypt,
@@ -6,18 +7,18 @@ use tachyon\components\Encrypt,
 
 /**
  * Компонент защиты от CSRF-атак
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
 class Csrf
 {
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
     protected $config;
     /**
-     * @var tachyon\components\Encrypt $encrypt
+     * @var Encrypt $encrypt
      */
     protected $encrypt;
 
@@ -41,7 +42,7 @@ class Csrf
     /**
      * получение уникального id token`а
      * (извлечение из $_SESSION либо генерация случайного)
-     * 
+     *
      * @return string
      */
     public function getTokenId()
@@ -56,7 +57,7 @@ class Csrf
     /**
      * получение значения token`а
      * (извлечение из $_SESSION либо генерация случайного)
-     * 
+     *
      * @return string
      */
     public function getTokenVal()
@@ -65,29 +66,29 @@ class Csrf
         if (!isset($_SESSION['token_value'])) {
             $_SESSION['token_value'] = $this->encrypt->randString();
         }
-        return $_SESSION['token_value']; 
+        return $_SESSION['token_value'];
     }
 
     /**
      * проверка token`ов, передаваемых ч/з запросы
-     * 
+     *
      * @return boolean
      */
     public function isTokenValid()
     {
         return
-               $this->config->get('csrf_check')!==true
+            $this->config->get('csrf_check') !== true
             || $this->_isValid($_GET)
             || $this->_isValid($_POST);
     }
 
     /**
      * проверка token`а
-     * 
+     *
      * @return boolean
      */
     private function _isValid($var)
     {
-        return isset($var[$this->getTokenId()]) && $var[$this->getTokenId()]===$this->getTokenVal();
+        return isset($var[$this->getTokenId()]) && $var[$this->getTokenId()] === $this->getTokenVal();
     }
 }

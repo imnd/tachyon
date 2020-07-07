@@ -1,7 +1,7 @@
 <?=
-$this->owner->css("pikaday"),
-$this->owner->js("moment"),
-$this->owner->js("pikaday")
+$this->owner->css("pikaday.min"),
+$this->owner->js("moment.min"),
+$this->owner->js("pikaday.min")
 ?>
 
 <script>

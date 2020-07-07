@@ -1,11 +1,13 @@
 <?php
+
 namespace tachyon\db\dataMapper;
 
-use tachyon\db\dbal\DbFactory;
+use tachyon\db\dbal\DbFactory,
+    tachyon\traits\HasOwner;
 
 class Persistence
 {
-    use \tachyon\traits\HasOwner;
+    use HasOwner;
 
     /**
      * Имя текущей (главной) таблицы запроса
@@ -19,7 +21,7 @@ class Persistence
      * Поля выборки.
      * выпилить. переместить в DB
      */
-    protected $select = array();
+    protected $select = [];
 
     /**
      * @var \tachyon\db\dbal\Db
@@ -36,10 +38,10 @@ class Persistence
 
     /**
      * Находит все записи по условию $where, отсортированные по $sort
-     * 
-     * @param array $where
-     * @param array $fields
-     * @param array $sort
+     *
+     * @param array  $where
+     * @param array  $fields
+     * @param array  $sort
      * @param string $tableName
      */
     public function findAll(array $where = [], array $sortBy = [], array $fields = [], $tableName = null): array
@@ -58,7 +60,9 @@ class Persistence
 
     /**
      * Делает запрос $query к БД и извлекает результаты в виде массива.
+     *
      * @param string $query
+     *
      * @return array
      */
     public function queryAll(string $query)
@@ -68,9 +72,9 @@ class Persistence
 
     /**
      * Находит все записи по условию $where, отсортированные по $sort
-     * 
-     * @param array $where
-     * @param array $fields
+     *
+     * @param array  $where
+     * @param array  $fields
      * @param string $tableName
      */
     public function findOne(array $where = [], array $fields = [], $tableName = null): array
@@ -94,10 +98,11 @@ class Persistence
 
     /**
      * Находит запись по первичному ключу
-     * 
+     *
+     * @param string $tableName
      * return mixed;
      */
-    public function findByPk($pk, $tableName = null)
+    public function findByPk($pk, string $tableName = null)
     {
         if (!is_null($tableName)) {
             $this->tableName = $tableName;
@@ -107,10 +112,14 @@ class Persistence
 
     /**
      * Обновляет запись по первичному ключу
-     * 
+     *
+     * @param mixed  $pk
+     * @param array  $fieldValues
+     * @param string $tableName
+     *
      * @return boolean
      */
-    public function updateByPk($pk, array $fieldValues, $tableName = null)
+    public function updateByPk($pk, array $fieldValues, string $tableName = null): bool
     {
         if (!is_null($tableName)) {
             $this->tableName = $tableName;
@@ -120,10 +129,13 @@ class Persistence
 
     /**
      * Сохраняет запись в хранилище
-     * 
+     *
+     * @param array  $fieldValues
+     * @param string $tableName
+     *
      * @return boolean
      */
-    public function insert(array $fieldValues, $tableName = null)
+    public function insert(array $fieldValues, string $tableName = null)
     {
         if (!is_null($tableName)) {
             $this->tableName = $tableName;
@@ -134,10 +146,12 @@ class Persistence
     /**
      * Удаляет запись из хранилища
      *
-     * @param mixed $pk
+     * @param mixed  $pk
+     * @param string $tableName
+     *
      * @return boolean
      */
-    public function deleteByPk($pk, $tableName = null)
+    public function deleteByPk($pk, string $tableName = null): bool
     {
         if (!is_null($tableName)) {
             $this->tableName = $tableName;
@@ -146,9 +160,19 @@ class Persistence
     }
 
     /**
+     * Truncates table $this->tableName
+     *
+     * @return boolean
+     */
+    public function clear(): bool
+    {
+        $this->db->truncate($this->tableName);
+    }
+
+    /**
      * @return void
      */
-    public function beginTransaction()
+    public function beginTransaction(): void
     {
         $this->db->beginTransaction();
     }
@@ -156,19 +180,20 @@ class Persistence
     /**
      * @return void
      */
-    public function endTransaction()
+    public function endTransaction(): void
     {
         $this->db->endTransaction();
     }
 
     /**
      * Устанавливаем какие таблицы джойнить
-     * 
+     *
      * @param array $with
      * @param array $on
+     *
      * @return Persistence
      */
-    public function with(array $with, $on = array())
+    public function with(array $with, array $on = []): Persistence
     {
         $withAlias = current($with);
         $withTableName = key($with);
@@ -187,28 +212,30 @@ class Persistence
             $this->select[] = $onPrimaryKey;
         }
         $this->db->setJoin("$withTableName AS $withAlias", "$onPrimaryKey = $onForeignKey");
-
         return $this;
     }
 
     /**
      * Устанавливает условие выборки.
-     * 
+     *
      * @param array $where
-     * @return void
+     *
+     * @return Persistence
      */
-    public function setWhere($where)
+    public function setWhere(array $where): Persistence
     {
         $this->db->setWhere($where);
+        return $this;
     }
 
     /**
      * Устанавливает LIMIT.
-     * 
+     *
      * @param string $limit
+     *
      * @return Persistence
      */
-    public function limit($limit)
+    public function limit(string $limit): Persistence
     {
         $this->db->setLimit($limit);
         return $this;
@@ -216,12 +243,13 @@ class Persistence
 
     /**
      * Устанавливает поля сортировки.
-     * 
-     * @param mixed $field
+     *
+     * @param mixed  $field
      * @param string $order
+     *
      * @return Persistence
      */
-    public function orderBy($field, $order=null)
+    public function orderBy($field, string $order = null): Persistence
     {
         if (is_null($order)) {
             if (!is_array($field)) {
@@ -236,45 +264,49 @@ class Persistence
 
     /**
      * Устанавливает поля сортировки.
-     * 
+     *
      * @param string $fields
+     *
      * @return Persistence
      */
-    public function setOrderBy($fields)
+    public function setOrderBy(string $fieldName): Persistence
     {
-        $this->db->setOrderBy($fields);
+        $this->db->setOrderBy($fieldName);
         return $this;
     }
 
     /**
      * Устанавливает поля сортировки.
-     * 
-     * @param string $fields
+     *
+     * @param string $fieldName
+     *
      * @return Persistence
      */
-    public function groupBy($fields)
+    public function groupBy(string $fieldName): Persistence
     {
-        $this->db->setGroupBy($fields);
+        $this->db->setGroupBy($fieldName);
         return $this;
     }
 
     /**
      * Устанавливает поля выборки.
-     * 
+     *
      * @param array $fields
+     *
      * @return Persistence
      */
-    public function select($fields)
+    public function select(array $fields): Persistence
     {
-        $this->db->setFields((array)$fields);
+        $this->db->setFields($fields);
         return $this;
     }
 
     /**
      * @param string $tableName
+     *
      * @return Persistence
      */
-    public function setTableName($tableName): Persistence
+    public function setTableName(string $tableName): Persistence
     {
         $this->tableName = $tableName;
         return $this;
@@ -282,9 +314,10 @@ class Persistence
 
     /**
      * @param string $tableName
+     *
      * @return Persistence
      */
-    public function from($tableName): Persistence
+    public function from(string $tableName): Persistence
     {
         $this->tableName = $tableName;
         return $this;
@@ -292,11 +325,12 @@ class Persistence
 
     /**
      * Устанавливает алиас текущей (главной) таблицы запроса
-     * 
+     *
      * @param string $alias
+     *
      * @return Persistence
      */
-    public function asa($alias)
+    public function asa(string $alias): Persistence
     {
         $this->tableAlias = $alias;
         return $this;

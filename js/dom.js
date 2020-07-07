@@ -80,8 +80,8 @@ var dom = (function() {
                 return doc.getElementsByClassName(className);
         },
 
-        val : function(obj, value) {
-            var obj = this.findObj(obj);
+        val : function(object, value) {
+            var obj = this.findObj(object);
             if (obj===null || obj===undefined) {
                 return "";
             }
@@ -109,13 +109,22 @@ var dom = (function() {
                        objType=="text" 
                     || objType==="password" 
                     || objType==="hidden" 
-                    || objType==="textarea"
                     || objType==="select-one"
                 ) {
                     if (value===undefined) {
                         return obj.value;
                     } else {
                         obj.value = value;
+                    }
+                }
+                if (
+                       objType==="textarea"
+                    || objType==="submit"
+                ) {
+                    if (value===undefined) {
+                        return obj.innerHTML;
+                    } else {
+                        obj.innerHTML = value;
                     }
                 }
             } else if (obj.innerHTML!==undefined) {
@@ -151,8 +160,8 @@ var dom = (function() {
                 this.clear(ctrls[i]);
             }
         },
-        clear : function(obj) {
-            var obj = this.findObj(obj);
+        clear : function(object) {
+            var obj = this.findObj(object);
             if (obj===undefined) {
                 return;
             }

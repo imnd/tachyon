@@ -1,18 +1,19 @@
 <?php
+
 namespace tachyon\components\html;
 
 use tachyon\Config;
 
 /**
  * Построитель html-кода
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2018 IMND
  */
 class Html
 {
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
     protected $config;
 
@@ -21,126 +22,133 @@ class Html
         $this->config = $config;
     }
 
-    public function div($options=array(), $type='dual')
+    public function div($options = [], $type = 'dual'): string
     {
         return $this->tag('div', $options, $type);
     }
 
     # FORM
 
-    public function formOpen($options=array())
+    public function formOpen($options = []): string
     {
         $options['attrs']['method'] = $options['method'] ?? null;
         return $this->tag('form', $options, 'open');
     }
-    
-    public function formClose()
+
+    public function formClose(): string
     {
-        return $this->tag('form', array(), 'close');
+        return $this->tag('form', [], 'close');
     }
-    
-    public function form($options=array())
+
+    public function form($options = []): string
     {
         return $this->tag('form', $options, 'dual');
     }
 
-    public function textarea($options=array())
+    public function textarea($options = []): string
     {
         $options = $this->_setOptions($options);
         return $this->tag('textarea', $options, 'dual');
     }
 
-    public function submit($value='')
+    public function submit($value = ''): string
     {
-        return $this->input(array('attrs' => array('type' => 'submit', 'value' => $value)));
+        return $this->input(['attrs' => [
+            'type' => 'submit',
+            'value' => $value
+        ]]);
     }
 
-    public function button($value='')
+    public function button($value = ''): string
     {
-        return $this->input(array('attrs' => array('type' => 'button', 'value' => $value)));
+        return $this->input(['attrs' => [
+            'type' => 'button',
+            'value' => $value
+        ]]);
     }
 
-    public function hidden($options=array())
+    public function hidden($options = []): string
     {
         $options = $this->_setOptions($options);
         $options['attrs']['type'] = 'hidden';
+
         return $this->input($options);
     }
-    
-    public function hiddenEx($model, $options=array())
+
+    public function hiddenEx($model, $options = []): string
     {
-        if (!is_array($options))
-            $options = array(
-                'attrs' => array(),
-                'name' => $options,
-            );
-        if (!isset($options['attrs']))
-            $options['attrs'] = array();
-        
+        if (!is_array($options)) {
+            $options = [
+                'attrs' => [],
+                'name'  => $options,
+            ];
+        }
+        if (!isset($options['attrs'])) {
+            $options['attrs'] = [];
+        }
         $options['attrs']['type'] = 'hidden';
         return $this->inputEx($model, $options);
     }
 
-    public function label($text, $for='')
+    public function label($text, $for = ''): string
     {
-        return $this->tag('label', array(
-            'attrs' => compact('for'),
-            'contents' => $text
-        ), 'dual');
+        return $this->tag('label', [
+            'attrs'    => compact('for'),
+            'contents' => $text,
+        ], 'dual');
     }
 
-    public function labelEx($model, $for)
+    public function labelEx($model, $for): string
     {
-        return $this->tag('label', array(
-            'attrs' => compact('for'),
-            'contents' => $model->getAttributeName($for)
-        ), 'dual');
+        return $this->tag('label', [
+            'attrs'    => compact('for'),
+            'contents' => $model->getAttributeName($for),
+        ], 'dual');
     }
 
-    public function error($model, $name)
+    public function error($model, $name): string
     {
-        return $this->tag('span', array(
-            'attrs' => array('class' => 'error'),
-            'contents' => $model->getError($name)
-        ), 'dual');
+        return $this->tag('span', [
+            'attrs'    => ['class' => 'error'],
+            'contents' => $model->getError($name),
+        ], 'dual');
     }
 
-    public function errorSummary($model)
+    public function errorSummary($model): string
     {
-        return $this->tag('span', array(
-            'attrs' => array('class' => 'error'),
-            'contents' => $model->getErrorsSummary()
-        ), 'dual');
+        return $this->tag('span', [
+            'attrs'    => ['class' => 'error'],
+            'contents' => $model->getErrorsSummary(),
+        ], 'dual');
     }
 
-    public function input($options=array())
+    public function input($options = []): string
     {
         $options = $this->_setOptions($options);
-
-        if (!empty($options['multiple']))
+        if (!empty($options['multiple'])) {
             $options['attrs']['name'] .= '[]';
-
-        if (isset($options['readonly']))
+        }
+        if (isset($options['readonly'])) {
             $options['attrs']['readonly'] = 'readonly';
-
+        }
         return $this->tag('input', $options, 'single');
     }
-    
-    public function inputEx($model, $options=array())
+
+    public function inputEx($model, $options = []): string
     {
         if (is_array($options) && isset($options['name'])) {
             $name = $options['name'];
             unset($options['name']);
         } else {
             $name = $options;
-            $options = array();
+            $options = [];
         }
-        if (!isset($options['attrs']))
-            $options['attrs'] = array();
-
-        if (!isset($options['value']))
+        if (!isset($options['attrs'])) {
+            $options['attrs'] = [];
+        }
+        if (!isset($options['value'])) {
             $options['value'] = $model->$name;
-
+        }
         $options['attrs']['name'] = "{$model->getClassName()}[$name]";
         if (!empty($options['multiple'])) {
             $options['attrs']['name'] .= '[]';
@@ -151,134 +159,131 @@ class Html
         return $this->tag('input', $options, 'single');
     }
 
-    public function select($options=array(), $num=null)
+    public function select($options = [], $num = null): string
     {
-        $options = $this->_setOptions($options, array('name'));
-
+        $options = $this->_setOptions($options, ['name']);
         $name = $options['attrs']['name'];
-
-        if (!is_null($num))
+        if (!is_null($num)) {
             $options['attrs']['name'] .= "[$num]";
-
+        }
         $contents = '';
         if (isset($options['options'])) {
-            $name = str_replace('[]', '' , $name);
+            $name = str_replace('[]', '', $name);
             foreach ($options['options'] as $option) {
-                if (isset($options['model']))
-                    if ($options['model']->$name===$option['value'])
+                if (isset($options['model'])) {
+                    if ($options['model']->$name === $option['value']) {
                         $option['attrs']['selected'] = 'selected';
-
+                    }
+                }
                 $contents .= $this->tag('option', $option, 'dual');
             }
         }
-        return $this->tag('select', array(
-            'attrs' => isset($options['attrs']) ? $options['attrs'] : array(),
+        return $this->tag('select', [
+            'attrs'    => isset($options['attrs']) ? $options['attrs'] : [],
             'contents' => $contents,
-        ), 'dual');
+        ], 'dual');
     }
 
-    public function selectEx($model, $options=array())
+    public function selectEx($model, $options = []): string
     {
         if (is_array($options) && isset($options['name'])) {
             $name = $options['name'];
             unset($options['name']);
         } else {
             $name = $options;
-            $options = array();
+            $options = [];
         }
-        if (!isset($options['attrs']))
-            $options['attrs'] = array();
-
+        if (!isset($options['attrs'])) {
+            $options['attrs'] = [];
+        }
         $contents = '';
         if (isset($options['options'])) {
             foreach ($options['options'] as $option) {
-                if ($model->$name===$option['value'])
+                if ($model->$name === $option['value']) {
                     $option['attrs']['selected'] = 'selected';
-
+                }
                 $contents .= $this->tag('option', $option, 'dual');
             }
         }
         $options['attrs']['name'] = $model->getClassName() . "[$name]";
-        if (!empty($options['multiple']))
+        if (!empty($options['multiple'])) {
             $options['attrs']['name'] .= '[]';
-
-        return $this->tag('select', array(
-            'attrs' =>isset($options['attrs']) ? $options['attrs'] : array(),
+        }
+        return $this->tag('select', [
+            'attrs'    => isset($options['attrs']) ? $options['attrs'] : [],
             'contents' => $contents,
-        ), 'dual');
+        ], 'dual');
     }
 
     /**
      * checkbox
-     * 
-     * @param $options array 
+     *
+     * @param $options array
+     *
      * @return string
      */
-    public function checkbox($options=array())
+    public function checkbox($options = []): string
     {
         $options = $this->_setOptions($options);
         $options['attrs']['type'] = 'checkbox';
-        
-        if (!isset($options['value']) && isset($options['model']))
+        if (!isset($options['value']) && isset($options['model'])) {
             $options['value'] = $options['model']->{$options['attrs']['name']};
-
-        if (isset($options['value']) && $options['value']==1)
+        }
+        if (isset($options['value']) && $options['value'] == 1) {
             $options['attrs']['checked'] = 'checked';
-
+        }
         return $this->tag('input', $options, 'single');
     }
 
     /**
-     * _setOptions
-     * 
-     * @param $options array 
+     * @param $options array
+     *
      * @return array
      */
-    private function _setOptions($options, $attrs=array('name', 'value'))
+    private function _setOptions($options, $attrs = ['name', 'value']): array
     {
-        if (!is_array($options))
-            $options = array('attrs' => array('name' => $options));
-        elseif (!isset($options['attrs']))
-            $options['attrs'] = array();
-
-        foreach ($attrs as $attr)
+        if (!is_array($options)) {
+            $options = ['attrs' => ['name' => $options]];
+        } elseif (!isset($options['attrs'])) {
+            $options['attrs'] = [];
+        }
+        foreach ($attrs as $attr) {
             $options['attrs'][$attr] = $options['attrs'][$attr] ?? null;
-
+        }
         return $options;
     }
 
     /**
-     * tag
      * возвращает html-тэг
-     * 
+     *
      * @param $name string
      * @param $options array
      * @param $type string dual | single | open | close
+     *
      * @return string
      */
-    public function tag($name, $options, $type)
+    public function tag($name, $options, $type): string
     {
         $output = '<';
-        if ($type==='close')
+        if ($type === 'close') {
             $output .= '/';
-
+        }
         $output .= "$name ";
-        
-        $attrs = isset($options['attrs']) ? $options['attrs'] : array();
-        foreach ($attrs as $key => $value)
+        $attrs = isset($options['attrs']) ? $options['attrs'] : [];
+        foreach ($attrs as $key => $value) {
             $output .= " $key=\"$value\"";
-
-        if (isset($options['value']))
+        }
+        if (isset($options['value'])) {
             $output .= " value=\"{$options['value']}\"";
-
-        if ($type==='dual') {
+        }
+        if ($type === 'dual') {
             $contents = isset($options['contents']) ? $options['contents'] : (isset($options['attrs']['value']) ? $options['attrs']['value'] : '');
             $output .= ">$contents</$name>";
-        } elseif ($type==='single')
+        } elseif ($type === 'single') {
             $output .= '/>';
-        else
+        } else {
             $output .= '>';
-        
+        }
         if (!empty($options['template'])) {
             // инициализируем путь для отображения
             $this->owner->setViewsPath($this->config->get('base_path') . '/tachyon/components/html/tpl');

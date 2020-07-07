@@ -5,7 +5,9 @@ use tachyon\Config,
     tachyon\components\AssetManager,
     tachyon\components\html\Html,
     tachyon\View,
-    tachyon\components\Csrf;
+    tachyon\components\Csrf,
+    tachyon\traits\ClassName
+;
 
 /**
  * Построитель форм
@@ -15,23 +17,23 @@ use tachyon\Config,
  */
 class FormBuilder
 {
-    use \tachyon\traits\ClassName;
+    use ClassName;
 
     /**
-     * @var tachyon\components\AssetManager $assetManager
+     * @var AssetManager $assetManager
      */
     protected $assetManager;
     /**
      * Компонент построителя html-кода
-     * @var tachyon\components\html\Html $html
+     * @var Html $html
      */
     protected $html;
     /**
-     * @var tachyon\components\Csrf $csrf
+     * @var Csrf $csrf
      */
     protected $csrf;
     /**
-     * @var tachyon\View $view
+     * @var View $view
      */
     protected $view;
 
@@ -113,7 +115,6 @@ class FormBuilder
     {
         // Custom опции
         $options = isset($params['options']) ? $params['options'] : array();
-        $attrs = $this->_options['attrs'];
         $this->_options = array_merge($this->_options, $options);
 
         $this->_options['attrs']['class'] = $this->_options['class'] ?? null;
@@ -129,7 +130,6 @@ class FormBuilder
 
         $formId = $this->_options['attrs']['id']; // для удобства записи
         $requiredFields = false;
-        $elements = array();
         $controls = array();
         // если поля формы определяются ч/з модель
         if (!empty($params['model']) && !empty($params['fields'])) {

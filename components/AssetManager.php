@@ -13,6 +13,12 @@ class AssetManager
     const PUBLIC_PATH = __DIR__ . '/../../../public';
     /** @const Путь к исходникам скриптов */
     const CORE_JS_SOURCE_PATH = __DIR__ . '/../js';
+    /** @const спец. символы javascript */
+    const SPEC_SYMBOLS = '\?{}\(\)\[\],;:|=-';
+    const TAGS = [
+        'js'  => 'script',
+        'css' => 'link',
+    ];
 
     /**
      * Путь к публичной папке со скриптами
@@ -42,22 +48,24 @@ class AssetManager
 
     public function css($name, $publicPath = 'css', $sourcePath = null)
     {
-        return $this->_publishFile('link', "$name.css", $publicPath, $sourcePath);
+        return $this->_publishFile($name, 'css', $publicPath, $sourcePath);
     }
 
     public function js($name, $publicPath = 'js', $sourcePath = null)
     {
-        return $this->_publishFile('script', "$name.js", $publicPath, $sourcePath);
+        return $this->_publishFile($name, 'js', $publicPath, $sourcePath);
     }
 
-    private function _publishFile($tag, $name, $publicPath, $sourcePath = null)
+    private function _publishFile($name, $ext, $publicPath, $sourcePath = null)
     {
         $publicPath = "{$this->assetsPublicPath}/$publicPath";
-        $filePath = "$publicPath/$name";
+        $filePath = "$publicPath/$name.$ext";
         if (!isset(self::$files[$filePath])) {
             if (!is_null($sourcePath) && !is_file($filePath)) {
-                $this->_copyFile($name, $sourcePath, $publicPath);
+                $text = $this->_readFile($name, $ext, $sourcePath);
+                $this->_writeFile($name, $ext, $text, $publicPath);
             }
+            $tag = self::TAGS[$ext];
             return self::$files[$filePath] = $this->$tag($filePath);
         }
         return '';
@@ -74,18 +82,92 @@ class AssetManager
             $sourcePath = self::PUBLIC_PATH . "/$ext";
         }
         if (!isset(self::$$ext[$name]) && !is_null($sourcePath)) {
-            $text = $this->_minimize(file_get_contents("$sourcePath/$name.$ext"));
-            self::$$ext[$name] = $text;
+            self::$$ext[$name] = $this->_readFile($name, $ext, $sourcePath);
         }
+    }
+
+    private function _readFile($name, $ext, $sourcePath)
+    {
+        $text = file_get_contents("$sourcePath/$name.$ext");
+        $text = $this->_clearify($text);
+        /*if ($ext==='js' && strpos($name, '.min')===false) {
+            $text = $this->_minimize($text, $name);
+        }*/
+        return $text;
+    }
+
+    private function _clearify($text)
+    {
+        // многострочные комменты
+        $text = preg_replace('!/\*.*?\*/!s', '', $text);
+        // однострочные комменты
+        $text = preg_replace('/\/{2,}.*\n/', '', $text);
+        // все whitespaces
+        $text = preg_replace('/[\n\t\r]/', ' ', $text);
+        // лишние пробелы
+        $text = trim(preg_replace('/[ ]{2,}/', ' ', $text));
+        $text = preg_replace("/([" . self::SPEC_SYMBOLS . "])[ ]/", '$1', $text);
+        $text = preg_replace("/[ ]([" . self::SPEC_SYMBOLS . "])/", '$1', $text);
+        // лишние "," и ";"
+        $text = preg_replace('/[,;](})/', '$1', $text);
+        return $text;
+    }
+
+    private function _minimize($text)
+    {
+        $keywords = ['abstract', 'arguments', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'eval', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield', 'class', 'enum', 'export', 'extends', 'import', 'super'];
+        $varNames = array_merge(range('a', 'z'), range('A', 'Z'));
+        $words = array_filter(preg_split('/[\s' . self::SPEC_SYMBOLS . ']/', $text));
+        $i=0;
+        foreach ($words as $word) {
+            if (!in_array($word, $keywords)) {
+                $text = preg_replace("/\\b$word\\b/", $varNames[$i++], $text);
+            }
+        }
+        return $text;
+    }
+
+    /**
+     * записываем
+     */
+    private function _writeFile($name, $ext, $text, $publicPath)
+    {
+        $path = self::PUBLIC_PATH;
+        $publicPathArr = explode('/', $publicPath);
+        foreach ($publicPathArr as $subPath) {
+            $path .= "/$subPath";
+            if (!is_dir($path)) {
+                mkdir($path);
+            }
+        }
+        $fileName = "$path/$name.$ext";
+        file_put_contents($fileName, $text);
+        file_put_contents("$fileName.gz", gzencode($text, 9));
+    }
+
+    public function publishFolder($dirName, $publicPath = null, $sourcePath = null)
+    {
+        $sourcePath = $sourcePath ?? $this->assetsSourcePath;
+        $publicPath = $publicPath ?? $this->assetsPublicPath;
+        $sourcePath .= "/$dirName";
+        $publicPath .= "/$dirName";
+        $sourceDir = dir($sourcePath);
+        while ($fileName = $sourceDir->read()) {
+            if ($fileName{0} != '.') {
+                $pathinfo = pathinfo($fileName);
+                $name = $pathinfo['filename'];
+                $ext = $pathinfo['extension'];
+                $text = $this->_readFile($name, $ext, $sourcePath);
+                $this->_writeFile($name, $ext, $text, $publicPath);
+            }
+        } 
+        $sourceDir->close();
     }
 
     public function finalize(&$contents)
     {
         $spritesTags = '';
-        foreach ([
-            'js' => 'script',
-            'css' => 'link',
-        ] as $ext => $tag) {
+        foreach (self::TAGS as $ext => $tag) {
             $publicPath = "{$this->assetsPublicPath}/$ext";
             $spriteText = $spriteName = '';
             foreach (self::$$ext as $name => $text) {
@@ -127,56 +209,6 @@ class AssetManager
     private function link($path)
     {
         return "<link rel=\"stylesheet\" href=\"/$path\" type=\"text/css\" media=\"screen\">";
-    }
-
-    private function _copyFile($name, $sourcePath, $publicPath)
-    {
-        $publicPathArr = explode('/', $publicPath);
-        $path = self::PUBLIC_PATH;
-        foreach ($publicPathArr as $subPath) {
-            $path .= "/$subPath";
-            if (!is_dir($path)) {
-                mkdir($path);
-            }
-        }
-        $text = $this->_minimize(file_get_contents("$sourcePath/$name"));
-        // записываем
-        $fileName = "$path/$name";
-        file_put_contents($fileName, $text);
-        file_put_contents("$fileName.gz", gzencode($text, 9));
-    }
-
-    private function _minimize($text)
-    {
-        // многострочные комменты
-        $text = preg_replace('!/\*.*?\*/!s', '', $text);
-        // однострочные комменты
-        $text = preg_replace('/\/{2,}.*\n/', '', $text);
-        // все whitespaces
-        $text = preg_replace('/[\n\t]/', ' ', $text);
-        // лишние пробелы
-        $text = trim(preg_replace('/[ ]{2,}/', ' ', $text));
-        $specSymb = '[\?{}\(\)\[\],;:|=-]';
-        $text = preg_replace("/($specSymb)[ ]/", '$1', $text);
-        $text = preg_replace("/[ ]($specSymb)/", '$1', $text);
-        // лишние , и ;
-        $text = preg_replace('/[,;](})/', '$1', $text);
-        return $text;
-    }
-
-    public function publishFolder($dirName, $publicPath = null, $sourcePath = null)
-    {
-        $sourcePath = $sourcePath ?? $this->assetsSourcePath;
-        $publicPath = $publicPath ?? $this->assetsPublicPath;
-        $sourcePath .= "/$dirName";
-        $publicPath .= "/$dirName";
-        $sourceDir = dir($sourcePath);
-        while ($fileName = $sourceDir->read()) {
-            if ($fileName{0} != '.') {
-                $this->_copyFile($fileName, $sourcePath, $publicPath);
-            }
-        } 
-        $sourceDir->close();
     }
 
     /**
