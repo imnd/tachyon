@@ -575,7 +575,7 @@ abstract class ActiveRecord extends Model
      */
     public function insert()
     {
-        if (!$lastInsertId = $this->getDb()->insert(static::$tableName, $this->fieldAttributes())) {
+        if (!$lastInsertId = $this->getDb()->insert(static::$tableName, $this->attributes)) {
             return false;
         }
         return $this->{$this->pkName} = $lastInsertId;
@@ -597,7 +597,7 @@ abstract class ActiveRecord extends Model
         } else {
             $condition[$pk] = $this->$pk;
         }
-        return $this->getDb()->update(static::$tableName, $this->fieldAttributes(), $condition);
+        return $this->getDb()->update(static::$tableName, $this->attributes, $condition);
     }
 
     /**

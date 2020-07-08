@@ -121,9 +121,9 @@ trait RepositoryListTrait
 
     /**
      * @param array $item
-     * @return array
+     * @return string
      */
-    private function _getItemValue(array $item): array
+    private function _getItemValue(array $item): string
     {
         if (is_array($this->valueField)) {
             $retArr = array();

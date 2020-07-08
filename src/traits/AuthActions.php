@@ -22,6 +22,10 @@ trait AuthActions
      * @var integer $remember
      */
     private $remember = 7;
+    /**
+     * Адрес страницы логина
+     * @var string $loginUrl
+     */
     private $loginUrl = '/login';
 
     /**

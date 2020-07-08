@@ -196,9 +196,9 @@ abstract class Db
      * @param array  $where условие поиска
      * @param array  $fields имена полей
      *
-     * @return array
+     * @return mixed
      */
-    public function selectOne(string $tblName, array $where = [], array $fields = []): array
+    public function selectOne(string $tblName, array $where = [], array $fields = [])
     {
         $rows = $this->setLimit(1)->select($tblName, $where, $fields);
         return $this->getOneRow($rows);
@@ -760,9 +760,9 @@ abstract class Db
      * Возвращение одного поля из извлеченного массива строк
      * 
      * @param array $rows
-     * @return 
+     * @return mixed
      */
-    protected function getOneRow(array $rows = []): array
+    protected function getOneRow(array $rows = [])
     {
         if (count($rows) > 0) {
             $rows = $this->prepareRows($rows);

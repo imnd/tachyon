@@ -201,7 +201,7 @@ final class Router
         } catch (BadMethodCallException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
         } catch (HttpException $e) {
-            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Not found.'));
+            $this->_error($e->getCode(), $e->getMessage());
         } catch (ReflectionException | ErrorException | Error | ContainerException $e) {
             $this->_error(HttpException::INTERNAL_SERVER_ERROR, $this->config->get('env')=='prod' ? $this->msg->i18n('Some error occurs') : "
                 Message: {$e->getMessage()}<br/>
