@@ -189,11 +189,11 @@ class Persistence
      * Устанавливаем какие таблицы джойнить
      *
      * @param array $with
-     * @param array $on
+     * @param mixed $on
      *
      * @return Persistence
      */
-    public function with(array $with, array $on = []): Persistence
+    public function with(array $with, $on = []): Persistence
     {
         $withAlias = current($with);
         $withTableName = key($with);

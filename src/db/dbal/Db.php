@@ -384,9 +384,9 @@ abstract class Db
     /**
      * Возвращает условие
      * 
-     * @return string
+     * @return array
      */
-    public function getWhere(): string
+    public function getWhere(): array
     {
         return $this->where;
     }
@@ -509,9 +509,9 @@ abstract class Db
 
     /**
      * Возвращает orderBy
-     * @return string
+     * @return array
      */
-    public function getOrderBy(): string
+    public function getOrderBy(): array
     {
         return $this->orderBy;
     }
