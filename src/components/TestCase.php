@@ -9,7 +9,7 @@ use
 
 /**
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 class TestCase extends BaseTestCase
 {
@@ -33,7 +33,6 @@ class TestCase extends BaseTestCase
     {
         $this->container = new Container;
 
-        defined('APP_ENV') or define('APP_ENV', 'test');
         $this->config = $this->container->get(Config::class);
         
         $baseUrl = $this->config->get('base_url');

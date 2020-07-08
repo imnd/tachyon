@@ -6,7 +6,7 @@ namespace tachyon\components\widgets;
  * Использует стороннюю библиотеку Pikaday David Bushell datepicker
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Datepicker extends Widget
 {

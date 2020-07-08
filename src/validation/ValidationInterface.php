@@ -3,7 +3,7 @@ namespace tachyon\validation;
 
 /**
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 interface ValidationInterface
 {
@@ -17,36 +17,39 @@ interface ValidationInterface
     /**
      * Валидация полей сущности
      * 
-     * @param $attrs array массив полей
+     * @param array $attributes массив полей
      * @return boolean
      */
-    public function validate(array $attributes=null);
+    public function validate(array $attributes = null): bool;
 
     /**
      * Возвращает список правил валидации для поля $fieldName
-     * 
+     *
+     * @param string $fieldName валидируемое поле
      * @return array
      */
-    public function getRules($fieldName);
+    public function getRules(string $fieldName): array;
 
     /**
      * Добавление ошибки в массив ошибок
-     * 
-     * @return array
+     *
+     * @param string $fieldName валидируемое поле
+     * @param string $message   сообщение об ошибке
+     * @return void
      */
-    public function addError($fieldName, $message);
+    public function addError(string $fieldName, string $message): void;
 
     /**
-     * ошибки
+     * Ошибки
      * 
      * @return array
      */
-    public function getErrors();
+    public function getErrors(): array;
 
     /**
      * Сообщение об ошибках
      * 
-     * @return array
+     * @return string
      */
-    public function getErrorsSummary();
+    public function getErrorsSummary(): string;
 }

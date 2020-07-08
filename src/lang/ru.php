@@ -43,7 +43,8 @@
     'Controller "%controllerName" is not found.' => 'Контроллер "%controllerName" не найден.',
     'Invalid request type.' => 'Недопустимый тип запроса.',
     'Wrong CSRF token.' => 'Неверный CSRF токен.',
-    'Not found' => 'Пть не найден',
+    'Not found' => 'Путь не найден',
+    'Some error occurs' => 'Произошла ошибка',
 
     // misc
     'Method "beforeAction" returned false' => 'Не соблюдены условия в методе beforeAction',

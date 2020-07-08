@@ -5,7 +5,7 @@ namespace tachyon\db\dbal;
  * PostgreSQL DBAL
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 class PgSql extends Db
 {
@@ -14,8 +14,8 @@ class PgSql extends Db
      */
     protected function getDsn(): string
     {
-        $port = $this->config['port'] ?? '5432';
-        return "pgsql:host={$this->config['host']};port=$port;dbname={$this->config['name']}";
+        $port = $this->options['port'] ?? '5432';
+        return "pgsql:host={$this->options['host']};port=$port;dbname={$this->options['name']}";
     }
 
     /**

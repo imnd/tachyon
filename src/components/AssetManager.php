@@ -5,7 +5,7 @@ namespace tachyon\components;
  * Работа со скриптами и стилями
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 class AssetManager
 {

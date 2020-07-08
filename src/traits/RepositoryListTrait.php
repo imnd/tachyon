@@ -8,7 +8,7 @@ use tachyon\dic\Container;
  * Содержит полезные функции для работы со списками для Repository
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 trait RepositoryListTrait
 {

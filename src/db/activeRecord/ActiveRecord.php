@@ -21,7 +21,7 @@ use tachyon\{
  * Класс модели Active Record
  *
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 abstract class ActiveRecord extends Model
 {

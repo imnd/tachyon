@@ -8,7 +8,7 @@ use tachyon\components\Encrypt,
  * Компонент защиты от CSRF-атак
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Csrf
 {

@@ -17,7 +17,7 @@ use tachyon\traits\{
  * Базовый класс для всех моделей
  *
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 abstract class Model implements ValidationInterface
 {

@@ -11,7 +11,7 @@ use tachyon\dic\Container,
  * Инстанциирует соответствующий класс DBAL
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 class DbFactory
 {

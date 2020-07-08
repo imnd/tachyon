@@ -19,7 +19,7 @@ interface RepositoryInterface
      * @param array $conditions условия поиска
      * @return Repository
      */
-    public function setSearchConditions($conditions = array());
+    public function setSearchConditions(array $conditions = array());
 
     /**
      * Устанавливает условия сортировки для хранилища.

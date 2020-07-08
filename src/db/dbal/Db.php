@@ -5,20 +5,19 @@ namespace tachyon\db\dbal;
 use PDO,
     PDOException,
     tachyon\exceptions\DBALException,
-    tachyon\components\Message;
+    tachyon\components\Message,
+    tachyon\Config;
 
 /**
  * DBAL
  *
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 abstract class Db
 {
     /**
-     * параметры БД
-     *
-     * @var array
+     * @var Config $config
      */
     protected $config;
     /**
@@ -33,6 +32,12 @@ abstract class Db
      * @var Message
      */
     protected $msg;
+    /**
+     * параметры БД
+     *
+     * @var array
+     */
+    protected $options;
     /**
      * Выводить ли анализ запросов в файл
      *
@@ -87,12 +92,13 @@ abstract class Db
      *
      * @return void
      */
-    public function __construct(Message $msg, array $config)
+    public function __construct(Message $msg, Config $config, array $options)
     {
-        $this->msg = $msg;
-        $this->config = $config;
-        if ($this->explain = ($this->config['explain'] ?? APP_ENV==='debug')) {
-            $this->explainPath = $this->config['explain_path'] ?? '../runtime/explain.xls';
+        $this->msg         = $msg;
+        $this->config      = $config;
+        $this->options     = $options;
+        if ($this->explain = ($this->options['explain'] ?? $this->config->get('env')==='debug')) {
+            $this->explainPath = $this->options['explain_path'] ?? '../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
                 unlink($this->explainPath);
@@ -114,13 +120,13 @@ abstract class Db
         try {
             $this->connection = new PDO(
                 $this->getDsn(),
-                $this->config['user'],
-                $this->config['password']
+                $this->options['user'],
+                $this->options['password']
             );
         } catch (PDOException $e) {
             throw new DBALException($this->msg->i18n('Unable to connect to database.') . "\n{$e->getMessage()}");
         }
-        $this->connection->exec("SET NAMES {$this->config['charset']}");
+        $this->connection->exec("SET NAMES {$this->options['charset']}");
     }
 
     /**
@@ -157,7 +163,7 @@ abstract class Db
         $where = array_merge($where, $this->where);
         $conditions = $this->prepareConditions($where, 'where');
         $fields = array_merge($fields, $this->fields);
-        $fields = $this->prepareFields($fields);
+        $fields = $this->quoteFields($fields);
         $query = "
             SELECT $fields
             FROM $tblName
@@ -629,7 +635,7 @@ abstract class Db
     {
         if ($this->groupBy !== '') {
             return " GROUP BY {$this->groupBy} ";
-
+        }
         return '';
     }
 
@@ -642,7 +648,7 @@ abstract class Db
      * 
      * @return string
      */
-    protected function prepareConditions(array $conditions, string $type, string $operator = '='): string
+    protected function prepareConditions(array $conditions, string $type, string $operator = '='): array
     {
         switch ($type) {
             case 'where':
@@ -666,7 +672,7 @@ abstract class Db
      * 
      * @return string
      */
-    protected function createConditions(array $conditions, string $keyword, string $operator, string $glue): string
+    protected function createConditions(array $conditions, string $keyword, string $operator, string $glue): array
     {
         $clause = '';
         $vals = [];
@@ -682,7 +688,7 @@ abstract class Db
                 } elseif (preg_match('/<=|<|>=|>/', $field, $matches) !== 0) {
                     $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . ' ?';
                 } else {
-                    $clauseArr[] = $this->prepareField($field) . $operator;
+                    $clauseArr[] = $this->quoteField($field) . $operator;
                 }
                 $vals[] = $val;
             }
@@ -702,7 +708,7 @@ abstract class Db
     {
         $field = str_replace($text, '', $field);
         $field = trim($field);
-        return $this->prepareField($field);
+        return $this->quoteField($field);
     }
 
     /**
@@ -711,7 +717,7 @@ abstract class Db
      * @param array $fields
      * @return string
      */
-    protected function prepareFields(array $fields): string
+    protected function quoteFields(array $fields): string
     {
         if (count($fields) == 0) {
             return '*';
@@ -720,7 +726,7 @@ abstract class Db
             if (!is_numeric($key)) {
                 $field = "$key AS $field";
             } else {
-                $field = $this->prepareField($field);
+                $field = $this->quoteField($field);
             }
         }
         return implode(',', $fields);

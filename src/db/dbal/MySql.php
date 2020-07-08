@@ -5,7 +5,7 @@ namespace tachyon\db\dbal;
  * MySql DBAL
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 class MySql extends Db
 {
@@ -14,8 +14,8 @@ class MySql extends Db
      */
     protected function getDsn(): string
     {
-        $port = $this->config['port'] ?? '3306';
-        return "mysql:host={$this->config['host']};port=$port;dbname={$this->config['name']}";
+        $port = $this->options['port'] ?? '3306';
+        return "mysql:host={$this->options['host']};port=$port;dbname={$this->options['name']}";
     }
 
     /**

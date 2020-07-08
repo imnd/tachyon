@@ -6,7 +6,7 @@ namespace tachyon\cache;
  * кеширование содержимого Db
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Db extends Cache
 {

@@ -6,7 +6,7 @@ namespace tachyon\db;
  * Трейт отвечающий за генерацию SQL выражений условий выборки
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 trait Terms
 {

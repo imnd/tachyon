@@ -12,10 +12,12 @@ trait Validation
 {
     /**
      * сценарий валидации
+     * @var string
      */
     protected $scenario = '';
     /**
      * ошибки валидации
+     * @var array
      */
     protected $errors = [];
 
@@ -25,12 +27,12 @@ trait Validation
      * @param array $arr
      * @param boolean $useModelName
      */
-    public function attachAttributes(array $arr, bool $useModelName = false)
+    public function attachAttributes(array $arr, bool $useModelName = false): void
     {
         $modelName = $this->getClassName();
         if ($useModelName) {
             if (!isset($arr[$modelName])) {
-                return null;
+                return;
             }
             $arr = $arr[$modelName];
         }
@@ -45,7 +47,7 @@ trait Validation
     }
 
     /**
-     * возвращает список правил валидации
+     * Возвращает список правил валидации
      *
      * @return array
      */
@@ -62,13 +64,13 @@ trait Validation
      * @return boolean
      * @throws \tachyon\exceptions\ValidationException
      */
-    public function validate(array $attrs = null): bool
+    public function validate(array $attributes = null): bool
     {
-        $errors = $this->validator->validate($this, $attrs);
+        $errors = $this->validator->validate($this, $attributes);
         return empty($errors);
     }
 
-    public function getRules(string $fieldName)
+    public function getRules(string $fieldName): array
     {
         return $this->validator->getRules($this, $fieldName);
     }
@@ -86,7 +88,7 @@ trait Validation
     }
 
     /**
-     * ошибки
+     * Ошибки
      *
      * @return array
      */
@@ -117,9 +119,9 @@ trait Validation
      *
      * @return void
      */
-    public function addError(string $attr, string $message): void
+    public function addError(string $fieldName, string $message): void
     {
-        $this->validator->addError($attr, $message);
+        $this->validator->addError($fieldName, $message);
     }
 
     /**

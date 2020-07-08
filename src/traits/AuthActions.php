@@ -8,7 +8,7 @@ use tachyon\exceptions\HttpException,
  * Трейт аутентификации
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */ 
 trait AuthActions
 {

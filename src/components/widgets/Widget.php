@@ -9,7 +9,7 @@ use tachyon\components\AssetManager,
  * Базовый класс для всех виджетов
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 abstract class Widget
 {

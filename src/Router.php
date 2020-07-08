@@ -11,6 +11,7 @@ use
     tachyon\exceptions\ContainerException,
     tachyon\exceptions\HttpException,
     // dependencies
+    tachyon\dic\Container,
     app\ServiceContainer,
     tachyon\cache\Output as OutputCache,
     tachyon\components\Message
@@ -20,7 +21,7 @@ use
  * Front Controller приложения
  *
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 final class Router
 {
@@ -199,10 +200,14 @@ final class Router
             $controller->afterAction();
         } catch (BadMethodCallException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
-        } catch (HttpException | ContainerException $e) {
+        } catch (HttpException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('Not found.'));
-        } catch (ErrorException | Error $e) {
-            $this->_error($e->getCode(), $e->getMessage());
+        } catch (ReflectionException | ErrorException | Error | ContainerException $e) {
+            $this->_error(HttpException::INTERNAL_SERVER_ERROR, $this->config->get('env')=='prod' ? $this->msg->i18n('Some error occurs') : "
+                Message: {$e->getMessage()}<br/>
+                File: {$e->getFile()}<br/>
+                Line: {$e->getLine()}
+            ");
         }
     }
 

@@ -14,7 +14,7 @@ use
  * Базовый класс для всех контроллеров
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Controller
 {

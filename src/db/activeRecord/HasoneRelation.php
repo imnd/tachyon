@@ -8,7 +8,7 @@ use tachyon\db\activeRecord\Join;
  * Класс реализующий связь "имеет один" между моделями
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class HasoneRelation extends Relation
 {

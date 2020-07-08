@@ -8,7 +8,7 @@ use ErrorException;
  * Содержит полезные функции для работы со списками для моделей Active Record
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 trait ActiveRecordListTrait
 {

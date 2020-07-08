@@ -5,7 +5,7 @@ namespace tachyon\components;
  * Содержит функции для работы с шифрованием
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Encrypt
 {

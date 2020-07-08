@@ -5,7 +5,7 @@ namespace tachyon;
  * Класс инкапсулирующий конфигурацию
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Config
 {
@@ -23,7 +23,7 @@ class Config
     /**
      * @param string $fileName
      */
-    public function __construct($env = null)
+    public function __construct($mode = null)
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         // все опции
@@ -31,14 +31,14 @@ class Config
         // base path
         $this->_options['base_path'] = $basePath;
         // environment
-        $this->_options['env'] = defined('APP_ENV') ? APP_ENV : $env ?? 'debug';
+        $this->_options['mode'] = defined('APP_MODE') ? APP_MODE : $mode ?? 'work';
         // read .env file
-        $envFile = ($this->_options['env']==='test') ? '.env-test' : '.env';
-        if (!$env = file("$basePath/../../$envFile")) {
+        $envFileName = ($this->_options['mode']==='test') ? '.env-test' : '.env';
+        if (!$envFile = file("$basePath/../../$envFileName")) {
             throw new \ErrorException("File $envFile not found");
         }
-        foreach ($env as $string) {
-            if ("\n"===$string) {
+        foreach ($envFile as $string) {
+            if ("\n"===$string || "\r\n"===$string) {
                 continue;
             }
             $arr = explode(':', $string);

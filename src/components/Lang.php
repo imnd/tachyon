@@ -8,7 +8,7 @@ use tachyon\Config,
  * Класс работы с языковыми настройками
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Lang
 {

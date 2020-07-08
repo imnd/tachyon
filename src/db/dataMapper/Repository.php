@@ -5,9 +5,7 @@ use Iterator,
     tachyon\db\dataMapper\Entity,
     tachyon\db\dataMapper\Persistence,
     tachyon\db\Terms,
-    tachyon\helpers\StringHelper,
     tachyon\traits\ClassName,
-    tachyon\db\dataMapper\EntityInterface,
     tachyon\db\dataMapper\RepositoryInterface
 ;
 
@@ -15,7 +13,7 @@ use Iterator,
  * EntityManager является центральной точкой доступа к функциональности DataMapper ORM.
  *
  * @author Андрей Сердюк
- * @copyright (c) 2019 IMND
+ * @copyright (c) 2020 IMND
  */
 abstract class Repository implements RepositoryInterface
 {
@@ -77,7 +75,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function setSearchConditions($conditions = array()): Repository
+    public function setSearchConditions(array $conditions = array()): Repository
     {
         $this->where($conditions);
         return $this;

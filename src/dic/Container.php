@@ -9,7 +9,7 @@ use ReflectionClass,
  * Dependency Injection Container
  *
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Container implements ContainerInterface
 {
@@ -32,8 +32,6 @@ class Container implements ContainerInterface
     public function __construct()
     {
         $this->_loadConfig();
-
-        defined('APP_ENV') or define('APP_ENV', 'prod');
     }
 
     public function boot()
@@ -119,23 +117,24 @@ class Container implements ContainerInterface
      */
     private function resolve(string $name, array $params = array())
     {
+        $implementName = $name;
         try {
-            $reflection = new ReflectionClass($name);
+            $reflection = new ReflectionClass($implementName);
         } catch (ErrorException $e) {
             throw new ContainerException($e->getMessage());
         }
         if ($reflection->isInterface()) {
-            if (!$this->getImplementation($name)) {
-                throw new ContainerException("Interface $name is not instantiable.");
+            if (!$this->getImplementation($implementName)) {
+                throw new ContainerException("Interface $implementName is not instantiable.");
             }
-            $name = $this->getImplementation($name);
-            $reflection = new ReflectionClass($name);
+            $implementName = $this->getImplementation($implementName);
+            $reflection = new ReflectionClass($implementName);
         } elseif (!$reflection->isInstantiable()) {
             throw new ContainerException("Class $name is not instantiable.");
         }
-        $variables = $this->_getVariables($name);
-        $dependencies = $this->getDependencies($name);
-        $parents = class_parents($name);
+        $variables = $this->_getVariables($implementName);
+        $dependencies = $this->getDependencies($implementName);
+        $parents = class_parents($implementName);
         foreach ($parents as $parentClassName) {
             $parentDependencies = $this->getDependencies($parentClassName);
             $dependencies = array_merge($dependencies, $parentDependencies);
@@ -215,12 +214,13 @@ class Container implements ContainerInterface
     }
 
     /**
-     * устанавливает св-ва
+     * Устанавливает св-ва
      *
-     * @param string $name
+     * @param mixed $service
+     * @param array $config
      * @return void
      */
-    private function _setVariables($service, $config)
+    private function _setVariables($service, array $config): void
     {
         if (empty($config)) {
             return;

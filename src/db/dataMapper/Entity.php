@@ -2,8 +2,8 @@
 namespace tachyon\db\dataMapper;
 
 use tachyon\{
-    validation\ValidationInterface,
     db\dataMapper\DbContext,
+    validation\ValidationInterface,
     validation\Validator,
     traits\ClassName
 };
@@ -230,16 +230,16 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * Валидация полей сущности
      * 
-     * @param $attrs array массив полей
+     * @param $attributes array массив полей
      * @return boolean
      */
-    public function validate(array $attributes=null)
+    public function validate(array $attributes = null): bool
     {
         $this->errors = $this->validator->validate($this, $attributes);
         return empty($this->errors);
     }
 
-    public function getRules($fieldName)
+    public function getRules(string $fieldName): array
     {
         return $this->validator->getRules($this, $fieldName);
     }
@@ -247,13 +247,13 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * добавляет ошибку к списку ошибок
      * 
-     * @param string $attr
+     * @param string $fieldName
      * @param string $message
      * @return void
      */
-    public function addError($attr, $message)
+    public function addError(string $fieldName, string $message): void
     {
-        $this->validator->addError($attr, $message);
+        $this->validator->addError($fieldName, $message);
     }
 
     /**
@@ -261,7 +261,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      * 
      * @return array
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->validator->getErrors();
     }
@@ -271,7 +271,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      * 
      * @return array
      */
-    public function getErrorsSummary()
+    public function getErrorsSummary(): string
     {
         return $this->validator->getErrorsSummary($this);
     }

@@ -12,7 +12,7 @@ use tachyon\dic\Container,
  * Отображает в виде таблицы результат выборки
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Grid extends Widget
 {

@@ -5,7 +5,7 @@ namespace tachyon\cache;
  * кеширование содержимого страницы целиком
  * 
  * @author Андрей Сердюк
- * @copyright (c) 2018 IMND
+ * @copyright (c) 2020 IMND
  */
 class Output extends Cache
 {
