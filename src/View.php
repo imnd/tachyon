@@ -105,7 +105,7 @@ class View
         Flash $flash
     ) {
         $this->config = $config;
-        $this->appViewsPath = $this->viewsPath = $this->config->get('base_path') . '/../../app/views';
+        $this->appViewsPath = $this->viewsPath = $this->config->get('base_path') . '/../../../app/views';
         $this->assetManager = $assetManager;
         $this->msg = $msg;
         $this->html = $html;

@@ -18,7 +18,7 @@ class Config
      * Путь к папке файлу настроек
      * @var string
      */
-    private $_filePath = '../../app/config/main.php';
+    private $_filePath = '../../../app/config/main.php';
 
     /**
      * @param string $fileName
@@ -34,7 +34,7 @@ class Config
         $this->_options['mode'] = defined('APP_MODE') ? APP_MODE : $mode ?? 'work';
         // read .env file
         $envFileName = ($this->_options['mode']==='test') ? '.env-test' : '.env';
-        if (!$envFile = file("$basePath/../../$envFileName")) {
+        if (!$envFile = file("$basePath/../../../$envFileName")) {
             throw new \ErrorException("File $envFile not found");
         }
         foreach ($envFile as $string) {
