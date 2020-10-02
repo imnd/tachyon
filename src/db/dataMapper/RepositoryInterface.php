@@ -47,9 +47,9 @@ interface RepositoryInterface
      * Получает сущность по условию $where
      * 
      * @param array $where
-     * @return null|Entity
+     * @return null|array
      */
-    public function findOneRaw(array $where = array()): ?Entity;
+    public function findOneRaw(array $where = array()): ?array;
 
     /**
      * Получает все сущности по условию $where, отсортированных по $sort
@@ -66,9 +66,9 @@ interface RepositoryInterface
      *
      * @param array $where
      * @param array $sort
-     * @return Iterator
+     * @return array
      */
-    public function findAllRaw(array $where = array(), array $sort = array()): Iterator;
+    public function findAllRaw(array $where = array(), array $sort = array()): array;
 
     /**
      * Получить сущность по первичному ключу.

@@ -13,7 +13,7 @@ use tachyon\dic\Container;
 trait RepositoryListTrait
 {
     protected $pkField = 'id';
-    protected $valueField = 'id';
+    protected $valueField = 'name';
     protected $emptyVal = '...';
     protected $valsGlue = ',';
 
@@ -22,8 +22,9 @@ trait RepositoryListTrait
      *
      * @return array
      */
-    public function getAllSelectList(): array
+    public function getAllSelectList($valueField = 'name'): array
     {
+        $this->valueField = $valueField;
         $model = (new Container)->get(get_called_class());
         return $model->getSelectList($model->findAllRaw());
     }

@@ -31,6 +31,11 @@ abstract class Repository implements RepositoryInterface
      * Имя класса сущности
      * @var Entity
      */
+    protected $entityName;
+    /**
+     * Класс сущности
+     * @var Entity
+     */
     protected $entity;
     /**
      * Массив сущностей
@@ -104,7 +109,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function findOneRaw(array $where = array()): ?Entity
+    public function findOneRaw(array $where = array()): ?array
     {
         return $this->persistence
             ->from($this->tableName)
@@ -177,11 +182,26 @@ abstract class Repository implements RepositoryInterface
      * Устанавливает условие выборки.
      *
      * @param array $where
-     * @return void
+     *
+     * @return Repository
      */
     public function where($where)
     {
         $this->persistence->setWhere($where);
+        return $this;
+    }
+
+    /**
+     * Устанавливает поля выборки.
+     *
+     * @param array $fields
+     *
+     * @return Repository
+     */
+    public function select($fields)
+    {
+        $this->persistence->select((array)$fields);
+        return $this;
     }
 
     /**
