@@ -10,7 +10,7 @@ use tachyon\exceptions\HttpException,
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */ 
-trait AuthActions
+trait Auth
 {
     /**
      * Имя переменной куки
