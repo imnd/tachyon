@@ -1,12 +1,10 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-use Iterator,
-    tachyon\db\dataMapper\Entity,
-    tachyon\db\dataMapper\Persistence,
+use
+    Iterator,
     tachyon\db\Terms,
-    tachyon\traits\ClassName,
-    tachyon\db\dataMapper\RepositoryInterface
+    tachyon\traits\ClassName
 ;
 
 /**
@@ -31,7 +29,7 @@ abstract class Repository implements RepositoryInterface
     protected $tableName;
     /**
      * Имя класса сущности
-     * @var string
+     * @var Entity
      */
     protected $entity;
     /**

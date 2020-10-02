@@ -1,8 +1,10 @@
 <?php
 namespace tachyon\dic;
 
-use ReflectionClass,
+use
     ErrorException,
+    Psr\Container\ContainerInterface,
+    ReflectionClass,
     tachyon\exceptions\ContainerException;
 
 /**

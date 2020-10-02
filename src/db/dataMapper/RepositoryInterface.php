@@ -1,10 +1,7 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-use Iterator,
-    tachyon\db\dataMapper\Entity,
-    tachyon\db\dataMapper\Repository
-;
+use Iterator;
 
 interface RepositoryInterface
 {
@@ -71,13 +68,13 @@ interface RepositoryInterface
      * @param array $sort
      * @return Iterator
      */
-    public function findAllRaw(array $where = array(), array $sort = array()): array;
+    public function findAllRaw(array $where = array(), array $sort = array()): Iterator;
 
     /**
      * Получить сущность по первичному ключу.
      * 
      * @param mixed $pk
-     * @return Entity
+     * @return null|Entity
      */
     public function findByPk($pk): ?Entity;
 
@@ -85,7 +82,7 @@ interface RepositoryInterface
      * Создает новую сущность.
      *
      * @param bool $mark
-     * @return Entity
+     * @return null|Entity
      */
     public function create($mark = true): ?Entity;
 }

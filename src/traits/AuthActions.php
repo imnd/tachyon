@@ -31,12 +31,13 @@ trait AuthActions
     /**
      * Перенаправляет пользователя на адрес логина
      * 
-     * @return void
+     * @return bool
      */
-    public function accessDenied()
+    public function accessDenied(): bool
     {
         Request::setReferer();
         $this->redirect($this->loginUrl);
+        return false;
     }
 
     /**
@@ -44,7 +45,7 @@ trait AuthActions
      * 
      * @return void
      */
-    public function unauthorised($msg)
+    public function unauthorised($msg): void
     {
         throw new HttpException($msg, HttpException::UNAUTHORIZED);
     }
@@ -54,7 +55,7 @@ trait AuthActions
      * 
      * @return boolean
      */
-    public function isAuthorised()
+    public function isAuthorised(): bool
     {
         if (!$cookie = $this->cookie->get($this->cookieKey)) {
             return false;
@@ -65,20 +66,21 @@ trait AuthActions
     /**
      * Авторизован ли юзер
      * 
-     * @return boolean
+     * @return bool
      */
-    public function checkAccess()
+    public function checkAccess(): bool
     {
-        if (!$this->isAuthorised()) {
-            $this->accessDenied();
+        if ($this->isAuthorised()) {
+            return true;
         }
+        return $this->accessDenied();
     }
 
     /**
      * залогинить юзера
      * @return void
      */
-    protected function _login($remember=false)
+    protected function _login($remember=false): void
     {
         $duration = $remember ? ($this->config->get('remember') ?: $this->remember) : 1;
         $this->cookie->setDuration($duration);
@@ -91,7 +93,7 @@ trait AuthActions
      * 
      * @return string
      */
-    private function _getCookieValue()
+    private function _getCookieValue(): string
     {
         return md5($_SERVER['REMOTE_ADDR'] . $_SERVER['SERVER_PORT'] . $_SERVER['HTTP_USER_AGENT']);
     }
@@ -100,7 +102,7 @@ trait AuthActions
      * Разлогинить юзера
      * @return void
      */
-    protected function _logout()
+    protected function _logout(): void
     {
         $this->cookie->delete($this->cookieKey);
     }

@@ -100,7 +100,7 @@ class Validator
         if (!$fieldVal = $model->getAttribute($fieldName)) {
             return;
         }
-        if ($rows = $model->findAllRaw(array($fieldName => $fieldVal))) {
+        if ($model->findAllRaw(array($fieldName => $fieldVal))) {
             $this->addError($fieldName, $this->msg->i18n('unique'));
         }
     }    
