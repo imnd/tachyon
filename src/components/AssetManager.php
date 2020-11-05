@@ -1,6 +1,8 @@
 <?php
 namespace tachyon\components;
 
+use tachyon\Config;
+
 /**
  * Работа со скриптами и стилями
  * 
@@ -21,43 +23,86 @@ class AssetManager
     ];
 
     /**
+     * @var Config $config
+     */
+    protected $config;
+
+    /**
      * Путь к публичной папке со скриптами
      * @var string $assetsPath
      */
     private $assetsPublicPath = 'assets';
+
     /**
      * Путь к папке со скриптами
      * @var string $assetsSource
      */
     private $assetsSourcePath;
+
     /**
      * Массив скриптов для склеивания и публикации
      * @var array $js
      */
     private static $js = array();
+
     /**
      * Массив стилей для склеивания и публикации
      * @var array $css
      */
     private static $css = array();
+
     /**
      * Опубликованные скрипты
      * @var string $scripts
      */
     private static $files = array();
 
-    public function css($name, $publicPath = 'css', $sourcePath = null)
+    /**
+     * @param Config $config
+     */
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * @param string $name
+     * @param string $publicPath
+     * @param string | null $sourcePath
+     *
+     * @return string
+     */
+    public function css(string $name, string $publicPath = 'css', string $sourcePath = null): string
     {
         return $this->_publishFile($name, 'css', $publicPath, $sourcePath);
     }
 
-    public function js($name, $publicPath = 'js', $sourcePath = null)
+    /**
+     * @param string $name
+     * @param string $publicPath
+     * @param string | null $sourcePath
+     *
+     * @return string
+     */
+    public function js(string $name, string $publicPath = 'js', string $sourcePath = null): string
     {
         return $this->_publishFile($name, 'js', $publicPath, $sourcePath);
     }
 
-    private function _publishFile($name, $ext, $publicPath, $sourcePath = null)
-    {
+    /**
+     * @param string $name
+     * @param string $ext
+     * @param string $publicPath
+     * @param string | null $sourcePath
+     *
+     * @return string
+     */
+    private function _publishFile(
+        string $name,
+        string $ext,
+        string $publicPath,
+        string $sourcePath = null
+    ): string {
         $publicPath = "{$this->assetsPublicPath}/$publicPath";
         $filePath = "$publicPath/$name.$ext";
         if (!isset(self::$files[$filePath])) {
@@ -71,12 +116,22 @@ class AssetManager
         return '';
     }
 
-    public function coreJs($name)
+    /**
+     * @param string $name
+     * @return void
+     */
+    public function coreJs(string $name): void
     {
-        return $this->_registerFile($name, 'js', self::CORE_JS_SOURCE_PATH);
+        $this->_registerFile($name, 'js', self::CORE_JS_SOURCE_PATH);
     }
 
-    private function _registerFile($name, $ext, $sourcePath = null)
+    /**
+     * @param string $name
+     * @param string $ext
+     * @param string | null $sourcePath
+     * @return void
+     */
+    private function _registerFile(string $name, string $ext, string $sourcePath = null): void
     {
         if (is_null($sourcePath)) {
             $sourcePath = self::PUBLIC_PATH . "/$ext";
@@ -86,17 +141,33 @@ class AssetManager
         }
     }
 
-    private function _readFile($name, $ext, $sourcePath)
+    /**
+     * @param string $name
+     * @param string $ext
+     * @param string $sourcePath
+     *
+     * @return string | string[] | null
+     */
+    private function _readFile(string $name, string $ext, string $sourcePath)
     {
         $text = file_get_contents("$sourcePath/$name.$ext");
-        $text = $this->_clearify($text);
+        // удаляем лишние символы
+        if ($this->config->get('env')==='production') {
+            $text = $this->_clearify($text);
+        }
+
         if ($ext==='js' && strpos($name, '.min')===false) {
 //            $text = $this->_minimize($text, $name);
         }
         return $text;
     }
 
-    private function _clearify($text)
+    /**
+     * @param string $text
+     *
+     * @return string|string[]|null
+     */
+    private function _clearify(string $text)
     {
         $text = str_replace(['https://', 'http://'], '', $text);
         // многострочные комменты
@@ -114,7 +185,12 @@ class AssetManager
         return $text;
     }
 
-    private function _minimize($text)
+    /**
+     * @param string $text
+     *
+     * @return string|string[]|null
+     */
+    private function _minimize(string $text)
     {
         $keywords = ['abstract', 'arguments', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'eval', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield', 'class', 'enum', 'export', 'extends', 'import', 'super'];
         $varNames = array_merge(range('a', 'z'), range('A', 'Z'));
@@ -130,9 +206,18 @@ class AssetManager
 
     /**
      * записываем
+     *
+     * @param string $name
+     * @param string $ext
+     * @param string $text
+     * @param string $publicPath
      */
-    private function _writeFile($name, $ext, $text, $publicPath)
-    {
+    private function _writeFile(
+        string $name,
+        string $ext,
+        string $text,
+        string $publicPath
+    ) {
         $path = self::PUBLIC_PATH;
         $publicPathArr = explode('/', $publicPath);
         foreach ($publicPathArr as $subPath) {
@@ -146,8 +231,16 @@ class AssetManager
         file_put_contents("$fileName.gz", gzencode($text, 9));
     }
 
-    public function publishFolder($dirName, $publicPath = null, $sourcePath = null)
-    {
+    /**
+     * @param string  $dirName
+     * @param string | null $publicPath
+     * @param string | null $sourcePath
+     */
+    public function publishFolder(
+        string $dirName,
+        string $publicPath = null,
+        string $sourcePath = null
+    ) {
         $sourcePath = $sourcePath ?? $this->assetsSourcePath;
         $publicPath = $publicPath ?? $this->assetsPublicPath;
         $sourcePath .= "/$dirName";
@@ -165,7 +258,10 @@ class AssetManager
         $sourceDir->close();
     }
 
-    public function finalize(&$contents)
+    /**
+     * @param string $contents
+     */
+    public function finalize(string &$contents)
     {
         $spritesTags = '';
         foreach (self::TAGS as $ext => $tag) {
@@ -182,8 +278,12 @@ class AssetManager
             if (!is_dir($publicPath)) {
                 mkdir($publicPath);
             }
-            if (!is_file($filePath = "$publicPath/$spriteName.$ext")) {
-                file_put_contents($filePath, $text);
+            $filePath = "$publicPath/$spriteName.$ext";
+            if (
+                   $this->config->get('env')!=='production'
+                || !is_file($filePath)
+            ) {
+                file_put_contents($filePath, $spriteText);
                 file_put_contents("$filePath.gz", gzencode($spriteText, 9));
             }
             $spritesTags .= "{$this->$tag($filePath)} ";

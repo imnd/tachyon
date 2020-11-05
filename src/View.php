@@ -146,10 +146,10 @@ class View
     public function view(string $viewsPath, array $vars = []): void
     {
         $this->layoutPath = "{$this->appViewsPath}/layouts";
-        echo $this->_displayLayout($this->display($viewsPath, $vars, true), $vars);
+        echo $this->_displayLayout($this->display($viewsPath, $vars, true), $vars, true);
     }
 
-    private function _displayLayout(string $viewContents, array $vars)
+    private function _displayLayout(string $viewContents, array $vars, $isRoot = false)
     {
         $layoutHtml = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
         if (false !== $extendsPos = strpos($layoutHtml, '@extends')) {
@@ -163,7 +163,10 @@ class View
             $layoutHtml = $this->_displayLayout($layoutHtml, $vars);
         }
         $layoutHtml = $this->_replaceTag($layoutHtml, $viewContents, '@contents');
-        $this->assetManager->finalize($layoutHtml);
+        if ($isRoot) {
+            $this->assetManager->finalize($layoutHtml);
+        }
+
         return $layoutHtml;
     }
 

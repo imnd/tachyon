@@ -122,9 +122,9 @@ class Html
         ], 'dual');
     }
 
-    public function input($options = []): string
+    public function input($options = [], $attrs = []): string
     {
-        $options = $this->_setOptions($options);
+        $options = $this->_setOptions($options, $attrs);
         if (!empty($options['multiple'])) {
             $options['attrs']['name'] .= '[]';
         }

@@ -81,10 +81,11 @@ class FormBuilder
      */
     private $_formCnt = 0;
     /**
-     * Список полей типа дэйтпикер
-     * @var array $_dateFieldNames
+     * Есть ли поля типа дэйтпикер
+     *
+     * @var array $isDatepicker
      */
-    private $_dateFieldNames = array();
+    private $isDatepicker = false;
 
     /**
      * @param Config $config
@@ -170,7 +171,8 @@ class FormBuilder
                     $control['options'] = (!empty($options['listData'])) ? $options['listData'] : array();
                 }
                 if ($control['type']==='date') {
-                    $this->_dateFieldNames[] = $control['attrs']['name'];
+                    $control['attrs']['class'] = $control['attrs']['class'] ? $control['attrs']['class'] . ' datepicker' : 'datepicker';
+                    $this->isDatepicker = true;
                 }
                 $controls[] = $control;
                 $requiredFields = $requiredFields || $required;
@@ -248,12 +250,12 @@ class FormBuilder
             'attrs' => $this->_options['attrs']
         ]);
         // включаем дэйтпикеры
-        if (!empty($this->_dateFieldNames)) {
-            $this->view->widget([
-                'class' => 'tachyon\components\widgets\Datepicker',
-                'controller' => $this,
-                'fieldNames' => $this->_dateFieldNames,
-            ]);
+        if ($this->isDatepicker) {
+            // хранить зависимости в assetManager
+            $this->assetManager->coreJs('obj');
+            $this->assetManager->coreJs('dom');
+            $this->assetManager->coreJs('datepicker');
+            echo "<script>datepicker.build();</script>";
         }
         // включаем скрипт валидации
         if (
