@@ -10,40 +10,24 @@ const datepicker = (function() {
         .hidden {display: none;}\
         .form__field {position: relative;display: flex;flex-wrap: wrap;align-items: stretch;width: auto;}\
         .datepicker{position:absolute;z-index:50;margin-top:5px;padding:20px 16px; width:220px;top:100%;left:0;background-color:#fff;border:1px solid #D0D0D0;border-radius:5px;}\
-.datepicker__nav{padding:0 3px;margin-bottom:16px}.datepicker__nav,.datepicker__nav-content{display:flex;align-items:center;justify-content:space-between}.datepicker__nav-content{flex-grow:1;padding:0 15px}\
+        .datepicker__nav{padding:0 3px;margin-bottom:16px}\
+        .datepicker__nav,.datepicker__nav-content{display:flex;align-items:center;justify-content:space-between}\
+        .datepicker__nav-content{flex-grow:1;padding:0 15px}\
         .datepicker__nav-action{width:30px;cursor:pointer;text-align:center;font-size: 24px;}\
         .datepicker__month{flex-grow:1;color:#000;font-size:1.3em;text-align:center}\
         .datepicker__year{display:flex;align-items:center;margin-left:6px;font-size:1.5em}\
         .datepicker__year-arrows{margin-left:5px}\
-        .datepicker__week{display:flex;padding:0;margin:0 0 13px;list-style:none}.datepicker__week li{width:14.28571%;color:#000;font-size:1em;line-height:1;text-align:center}.datepicker__days{display:flex;flex-wrap:wrap;padding:0;margin:0;list-style:none}.datepicker__days li{margin-bottom:2px;width:14.28571%}\
+        .datepicker__week{display:flex;padding:0;margin:0 0 13px;list-style:none}\
+        .datepicker__week li{width:14.28571%;color:#000;font-size:1em;line-height:1;text-align:center}\
+        .datepicker__days{display:flex;flex-wrap:wrap;padding:0;margin:0;list-style:none}\
+        .datepicker__days li{margin-bottom:2px;width:14.28571%}\
         .datepicker__days li span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid transparent;border-radius:50%;color:#000;font-size:1rem;line-height:1;cursor:pointer;transition:all .3s}.datepicker__days li span:hover{border-color:#D0D0D0}.datepicker__days li span.is-active{background-color:#777;border-color:#777;color:#fff}\
         .datepicker__days li span.prev-month, .datepicker__days li span.next-month {color:#7d7d7d}\
         .datepicker__year-arrow{position: absolute;display:flex;width:10px;height:10px;cursor:pointer;font-weight: bold;}\
         .datepicker__year-arrow.up {top:16px; font-size:0.8em;}\
         .datepicker__year-arrow.down {top:24px; font-size:0.7em; margin-left: 1px;}\
-        .control {margin-right: 0px;}\
+        .datepicker .control {margin-right: 0px;}\
     ';
-
-    const MONTH_NAMES = [
-        "Январь",
-        "Февраль",
-        "Март",
-        "Апрель",
-        "Май",
-        "Июнь",
-        "Июль",
-        "Август",
-        "Сентябрь",
-        "Октябрь",
-        "Ноябрь",
-        "Декабрь"
-    ];
-
-    let options = {
-        "class" : "datepicker",
-        "placeholder" : "ДД.ММ.ГГГГ",
-        "daysOfWeek" : ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
-    };
 
     return {
         /**
@@ -51,6 +35,13 @@ const datepicker = (function() {
          * @return {void}
          */
         build: data => {
+            let options = {
+                "class" : "datepicker",
+                "placeholder" : "ДД.ММ.ГГГГ",
+                "daysOfWeek" : ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+                "monthNames" : ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+            };
+
             for (let ind in data) {
                 if (data.hasOwnProperty(ind)) {
                     options[ind] = data[ind];
@@ -62,20 +53,14 @@ const datepicker = (function() {
                 obj.forEach(datepickerInputs, function(datepickerInput) {
 
                     let
-                        id = (new Date()).getTime(),
                         hidden = true,
-                        inlineVars = {
-                            "formattedValue" : "",
-                            "curMonthName" : "",
-                            "curYear" : "",
-                            "datepickerItems" : "",
-                            "placeholder" : "",
-                            "daysOfWeek" : "",
-                            "prevMonthDays" : "",
-                            "curMonthDays" : "",
-                            "nextMonthDays" : "",
-                            "datepickerDays" : "",
-                        },
+                        id = (new Date()).getTime(),
+                        daysOfWeek = "",
+                        value,
+                        curMonthName,
+                        curYear,
+                        placeholder,
+                        datepickerDays,
                         curMonth,
                         selectedYear,
                         selectedMonth,
@@ -86,29 +71,28 @@ const datepicker = (function() {
                     ;
 
                     const template = '\
-    <div class="form__field datepicker-wrapper" id="datepicker-wrapper-' + id + '">\
-        <div class="input-field input-field--append">\
-            <input class="datepicker-input" id="datepicker-input-' + id + '" value="{{ formattedValue }}" placeholder="{{ placeholder }}"/>\
-            <div class="hidden datepicker" id="datepicker-' + id + '">\
-                <div class="datepicker__nav">\
-                    <div class="datepicker__nav-action on-prev-month" id="on-prev-month-' + id + '"><</div>\
-                    <div class="datepicker__nav-content">\
-                        <div class="datepicker__month">{{ curMonthName }}</div>\
-                        <div class="datepicker__year">{{ curYear }}\
-                            <div class="datepicker__year-arrows">\
-                                <div class="datepicker__year-arrow up on-next-year" id="on-next-year-' + id + '">^</div>\
-                                <div class="datepicker__year-arrow down on-prev-year" id="on-prev-year-' + id + '">v</div>\
-                            </div>\
+<div class="form__field datepicker-wrapper" id="datepicker-wrapper-{{ id }}">\
+    <div class="input-field input-field--append">\
+        <input class="datepicker-input" id="datepicker-input-{{ id }}" value="{{ value }}" placeholder="{{ placeholder }}"/>\
+        <div class="hidden datepicker" id="datepicker-{{ id }}">\
+            <div class="datepicker__nav">\
+                <div class="datepicker__nav-action on-prev-month" id="on-prev-month-{{ id }}"><</div>\
+                <div class="datepicker__nav-content">\
+                    <div class="datepicker__month">{{ curMonthName }}</div>\
+                    <div class="datepicker__year">{{ curYear }}\
+                        <div class="datepicker__year-arrows">\
+                            <div class="datepicker__year-arrow up on-next-year" id="on-next-year-{{ id }}">^</div>\
+                            <div class="datepicker__year-arrow down on-prev-year" id="on-prev-year-{{ id }}">v</div>\
                         </div>\
                     </div>\
-                    <div class="datepicker__nav-action control on-next-month" id="on-next-month-' + id + '">></div>\
                 </div>\
-                <ul class="datepicker__week">{{ daysOfWeek }}</ul>\
-                <ul class="datepicker__days">{{ datepickerDays }}</ul>\
+                <div class="datepicker__nav-action control on-next-month" id="on-next-month-{{ id }}">></div>\
             </div>\
+            <ul class="datepicker__week">{{ daysOfWeek }}</ul>\
+            <ul class="datepicker__days">{{ datepickerDays }}</ul>\
         </div>\
-    </div>';
-
+    </div>\
+</div>';
                     /**
                      * Считает количество дней в месяце month года year
                      * @param month
@@ -133,7 +117,15 @@ const datepicker = (function() {
                         if (datepickerWrapper===undefined) {
                             datepickerWrapper = dom.findById("datepicker-wrapper-" + id);
                         }
-                        dom.replace(datepickerWrapper, dom.fillTemplate(template, inlineVars));
+                        dom.replace(datepickerWrapper, dom.renderTemplate(template, {
+                            "id" : id,
+                            "value" : value,
+                            "curMonthName" : curMonthName,
+                            "curYear" : curYear,
+                            "placeholder" : placeholder,
+                            "daysOfWeek" : daysOfWeek,
+                            "datepickerDays" : datepickerDays,
+                        }));
 
                         const datepickerInput = dom.findById("datepicker-input-" + id);
                         const datepicker = dom.findById("datepicker-" + id);
@@ -158,7 +150,7 @@ const datepicker = (function() {
                             curMonth--;
                             if (curMonth === -1) {
                                 curMonth = 11;
-                                inlineVars.curYear--;
+                                curYear--;
                             }
                             buildDatepicker();
                         });
@@ -166,16 +158,16 @@ const datepicker = (function() {
                             curMonth++;
                             if (curMonth === 12) {
                                 curMonth = 0;
-                                inlineVars.curYear++;
+                                curYear++;
                             }
                             buildDatepicker();
                         });
                         dom.click(dom.findById("on-prev-year-" + id), () => {
-                            inlineVars.curYear--;
+                            curYear--;
                             buildDatepicker();
                         });
                         dom.click(dom.findById("on-next-year-" + id), () => {
-                            inlineVars.curYear++;
+                            curYear++;
                             buildDatepicker();
                         });
                         // дни календаря
@@ -193,8 +185,8 @@ const datepicker = (function() {
 
                                 selectedDate = date;
                                 selectedMonth = month;
-                                if (inlineVars.curYear !== undefined) {
-                                    selectedYear = inlineVars.curYear;
+                                if (curYear !== undefined) {
+                                    selectedYear = curYear;
                                 }
                                 if (selectedMonth === -1) {
                                     selectedMonth = 11;
@@ -215,15 +207,15 @@ const datepicker = (function() {
                      * Высчитываем дни календаря
                      */
                     const buildDatepicker = (datepicker) => {
-                        inlineVars.curMonthName = MONTH_NAMES[curMonth];
+                        curMonthName = options.monthNames[curMonth];
                         // день недели первого дня месяца
-                        let firstDay = (new Date(inlineVars.curYear, curMonth)).getDay();
+                        let firstDay = (new Date(curYear, curMonth)).getDay();
                         firstDay = ruDaysOfWeek(firstDay);
                         // высчитываем дни текущего месяца
-                        const daysInMonth = getDaysInMonth(curMonth, inlineVars.curYear);
+                        const daysInMonth = getDaysInMonth(curMonth, curYear);
                         curMonthDays = range(1, daysInMonth);
                         // высчитываем дни предыдущего месяца
-                        const dateTime = new Date(inlineVars.curYear, curMonth);
+                        const dateTime = new Date(curYear, curMonth);
                         dateTime.setDate(0);
                         const prevLastDate = dateTime.getDate();
                         const prevFirstDate = prevLastDate - firstDay + 1;
@@ -233,7 +225,7 @@ const datepicker = (function() {
                         const nextLastDate = 42 - daysInMonth - (prevLastDate - prevFirstDate) - 1;
                         nextMonthDays = range(1, nextLastDate);
 
-                        inlineVars.datepickerDays = "";
+                        datepickerDays = "";
                         setDatepickerDays(prevMonthDays, curMonth - 1, 'prev-month');
                         setDatepickerDays(curMonthDays, curMonth, 'curr-month');
                         setDatepickerDays(nextMonthDays, curMonth + 1, 'next-month');
@@ -246,17 +238,17 @@ const datepicker = (function() {
                             let _spanClass = spanClass;
                             let date = monthDays[i];
                             // Является ли день календаря сегодняшним или выбранным
-                            if (date === selectedDate && month === selectedMonth && inlineVars.curYear === selectedYear) {
+                            if (date === selectedDate && month === selectedMonth && curYear === selectedYear) {
                                 _spanClass += ' is-active';
                             }
-                            inlineVars.datepickerDays += '<li><span id="datepicker-date-' + id + date + month + '" class="' + _spanClass + '">' + date + '</span></li>';
+                            datepickerDays += '<li><span id="datepicker-date-' + id + date + month + '" class="' + _spanClass + '">' + date + '</span></li>';
                         }
                     }
 
                     const showDatepicker = function (datepicker) {
                         hidden = false;
                         dom.removeClass(datepicker, "hidden");
-                        // dom.findById("datepicker-input-" + id).focus();
+                        dom.findById("datepicker-input-" + id).focus();
                     };
 
                     const hideDatepicker = datepicker => {
@@ -268,12 +260,12 @@ const datepicker = (function() {
                         const dateFormatted = selectedDate.toString().padStart(2, '0');
                         const monthFormatted = (selectedMonth + 1).toString().padStart(2, '0');
 
-                        inlineVars.formattedValue = dateFormatted + '.' + monthFormatted + '.' + selectedYear;
+                        value = dateFormatted + '.' + monthFormatted + '.' + selectedYear;
                     }
 
-                    inlineVars.placeholder = options.placeholder;
+                    placeholder = options.placeholder;
                     obj.forEach(options.daysOfWeek, function(day) {
-                        inlineVars.daysOfWeek += "<li>" + day + "</li>"
+                        daysOfWeek += "<li>" + day + "</li>"
                     })
 
                     let date = dom.val(datepickerInput);
@@ -287,7 +279,7 @@ const datepicker = (function() {
                         selectedYear = curDateTime.getFullYear();
                     }
                     curMonth = selectedMonth;
-                    inlineVars.curYear = selectedYear;
+                    curYear = selectedYear;
                     formatInputDate();
                     buildDatepicker(datepickerInput);
                 });

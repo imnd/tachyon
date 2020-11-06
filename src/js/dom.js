@@ -248,7 +248,7 @@ const dom = (function () {
             obj.className = "hidden";
         },
 
-        fillTemplate: function (template, vars) {
+        renderTemplate: function (template, vars) {
             let openCurlPos = template.indexOf("{{"), closeCurlPos;
             while (openCurlPos !== -1) {
                 closeCurlPos = template.indexOf("}}");
