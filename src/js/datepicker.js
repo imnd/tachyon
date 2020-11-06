@@ -52,24 +52,6 @@ const datepicker = (function() {
                 let datepickerInputs = dom.findAllByClass(options["class"]);
                 obj.forEach(datepickerInputs, function(datepickerInput) {
 
-                    let
-                        hidden = true,
-                        id = (new Date()).getTime(),
-                        daysOfWeek = "",
-                        value,
-                        curMonthName,
-                        curYear,
-                        placeholder,
-                        datepickerDays,
-                        curMonth,
-                        selectedYear,
-                        selectedMonth,
-                        selectedDate,
-                        curMonthDays,
-                        prevMonthDays,
-                        nextMonthDays
-                    ;
-
                     const template = '\
 <div class="form__field datepicker-wrapper" id="datepicker-wrapper-{{ id }}">\
     <div class="input-field input-field--append">\
@@ -93,6 +75,25 @@ const datepicker = (function() {
         </div>\
     </div>\
 </div>';
+
+                    let
+                        hidden = true,
+                        id = (new Date()).getTime(),
+                        daysOfWeek = "",
+                        value,
+                        curMonthName,
+                        curYear,
+                        placeholder,
+                        datepickerDays,
+                        curMonth,
+                        selectedYear,
+                        selectedMonth,
+                        selectedDate,
+                        curMonthDays,
+                        prevMonthDays,
+                        nextMonthDays,
+                        hide
+                    ;
                     /**
                      * Считает количество дней в месяце month года year
                      * @param month
@@ -135,16 +136,22 @@ const datepicker = (function() {
                         }
 
                         // навешиваем обработчики события
-                        dom.click(datepickerInput, () => {
-                            if (hidden) {
-                                showDatepicker(datepicker);
-                            } else {
+                        // показать или спрятать окно при клике на инпут
+                        dom.click(datepickerInput, (e) => {
+                            showDatepicker(datepicker);
+                            e.stopPropagation();
+                        });
+                        dom.click(datepicker, (e) => {
+                            hide = false;
+                            e.stopPropagation();
+                        });
+                        dom.click(window, (e) => {
+                            if (hide) {
                                 hideDatepicker(datepicker);
                             }
+                            hide = true;
                         });
-                        /*dom.blur(datepickerInput, () => {
-                            hideDatepicker(datepicker);
-                        })*/
+
                         // навигация
                         dom.click(dom.findById("on-prev-month-" + id), () => {
                             curMonth--;
@@ -170,6 +177,7 @@ const datepicker = (function() {
                             curYear++;
                             buildDatepicker();
                         });
+
                         // дни календаря
                         setDateHandlers(prevMonthDays, curMonth - 1);
                         setDateHandlers(curMonthDays, curMonth);
@@ -248,7 +256,6 @@ const datepicker = (function() {
                     const showDatepicker = function (datepicker) {
                         hidden = false;
                         dom.removeClass(datepicker, "hidden");
-                        dom.findById("datepicker-input-" + id).focus();
                     };
 
                     const hideDatepicker = datepicker => {
