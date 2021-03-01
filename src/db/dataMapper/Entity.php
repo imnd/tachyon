@@ -2,10 +2,9 @@
 namespace tachyon\db\dataMapper;
 
 use tachyon\{
-    db\dataMapper\DbContext,
-    traits\ClassName,
     validation\ValidationInterface,
     validation\Validator,
+    traits\ClassName
 };
 
 abstract class Entity implements EntityInterface, UnitOfWorkInterface, ValidationInterface

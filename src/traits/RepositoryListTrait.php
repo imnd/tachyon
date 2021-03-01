@@ -15,20 +15,23 @@ use tachyon\exceptions\ContainerException;
  */
 trait RepositoryListTrait
 {
-    protected string $pkField = 'id';
-    protected string $valueField = 'id';
-    protected string $emptyVal = '...';
-    protected string $valsGlue = ',';
+    protected $pkField = 'id';
+    protected $valueField = 'name';
+    protected $emptyVal = '...';
+    protected $valsGlue = ',';
 
     /**
      * Список для select`а из массива строк таблицы $items
      *
+     * @param string $valueField
+     *
      * @return array
-     * @throws ReflectionException
      * @throws ContainerException
+     * @throws ReflectionException
      */
-    public function getAllSelectList(): array
+    public function getAllSelectList($valueField = 'name'): array
     {
+        $this->valueField = $valueField;
         $model = (new Container)->get(static::class);
         return $model->getSelectList($model->findAllRaw());
     }
@@ -150,7 +153,6 @@ trait RepositoryListTrait
 
     /**
      * @param string $valueField
-     *
      * @return void
      */
     public function setValueField(string $valueField): void
@@ -160,7 +162,6 @@ trait RepositoryListTrait
 
     /**
      * @param string $valsGlue
-     *
      * @return void
      */
     public function setValsGlue(string $valsGlue): void
@@ -170,7 +171,6 @@ trait RepositoryListTrait
 
     /**
      * @param string $pkField
-     *
      * @return void
      */
     public function setPkField(string $pkField): void
@@ -180,7 +180,6 @@ trait RepositoryListTrait
 
     /**
      * @param string $emptyVal
-     *
      * @return void
      */
     public function setEmptyVal(string $emptyVal): void

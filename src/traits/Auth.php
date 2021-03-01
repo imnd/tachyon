@@ -1,5 +1,4 @@
 <?php
-
 namespace tachyon\traits;
 
 use tachyon\exceptions\HttpException,
@@ -7,51 +6,44 @@ use tachyon\exceptions\HttpException,
 
 /**
  * Трейт аутентификации
- *
+ * 
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
- */
-trait AuthActions
+ */ 
+trait Auth
 {
     /**
      * Имя переменной куки
-     *
      * @var string $cookieKey
      */
-    private string $cookieKey = 'authorized';
+    private $cookieKey = 'authorized';
     /**
      * Время жизни куки дней при нажатой кнопке "remember me"
-     *
      * @var integer $remember
      */
-    private int $remember = 7;
+    private $remember = 7;
     /**
      * Адрес страницы логина
-     *
      * @var string $loginUrl
      */
     private $loginUrl = '/login';
 
     /**
      * Перенаправляет пользователя на адрес логина
-     *
-     * @return void
+     * 
+     * @return bool
      */
-    public function accessDenied(): void
+    public function accessDenied(): bool
     {
         Request::setReferer();
-        if (method_exists($this, 'redirect')) {
-            $this->redirect($this->loginUrl);
-        }
+        $this->redirect($this->loginUrl);
+        return false;
     }
 
     /**
      * Юзер не авторизован
-     *
-     * @param $msg
-     *
+     * 
      * @return void
-     * @throws HttpException
      */
     public function unauthorised($msg): void
     {
@@ -60,40 +52,35 @@ trait AuthActions
 
     /**
      * Авторизован ли юзер
-     *
+     * 
      * @return boolean
      */
     public function isAuthorised(): bool
     {
-        if (property_exists($this, 'cookie')) {
-            if (!$cookie = $this->cookie->get($this->cookieKey)) {
-                return false;
-            }
+        if (!$cookie = $this->cookie->get($this->cookieKey)) {
+            return false;
         }
-
-        return $cookie === $this->_getCookieValue();
+        return $cookie===$this->_getCookieValue();
     }
 
     /**
      * Авторизован ли юзер
-     *
-     * @return boolean
+     * 
+     * @return bool
      */
-    public function checkAccess(): ?bool
+    public function checkAccess(): bool
     {
-        if (!$this->isAuthorised()) {
-            $this->accessDenied();
+        if ($this->isAuthorised()) {
+            return true;
         }
+        return $this->accessDenied();
     }
 
     /**
      * залогинить юзера
-     *
-     * @param bool $remember
-     *
      * @return void
      */
-    protected function _login($remember = false): void
+    protected function _login($remember=false): void
     {
         $duration = $remember ? ($this->config->get('remember') ?: $this->remember) : 1;
         $this->cookie->setDuration($duration);
@@ -102,8 +89,8 @@ trait AuthActions
 
     /**
      * Защита от воровства куки авторизации
-     * Берется набор уникальных данных о пользователе (айпи, порт, строка юзер-агента браузера) и хэшируется
-     *
+     * берется набор уникальных данных о пользователе (айпи, порт, строка юзер-агента браузера) и хэшируется
+     * 
      * @return string
      */
     private function _getCookieValue(): string
@@ -113,7 +100,6 @@ trait AuthActions
 
     /**
      * Разлогинить юзера
-     *
      * @return void
      */
     protected function _logout(): void

@@ -1,10 +1,7 @@
 <?php
 namespace tachyon\db\dataMapper;
 
-use Iterator,
-    tachyon\db\dataMapper\Entity,
-    tachyon\db\dataMapper\Repository
-;
+use Iterator;
 
 interface RepositoryInterface
 {
@@ -15,7 +12,7 @@ interface RepositoryInterface
 
     /**
      * Устанавливает условия поиска для хранилища
-     *
+     * 
      * @param array $conditions условия поиска
      * @return Repository
      */
@@ -23,7 +20,7 @@ interface RepositoryInterface
 
     /**
      * Устанавливает условия сортировки для хранилища.
-     *
+     * 
      * @param array $attrs
      * @return Repository
      */
@@ -31,7 +28,7 @@ interface RepositoryInterface
 
     /**
      * Добавляет условия сортировки для хранилища к уже существующим.
-     *
+     * 
      * @param string $field
      * @param string $order
      * @return void
@@ -40,7 +37,7 @@ interface RepositoryInterface
 
     /**
      * Получает сущность по условию $where
-     *
+     * 
      * @param array $where
      * @return null|Entity
      */
@@ -48,16 +45,16 @@ interface RepositoryInterface
 
     /**
      * Получает сущность по условию $where
-     *
+     * 
      * @param array $where
-     * @return null|Entity
+     * @return null|array
      */
-    public function findOneRaw(array $where = array()): ?Entity;
+    public function findOneRaw(array $where = array()): ?array;
 
     /**
      * Получает все сущности по условию $where, отсортированных по $sort
      * и преобразовывает в Iterator
-     *
+     * 
      * @param array $where
      * @param array $sort
      * @return Iterator
@@ -69,15 +66,15 @@ interface RepositoryInterface
      *
      * @param array $where
      * @param array $sort
-     * @return Iterator
+     * @return array
      */
     public function findAllRaw(array $where = array(), array $sort = array()): array;
 
     /**
      * Получить сущность по первичному ключу.
-     *
+     * 
      * @param mixed $pk
-     * @return Entity
+     * @return null|Entity
      */
     public function findByPk($pk): ?Entity;
 
@@ -85,7 +82,7 @@ interface RepositoryInterface
      * Создает новую сущность.
      *
      * @param bool $mark
-     * @return Entity
+     * @return null|Entity
      */
-    public function create($mark = true): Entity;
+    public function create($mark = true): ?Entity;
 }

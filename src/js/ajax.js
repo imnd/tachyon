@@ -1,13 +1,13 @@
 /**
  * Компонент для отправки AJAX запросов
- * 
+ *
  * @constructor
  * @this {ajax}
  */
-var ajax = (function() {
-    var 
+const ajax = (function() {
+    const
         appendPath = function(path, data) {
-            for (var key in data) {
+            for (let key in data) {
                 path += "&" + key + "=" + data[key];
             }
             return path;
@@ -15,15 +15,15 @@ var ajax = (function() {
         /**
          * Создание запроса
          *
-         * @return {void} 
+         * @return {void | XMLHttpRequest}
          */
         createRequest = function() {
             if (window.XMLHttpRequest) {
                 return new XMLHttpRequest();
             } else if (window.ActiveXObject) {
-                var xhr;
+                let xhr;
                 try {
-                    xhr = new ActiveXObject("Msxml2.XMLHTTP"); 
+                    xhr = new ActiveXObject("Msxml2.XMLHTTP");
                 } catch (e){}
                 try {
                     xhr = new ActiveXObject("Microsoft.XMLHTTP");
@@ -38,15 +38,15 @@ var ajax = (function() {
          * Посылка запроса
          *
          * @param {array} options параметры запроса
-         * @return {void} 
+         * @return {void}
          */
         sendRequest = function(options) {
-            var xhr = this.createRequest();
+            const xhr = this.createRequest();
             if (!xhr) {
                 alert("Браузер не поддерживает AJAX");
-                return;            
+                return;
             }
-            var
+            let
                 sendData,
                 path = options["path"] + "?ajax=true",
                 callback = options["callback"],
@@ -56,10 +56,10 @@ var ajax = (function() {
                 contentType = options["contentType"] || "application/x-www-form-urlencoded"
             ;
 
-            if (requestType=="GET") {
+            if (requestType==="GET") {
                 path = this.appendPath(path, data);
-            } else if (contentType=="multipart/form-data") {
-                var boundary = String(Math.random()).slice(2);
+            } else if (contentType==="multipart/form-data") {
+                const boundary = String(Math.random()).slice(2);
                 contentType += '; boundary=' + boundary;
                 sendData = '\r\n--' + boundary + '\r\nContent-Disposition: form-data; name="data"; filename="' + data.fileName + '"\r\nContent-Type: ' + data.fileType + '\r\n\r\n' + data.data + '\r\n--' + boundary + '--\r\n';
                 delete data.fileName;
@@ -80,14 +80,14 @@ var ajax = (function() {
                     if (xhr.status === 200) {
                         var rData = xhr.responseText;
                         if (respType==="json") {
-                            if (rData=="true") {
+                            if (rData==="true") {
                                 return {success: true};
                             }
-                            if (rData=="false") {
+                            if (rData==="false") {
                                 return {success: false};
                             }
-                            var eData = !(/[^,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]/.test(rData.replace(/"(\\.|[^"\\])*"/g, ""))) && eval("(" + rData + ")");
-                            var eArray = new Object(eData);
+                            const eData = !(/[^,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]/.test(rData.replace(/"(\\.|[^"\\])*"/g, ""))) && eval("(" + rData + ")");
+                            const eArray = new Object(eData);
                             callback(eArray);
                         } else {
                             callback(rData);
@@ -104,11 +104,11 @@ var ajax = (function() {
          * Посылка get запроса
          *
          * @param {string} path
-         * @param {mixed} data параметры запроса
+         * @param data параметры запроса
          * @param {function} callback
          * @param {string} respType
          * @param {string} contentType
-         * @return {void} 
+         * @return {void}
          */
         get : function (path, data, callback, respType, contentType) {
             if (typeof data === "function") {
@@ -129,11 +129,11 @@ var ajax = (function() {
          * Посылка post запроса
          *
          * @param {string} path
-         * @param {mixed} data параметры запроса
+         * @param data параметры запроса
          * @param {function} callback
          * @param {string} respType
          * @param {string} contentType
-         * @return {void} 
+         * @return {void}
          */
         post : function (path, data, callback, respType, contentType) {
             this.sendRequest({

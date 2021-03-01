@@ -53,15 +53,15 @@ let upload = (function() {
          * @return {void} 
          */
         uploadBlob = function(options) {
-            var
+            const
                 file = options["file"],
                 startByte = options["startByte"],
                 stopByte = options["stopByte"],
                 chunksCount = options["chunksCount"] || 0,
-                fileNum = options["fileNum"] || 0
+                fileNum = options["fileNum"] || 0,
+                reader = new FileReader()
             ;
-            var
-                reader = new FileReader(),
+            const
                 start = parseInt(startByte) || 0,
                 stop = parseInt(stopByte) || file.size - 1
             ;
@@ -77,7 +77,7 @@ let upload = (function() {
                         "fileNum" : fileNum,
                     },
                     function(data) {
-                        if (data.complete==true) {
+                        if (data.complete===true) {
                             settings["complete-callback"]();
                         }
                     },
@@ -85,7 +85,7 @@ let upload = (function() {
                     "multipart/form-data"
                 );
             };
-            var blob;
+            let blob;
             if (file.slice) {
                 blob = file.slice(start, stop);
             } else if (file.webkitSlice) {
@@ -117,14 +117,14 @@ let upload = (function() {
          */
         run : function() {
             if (window.File && window.FileReader && window.FileList && window.Blob) {
-                var files = dom.findById(settings["file-id"]).files;
+                const files = dom.findById(settings["file-id"]).files;
                 if (!files.length) {
                     alert("Выберите файл, пожалуйста.");
                     return;
                 }
-                var file = files[0];
-                var chunksCount = Math.ceil(file.size / settings["chunk-size"]);
-                for (var fileNum = 0; fileNum < chunksCount; fileNum++) {
+                const file = files[0],
+                      chunksCount = Math.ceil(file.size / settings["chunk-size"]);
+                for (let fileNum = 0; fileNum < chunksCount; fileNum++) {
                     uploadBlob({
                         "file" : file,
                         "startByte" : settings["chunk-size"] * fileNum,
@@ -143,8 +143,8 @@ let upload = (function() {
          * @return {void} 
          */
         defaults : function(options) {
-            var varNames = ["file-id", "chunk-size", "upload-url", "complete-callback"];
-            for (var key in varNames) {
+            const varNames = ["file-id", "chunk-size", "upload-url", "complete-callback"];
+            for (const key in varNames) {
                 setValue(varNames[key], options);
             }
         }

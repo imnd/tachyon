@@ -1,10 +1,12 @@
 <?php
+
 namespace tachyon\db\dataMapper;
 
-use Iterator,
+use ErrorException,
+    Iterator,
     tachyon\db\Terms,
-    tachyon\traits\ClassName
-;
+    tachyon\traits\ClassName,
+    tachyon\exceptions\DBALException;
 
 /**
  * EntityManager является центральной точкой доступа к функциональности DataMapper ORM.
@@ -19,20 +21,29 @@ abstract class Repository implements RepositoryInterface
     /**
      * @var Persistence
      */
-    protected $persistence;
+    protected Persistence $persistence;
 
     /**
      * Имя таблицы БД
+     *
      * @var string
      */
     protected string $tableName;
     /**
+     * Имя класса сущности
+     *
+     * @var Entity
+     */
+    protected Entity $entityName;
+    /**
      * Класс сущности
+     *
      * @var Entity
      */
     protected Entity $entity;
     /**
      * Массив сущностей
+     *
      * @var array
      */
     protected array $collection = [];
@@ -41,9 +52,8 @@ abstract class Repository implements RepositoryInterface
     {
         $this->persistence = $persistence;
         $this->persistence->setOwner($this);
-
         if (is_null($this->tableName)) {
-            $tableNameArr = preg_split('/(?=[A-Z])/', str_replace('Repository', '', get_called_class()));
+            $tableNameArr = preg_split('/(?=[A-Z])/', str_replace('Repository', '', static::class));
             array_shift($tableNameArr);
             $this->tableName = strtolower(implode('_', $tableNameArr));
         }
@@ -52,7 +62,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @return string
      */
-    public function getTableName()
+    public function getTableName(): string
     {
         return $this->tableName;
     }
@@ -72,7 +82,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function setSearchConditions(array $conditions = array()): Repository
+    public function setSearchConditions(array $conditions = []): Repository
     {
         $this->where($conditions);
         return $this;
@@ -81,7 +91,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function findOne(array $where = array()): ?Entity
+    public function findOne(array $where = []): ?Entity
     {
         if (!$entity = $this->findOneRaw($where)) {
             return null;
@@ -91,19 +101,19 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * @param array $data
+     *
      * @return array
      */
     protected function convertData($data): Entity
     {
         $entity = $this->entity->fromState($data);
-
         return $this->collection[$entity->getPk()] = $entity;
     }
 
     /**
      * @inheritdoc
      */
-    public function findOneRaw(array $where = array()): ?Entity
+    public function findOneRaw(array $where = []): ?array
     {
         return $this
             ->persistence
@@ -114,7 +124,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function findAllRaw(array $where = array(), array $sort = array()): array
+    public function findAllRaw(array $where = [], array $sort = []): array
     {
         return $this->persistence
             ->from($this->tableName)
@@ -124,7 +134,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function findAll(array $where = array(), array $sort = array()): Iterator
+    public function findAll(array $where = [], array $sort = []): Iterator
     {
         $arrayData = $this->findAllRaw($where, $sort);
         return $this->convertArrayData($arrayData);
@@ -132,6 +142,7 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * @param array $arrayData
+     *
      * @return Iterator
      */
     protected function convertArrayData($arrayData): Iterator
@@ -146,7 +157,9 @@ abstract class Repository implements RepositoryInterface
      * Получить сущность по первичному ключу и поместить в $this->collection.
      *
      * @param int $pk
+     *
      * @return Entity
+     * @throws DBALException
      */
     public function findByPk($pk): ?Entity
     {
@@ -160,7 +173,9 @@ abstract class Repository implements RepositoryInterface
      * Получить сущность из БД по первичному ключу.
      *
      * @param int $pk
+     *
      * @return Entity
+     * @throws DBALException
      */
     protected function getByPk($pk): ?Entity
     {
@@ -177,20 +192,37 @@ abstract class Repository implements RepositoryInterface
      * Устанавливает условие выборки.
      *
      * @param array $where
-     * @return void
+     *
+     * @return Repository
      */
-    public function where($where)
+    public function where($where): Repository
     {
         $this->persistence->setWhere($where);
+        return $this;
+    }
+
+    /**
+     * Устанавливает поля выборки.
+     *
+     * @param array $fields
+     *
+     * @return Repository
+     */
+    public function select($fields): Repository
+    {
+        $this->persistence->select((array)$fields);
+        return $this;
     }
 
     /**
      * Устанавливает условия сортировки для хранилища
      *
      * @param array $attrs
+     *
      * @return Repository
+     * @throws ErrorException
      */
-    public function setSort($attrs)
+    public function setSort($attrs): Repository
     {
         if (isset($attrs['order'])) {
             $this->addSortBy($attrs['field'], $attrs['order']);
@@ -203,18 +235,22 @@ abstract class Repository implements RepositoryInterface
      *
      * @param string $field
      * @param string $order
+     *
      * @return void
+     * @throws ErrorException
      */
-    public function addSortBy($field, $order)
+    public function addSortBy($field, $order): void
     {
         $this->persistence->orderBy($field, $order);
     }
 
     /**
      * truncates table
+     *
      * @return void
+     * @throws DBALException
      */
-    public function clear()
+    public function clear(): void
     {
         $this->persistence->clear();
     }

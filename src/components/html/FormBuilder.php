@@ -13,7 +13,7 @@ use tachyon\components\{
 };
 /**
  * Построитель форм
- *
+ * 
  * @author Андрей Сердюк
  * @copyright (c) 2010 IMND
  */
@@ -98,13 +98,8 @@ class FormBuilder
      * @param Csrf $csrf
      * @param View $view
      */
-    public function __construct(
-        Config $config,
-        AssetManager $assetManager,
-        Html $html,
-        Csrf $csrf,
-        View $view
-    ) {
+    public function __construct(Config $config, AssetManager $assetManager, Html $html, Csrf $csrf, View $view)
+    {
         $this->assetManager = $assetManager;
         $this->html = $html;
         $this->csrf = $csrf;
@@ -115,24 +110,28 @@ class FormBuilder
     }
 
     /**
+     * build
      * Отрисовка формы
-     *
-     * @param $params array
+     * 
+     * @param $params array 
      */
     public function build($params = []): void
     {
         // Custom опции
         $options = $params['options'] ?? [];
         $this->_options = array_merge($this->_options, $options);
+
         $this->_options['attrs']['class'] = $this->_options['class'] ?? null;
         $this->_options['attrs']['action'] = $this->_options['action'] ?? '';
         $this->_options['attrs']['method'] = $this->_options['method'] ?? 'GET';
         $this->_options['text']['submitCaption'] = $this->_options['submitCaption'] ?? null;
         $this->_options['final'] = $this->_options['final'] ?? true;
+
         // генерируем для каждой формы уникальный id и уникальный name если он не задан в $options
         $this->_options['attrs']['id'] = $this->_options['attrs']['name'] = $this->_options['defId'] . '_frm_' . $this->_formCnt++;
         // инициализируем путь для отображения
         $this->view->setViewsPath($this->_options['viewsPath']);
+
         $formId = $this->_options['attrs']['id']; // для удобства записи
         $requiredFields = false;
         $controls = [];
