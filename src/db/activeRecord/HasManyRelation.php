@@ -1,38 +1,45 @@
 <?php
 namespace tachyon\db\activeRecord;
 
-use tachyon\db\activeRecord\Join;
+use tachyon\components\Message;
+use tachyon\db\Alias;
 
 /**
  * Класс, реализующий связь "имеет много" между моделями
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
-class HasmanyRelation extends Relation
+class HasManyRelation extends Relation
 {
     /**
-     * @var \tachyon\db\activeRecord\Join $join
+     * @var Join $join
      */
-    protected $join;
+    protected Join $join;
 
-    public function __construct(Join $join)
+    public function __construct(Message $msg, Alias $alias, Join $join)
     {
+        parent::__construct($msg, $alias);
+
         $this->join = $join;
     }
 
-    public function joinWith($owner)
+    public function joinWith($owner): void
     {
-        $this->join->leftJoin("{$this->tableName} AS {$this->tableAlias}", "{$this->tableAlias}.{$this->linkKey}={$owner->getTableName()}.{$owner->getPkName()}", $this->getTableAlias(), $owner);
+        $this->join->leftJoin(
+            "{$this->tableName} AS {$this->tableAlias}",
+            "{$this->tableAlias}.{$this->linkKey}={$owner->getTableName()}.{$owner->getPkName()}",
+            $this->getTableAlias()
+        );
     }
 
     public function attachWithObject($retItem, $with)
     {
-        if (is_null($retItem->$with))
-            $retItem->$with = array($this->model);
-        else
-            $retItem->$with = array_merge($retItem->$with, array($this->model));
-            
+        if (is_null($retItem->$with)) {
+            $retItem->$with = [$this->model];
+        } else {
+            $retItem->$with = array_merge($retItem->$with, [$this->model]);
+        }
         return $retItem;
     }
 }

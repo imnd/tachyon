@@ -1,9 +1,11 @@
 <?php
 namespace tachyon;
 
+use ErrorException;
+
 /**
  * Класс инкапсулирующий конфигурацию
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -13,17 +15,19 @@ class Config
      * Все опции
      * @var array
      */
-    private $_options;
+    private array $_options;
     /**
      * Путь к папке файлу настроек
      * @var string
      */
-    private $_filePath = '../../app/config/main.php';
+    private string $_filePath = '../../app/config/main.php';
 
     /**
-     * @param string $fileName
+     * @param string $mode
+     *
+     * @throws ErrorException
      */
-    public function __construct($mode = null)
+    public function __construct(string $mode = null)
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         // все опции
@@ -35,7 +39,7 @@ class Config
         // read .env file
         $envFileName = ($this->_options['mode']==='test') ? '.env-test' : '.env';
         if (!$envFile = file("$basePath/../../$envFileName")) {
-            throw new \ErrorException("File $envFile not found");
+            throw new ErrorException("File $envFile not found");
         }
         foreach ($envFile as $string) {
             if ("\n"===$string || "\r\n"===$string) {
@@ -54,15 +58,16 @@ class Config
                 }
                 $key1 = substr($key, $point+1);
                 $this->_options[$key0][$key1] = $val;
-            } else
+            } else {
                 $this->_options[$key] = $val;
+            }
         }
     }
 
     /**
      * Извлечение значения по ключу
      * @param string $optionName
-     * 
+     *
      * @return mixed
      */
     public function get($optionName)

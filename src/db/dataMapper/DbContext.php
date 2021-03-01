@@ -1,33 +1,34 @@
 <?php
+
 namespace tachyon\db\dataMapper;
 
-use tachyon\db\dataMapper\Persistence;
+use tachyon\exceptions\DBALException;
 
 /**
  * Реализация Unit of work.
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
 class DbContext
 {
     /**
-     * @var \tachyon\db\dataMapper\Persistence
+     * @var Persistence
      */
-    protected $persistence;
+    protected Persistence $persistence;
 
     /**
      * @var array $newEntities
      */
-    private $newEntities = array();
+    private array $newEntities = [];
     /**
      * @var array $dirtyEntities
      */
-    private $dirtyEntities = array();
+    private $dirtyEntities = [];
     /**
      * @var array $deletedEntities
      */
-    private $deletedEntities = array();
+    private $deletedEntities = [];
 
     public function __construct(Persistence $persistence)
     {
@@ -37,22 +38,24 @@ class DbContext
 
     /**
      * Помечает сущность как новую.
-     * 
+     *
      * @param Entity $entity
+     *
      * @return void
      */
-    public function registerNew(Entity $entity)
+    public function registerNew(Entity $entity): void
     {
         $this->newEntities[spl_object_hash($entity)] = $entity;
     }
 
     /**
      * Помечает сущность как измененную.
-     * 
+     *
      * @param Entity $entity
+     *
      * @return void
      */
-    public function registerDirty(Entity $entity)
+    public function registerDirty(Entity $entity): void
     {
         if ($this->isNew($entity)) {
             return;
@@ -62,11 +65,12 @@ class DbContext
 
     /**
      * Помечает сущность на удаление.
-     * 
+     *
      * @param Entity $entity
+     *
      * @return void
      */
-    public function registerDeleted(Entity $entity)
+    public function registerDeleted(Entity $entity): void
     {
         if ($this->isNew($entity)) {
             return;
@@ -76,35 +80,40 @@ class DbContext
 
     /**
      * @param Entity $entity
+     *
      * @return bool
      */
-    public function isNew(Entity $entity)
+    public function isNew(Entity $entity): bool
     {
         return isset($this->newEntities[spl_object_hash($entity)]);
     }
 
     /**
      * @param Entity $entity
+     *
      * @return bool
      */
-    public function isDirty(Entity $entity)
+    public function isDirty(Entity $entity): bool
     {
         return isset($this->dirtyEntities[spl_object_hash($entity)]);
     }
 
     /**
      * @param Entity $entity
+     *
      * @return bool
      */
-    public function isDeleted(Entity $entity)
+    public function isDeleted(Entity $entity): bool
     {
         return isset($this->deletedEntities[spl_object_hash($entity)]);
     }
 
     /**
      * Сливаем в БД
+     *
+     * @throws DBALException
      */
-    public function commit()
+    public function commit(): bool
     {
         if (
                !empty($this->newEntities)
@@ -118,25 +127,36 @@ class DbContext
         foreach ($this->dirtyEntities as $entity) {
             $success = $success && $this
                 ->persistence
-                ->updateByPk($entity->getPk(), $entity->getAttributes(), $entity->getTableName());
+                ->updateByPk(
+                    $entity->getPk(),
+                    $entity->getAttributes(),
+                    $entity->getTableName()
+                );
         }
         // Удаляет сущность из хранилища
         foreach ($this->deletedEntities as $entity) {
             $success = $success && $this
                 ->persistence
-                ->deleteByPk($entity->getPk(), $entity->getTableName());
+                ->deleteByPk(
+                    $entity->getPk(),
+                    $entity->getTableName()
+                );
         }
         // Вставляет в хранилище новую сущность
         foreach ($this->newEntities as &$entity) {
             if (!$pk = $this
                 ->persistence
-                ->insert($entity->getAttributes(), $entity->getTableName())) {
+                ->insert(
+                    $entity->getAttributes(),
+                    $entity->getTableName()
+                )
+            ) {
                 $success = false;
             }
             $entity->setPk($pk);
         }
-        $this->newEntities = $this->dirtyEntities = $this->deletedEntities = array();
-
+        unset($entity);
+        $this->newEntities = $this->dirtyEntities = $this->deletedEntities = [];
         $this->persistence->endTransaction();
 
         return $success;

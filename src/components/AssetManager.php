@@ -3,7 +3,7 @@ namespace tachyon\components;
 
 /**
  * Работа со скриптами и стилями
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -138,7 +138,9 @@ class AssetManager
         foreach ($publicPathArr as $subPath) {
             $path .= "/$subPath";
             if (!is_dir($path)) {
-                mkdir($path);
+                if (!mkdir($path) && !is_dir($path)) {
+                    throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
+                }
             }
         }
         $fileName = "$path/$name.$ext";
@@ -154,14 +156,14 @@ class AssetManager
         $publicPath .= "/$dirName";
         $sourceDir = dir($sourcePath);
         while ($fileName = $sourceDir->read()) {
-            if ($fileName{0} != '.') {
+            if ($fileName[0] != '.') {
                 $pathinfo = pathinfo($fileName);
                 $name = $pathinfo['filename'];
                 $ext = $pathinfo['extension'];
                 $text = $this->_readFile($name, $ext, $sourcePath);
                 $this->_writeFile($name, $ext, $text, $publicPath);
             }
-        } 
+        }
         $sourceDir->close();
     }
 
@@ -179,8 +181,8 @@ class AssetManager
                 continue;
             }
             $spriteName = md5($spriteName);
-            if (!is_dir($publicPath)) {
-                mkdir($publicPath);
+            if (!mkdir($publicPath) && !is_dir($publicPath)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $publicPath));
             }
             if (!is_file($filePath = "$publicPath/$spriteName.$ext")) {
                 file_put_contents($filePath, $text);

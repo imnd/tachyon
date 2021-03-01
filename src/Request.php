@@ -1,75 +1,80 @@
 <?php
+
 namespace tachyon;
 
 class Request
 {
-    private static $parameters = [];
+    /**
+     * @var array
+     */
+    private static array $parameters = [];
 
     /**
-     * @param $name
-     * @param $val
-     * 
+     * @param string $name
+     * @param mixed  $val
+     *
      * @return void
      */
-    public static function set($name, $val)
+    public static function set(string $name, $val): void
     {
         if (is_null($val)) {
             return;
         }
-        if ($name!=='files') {
+        if ($name !== 'files') {
             $val = self::_filter($val);
         }
         self::$parameters[$name] = $val;
     }
 
     /**
-     * @param $name
-     * @param $val
-     * 
+     * @param string $name
+     * @param        $val
+     *
      * @return void
      */
-    public static function add($name, $val)
+    public static function add(string $name, $val): void
     {
-        if ($name!=='files') {
+        if ($name !== 'files') {
             $val = self::_filter($val);
         }
         self::$parameters[$name] = array_merge(self::$parameters[$name], $val);
     }
 
     /**
-     * @param $name
-     * 
+     * @param string $name
+     *
      * @return mixed
      */
-    public static function get($name)
+    public static function get(string $name)
     {
         return self::$parameters[$name] ?? null;
     }
 
     /**
      * Страница, с которой редиректились
-     * 
+     *
      * @return string
      */
-    public static function getReferer()
+    public static function getReferer(): string
     {
         return $_COOKIE['referer'] ?? '/';
     }
 
     /**
      * Запоминаем страницу, с которой редиректимся
-     * 
+     *
      * @return void
      */
-    public static function setReferer()
+    public static function setReferer(): void
     {
         setcookie('referer', $_SERVER['REQUEST_URI'], 0, '/');
     }
 
     /**
      * Шорткат
-     * 
+     *
      * @param $queryType string
+     *
      * @return array
      */
     public static function getQuery(string $queryType = null): array
@@ -82,8 +87,9 @@ class Request
 
     /**
      * Шорткат для $_GET
-     * 
-     * @param $index string
+     *
+     * @param string|null $key
+     *
      * @return mixed
      */
     public static function getGet(string $key = null)
@@ -96,8 +102,9 @@ class Request
 
     /**
      * Шорткат для $_POST
-     * 
-     * @param $index string
+     *
+     * @param string|null $key
+     *
      * @return mixed
      */
     public static function getPost(string $key = null)
@@ -118,18 +125,20 @@ class Request
 
     /**
      * Разбирает строку запроса
-     * 
+     *
      * @return string
      */
-    public static function parseUri()
+    public static function parseUri(): string
     {
         $uri = $_SERVER['REQUEST_URI'];
         $path = parse_url($uri)['path'];
-        if (substr($path, 0, 1)==='/' && $path!=='/') {
-            $path = substr($path, 1 - strlen($path));
-        }
-        if (substr($path, -1)==='/' && $path!=='/') {
-            $path = substr($path, 0, -1);
+        if ($path !== '/') {
+            if (strpos($path, '/') === 0) {
+                $path = substr($path, 1 - strlen($path));
+            }
+            if (substr($path, -1) === '/') {
+                $path = substr($path, 0, -1);
+            }
         }
         self::set('path', $path);
 
@@ -141,21 +150,22 @@ class Request
      */
     public static function isPost(): bool
     {
-        return $_SERVER['REQUEST_METHOD']==='POST';
+        return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
     /**
      * Защита от XSS и SQL injection
-     * 
+     *
      * @param mixed $data
-     * 
+     *
      * @return mixed
      */
     private static function _filter($data)
     {
         if (is_string($data)) {
             return htmlentities($data);
-        } elseif (is_array($data)) {
+        }
+        if (is_array($data)) {
             foreach ($data as &$val) {
                 $val = self::_filter($val);
             }
@@ -166,5 +176,7 @@ class Request
     /**
      * @return void
      */
-    public static function boot() {}
+    public static function boot(): void
+    {
+    }
 }

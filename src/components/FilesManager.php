@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace tachyon\components;
 
 class FilesManager
@@ -10,7 +10,7 @@ class FilesManager
 
     /**
      * Склеивание файла
-     * 
+     *
      * @param array $files имена файлов кусков
      * @param string $name имя файла, в который будет запись
      * @return boolean
@@ -31,7 +31,7 @@ class FilesManager
 
     /**
      * Загрузка части файла на сервер
-     * 
+     *
      * @param string $tmpName
      * @return boolean
      */
@@ -45,7 +45,7 @@ class FilesManager
 
     /**
      * Количество сохраненных кусков. Считаем с нуля
-     * 
+     *
      * @return array
      */
     public function getChunkNames()
@@ -55,7 +55,7 @@ class FilesManager
 
     /**
      * Удаление файла.
-     * 
+     *
      * @param string $fileName
      * @return boolean
      */
@@ -69,7 +69,7 @@ class FilesManager
 
     /**
      * Чтение файла.
-     * 
+     *
      * @param string $fileName
      * @return string
      */
@@ -92,7 +92,7 @@ class FilesManager
 
     /**
      * Запись в файл.
-     * 
+     *
      * @param string $fileName
      * @param string $fileContents
      * @return void
@@ -112,7 +112,7 @@ class FilesManager
 
     /**
      * Массив файлов в папке
-     * 
+     *
      * @param string $dirPath
      * @return array
      */
@@ -121,10 +121,10 @@ class FilesManager
         $fileNames = [];
         $dir = dir($dirPath);
         while ($fileName = $dir->read()) {
-            if ($fileName{0} != '.') {
+            if ($fileName[0] != '.') {
                 $fileNames[] = $fileName;
             };
-        } 
+        }
         $dir->close();
         return $fileNames;
     }

@@ -3,15 +3,15 @@ namespace tachyon\db\dataMapper;
 
 use tachyon\{
     db\dataMapper\DbContext,
+    traits\ClassName,
     validation\ValidationInterface,
     validation\Validator,
-    traits\ClassName
 };
 
 abstract class Entity implements EntityInterface, UnitOfWorkInterface, ValidationInterface
 {
     use ClassName;
-    
+
     /**
      * Имя таблицы БД
      * @var string
@@ -27,6 +27,22 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     protected $validator;
 
     /**
+     * Подписи для поля сущностей
+     * @var array
+     */
+    protected array $attributeCaptions = array();
+    /**
+     * Первичный ключ
+     * @var mixed
+     */
+    protected $pk = 'id';
+    /**
+     * Ошибки валидации
+     * @var array $errors
+     */
+    protected $errors = array();
+
+    /**
      * @return void
      */
     public function __construct(DbContext $dbContext, Validator $validator)
@@ -39,21 +55,6 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
             $this->tableName = strtolower(implode('_', $tableNameArr)) . 's';
         }
     }
-
-    /**
-     * @var array Подписи для поля сущностей
-     */
-    protected $attributeCaptions = array();
-    /**
-     * Первичный ключ
-     * @var mixed
-     */
-    protected $pk = 'id';
-    /**
-     * Ошибки валидации
-     * @var array $errors
-     */
-    protected $errors = array();
 
     /**
      * @return string
@@ -73,7 +74,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Подпись для поля сущности
-     * 
+     *
      * @param string $attribute имя сущности
      * @return string
      */
@@ -84,9 +85,9 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Извлечение значения аттрибута $attribute
-     * 
-     * @param string $attribute 
-     * @return mixed 
+     *
+     * @param string $attribute
+     * @return mixed
      */
     public function getAttribute($attribute)
     {
@@ -99,9 +100,9 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * Присваивание значения $value аттрибуту $attribute
      * При этом сущность не помечается как измененная.
-     * 
-     * @param mixed $attribute 
-     * @param mixed $value 
+     *
+     * @param mixed $attribute
+     * @param mixed $value
      */
     public function setAttribute($attribute, $value = null)
     {
@@ -123,7 +124,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Имя поля первичного ключа
-     * 
+     *
      * @return string
      */
     public function getPkName(): string
@@ -133,7 +134,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Значение первичного ключа
-     * 
+     *
      * @return mixed
      */
     public function getPk()
@@ -143,7 +144,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Установка значения первичного ключа
-     * 
+     *
      * @return mixed
      */
     public function setPk($pk)
@@ -219,7 +220,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Возвращает список правил валидации
-     * 
+     *
      * @return array
      */
     public function rules(): array
@@ -229,8 +230,8 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Валидация полей сущности
-     * 
-     * @param $attributes array массив полей
+     *
+     * @param  array $attributesмассив полей
      * @return boolean
      */
     public function validate(array $attributes = null): bool
@@ -239,6 +240,10 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         return empty($this->errors);
     }
 
+    /**
+     * @param string $fieldName
+     * @return array
+     */
     public function getRules(string $fieldName): array
     {
         return $this->validator->getRules($this, $fieldName);
@@ -246,7 +251,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * добавляет ошибку к списку ошибок
-     * 
+     *
      * @param string $fieldName
      * @param string $message
      * @return void
@@ -258,7 +263,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Сообщение об ошибках
-     * 
+     *
      * @return array
      */
     public function getErrors(): array
@@ -268,7 +273,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Сообщение об ошибках
-     * 
+     *
      * @return array
      */
     public function getErrorsSummary(): string

@@ -5,14 +5,12 @@ use
     ReflectionClass,
     // exceptions
     Error,
-    ErrorException,
     ReflectionException,
     BadMethodCallException,
     tachyon\exceptions\ContainerException,
     tachyon\exceptions\HttpException,
     // dependencies
     tachyon\dic\Container,
-    app\ServiceContainer,
     tachyon\cache\Output as OutputCache,
     tachyon\components\Message
 ;
@@ -28,23 +26,23 @@ final class Router
     /**
      * @var Config $config
      */
-    private $config;
+    private Config $config;
     /**
      * @var OutputCache $cache
      */
-    private $cache;
+    private OutputCache $cache;
     /**
-     * @var \tachyon\components\Message $msg
+     * @var Message $msg
      */
-    private $msg;
+    private Message $msg;
     /**
      * @var View $view
      */
-    private $view;
+    private View $view;
     /**
      * @var Container $container
      */
-    private $container;
+    private Container $container;
     /**
      * @var array $routes
      */
@@ -62,7 +60,7 @@ final class Router
         OutputCache $cache,
         Message $msg,
         View $view,
-        ServiceContainer $container
+        Container $container
     )
     {
         $this->config    = $config;
@@ -80,7 +78,7 @@ final class Router
      * @throws ContainerException
      * @throws ReflectionException
      */
-    public function dispatch()
+    public function dispatch(): void
     {
         // кеширование
         $this->cache->start($_SERVER['REQUEST_URI']);
@@ -119,9 +117,10 @@ final class Router
      * Extract controller and action names from conf route
      *
      * @param string $path
-     * @return array
+     *
+     * @return bool
      */
-    private function _parseRoute($path)
+    private function _parseRoute($path): bool
     {
         if (!isset($this->routes[$path])) {
            return false;
@@ -140,26 +139,21 @@ final class Router
      * @param $requestArr array Массив параметров
      * @return string|null
      */
-    private function _getNameFromRequest(array &$requestArr)
+    private function _getNameFromRequest(array &$requestArr): ?string
     {
         if (
-                count($requestArr)===0
+               count($requestArr)===0
             || is_numeric($requestArr[0])
         ) {
-            return;
+            return null;
         }
         return array_shift($requestArr);
     }
 
     /**
      * запускаем контроллер
-     *
-     * @param $requestVars
-     *
-     * @throws ContainerException
-     * @throws ReflectionException
      */
-    private function _startController()
+    private function _startController(): void
     {
         try {
             if (!$controllerClass = Request::get('controller')) {
@@ -202,12 +196,15 @@ final class Router
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
         } catch (HttpException $e) {
             $this->_error($e->getCode(), $e->getMessage());
-        } catch (ReflectionException | ErrorException | Error | ContainerException $e) {
-            $this->_error(HttpException::INTERNAL_SERVER_ERROR, $this->config->get('env')=='prod' ? $this->msg->i18n('Some error occurs') : "
-                Message: {$e->getMessage()}<br/>
-                File: {$e->getFile()}<br/>
-                Line: {$e->getLine()}
-            ");
+        } catch (ReflectionException | Error | ContainerException $e) {
+            $this->_error(
+                HttpException::INTERNAL_SERVER_ERROR,
+                $this->config->get('env')==='prod' ? $this->msg->i18n('Some error occurs') : "
+                    Message: {$e->getMessage()}<br/>
+                    File: {$e->getFile()}<br/>
+                    Line: {$e->getLine()}
+                "
+            );
         }
     }
 
@@ -216,12 +213,11 @@ final class Router
      * Вывод сообщения об ошибке
      *
      * @param integer $code код ошибки
-     * @param string $msg текст ошибки
+     * @param string  $msg текст ошибки
      *
      * @return void
-     * @throws ReflectionException
      */
-    private function _error($code, $msg)
+    private function _error($code, $msg): void
     {
         http_response_code($code);
         header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
@@ -231,15 +227,18 @@ final class Router
             die;
         }
 
-        $controllerName = Request::get('controller');
-        $controllerId = lcfirst(str_replace('Controller', '', (new ReflectionClass($controllerName))->getShortName()));
-        $this->container
-            ->get($controllerName)
-            ->setAction('error')
-            ->setId($controllerId)
-            ->start()
-            ->view('error', compact('code', 'msg'));
-
+        try {
+            $controllerName = Request::get('controller');
+            $controllerId = lcfirst(str_replace('Controller', '', (new ReflectionClass($controllerName))->getShortName()));
+            $this->container
+                ->get($controllerName)
+                ->setAction('error')
+                ->setId($controllerId)
+                ->start()
+                ->view('error', compact('code', 'msg'));
+        } catch (ContainerException | ReflectionException $e) {
+            echo "Error $code: $msg";
+        }
         die;
     }
 }

@@ -9,10 +9,11 @@
         }
     },
     "require": {
-        "php": ">=7.2.10",
+        "php": ">=7.4",
         "ext-gd": "*",
         "ext-dom": "*",
         "ext-xsl": "*",
-        "guzzlehttp/guzzle": "^6.4"
+        "guzzlehttp/guzzle": "^6.4",
+        "ext-zlib": "*"
     }
 }

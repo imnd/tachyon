@@ -26,11 +26,11 @@ abstract class Model implements ValidationInterface
     /**
      * @var Lang $lang
      */
-    protected $lang;
+    protected Lang $lang;
     /**
      * @var Validator $validator
      */
-    protected $validator;
+    protected Validator $validator;
 
     /**
      * @param Lang      $lang

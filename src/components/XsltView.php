@@ -17,15 +17,16 @@ class XsltView extends View
     /**
      * @var DOMDocument $domDocument
      */
-    protected $domDocument;
+    protected DOMDocument $domDocument;
     /**
      * @var XSLTProcessor $xsltProcessor
      */
-    protected $xsltProcessor;
+    protected XSLTProcessor $xsltProcessor;
 
     /**
      * @param DOMDocument   $domDocument
      * @param XSLTProcessor $xsltProcessor
+     * @param array         $params
      */
     public function __construct(
         DOMDocument $domDocument,
@@ -73,24 +74,40 @@ class XsltView extends View
         echo $output;
     }
 
-    private function arrayToXML(array $inpArray, string $rootTag = 'root', string $innerTag = 'element')
+    /**
+     * @param array  $inpArray
+     * @param string $rootTag
+     * @param string $innerTag
+     *
+     * @return string
+     */
+    private function arrayToXML(
+        array $inpArray,
+        string $rootTag = 'root',
+        string $innerTag = 'element'
+    ): string
     {
         $xml = "<$rootTag>";
         foreach ($inpArray as $key => $val) {
             $tag = is_numeric($key) ? $innerTag : $key;
             $xml .= is_array($val) ? $this->arrayToXML($val, $tag) : "<$tag>$val</$tag>";
         }
+
         return "$xml</$rootTag>";
     }
 
     /**
-     * XsltTransform
+     * @param string $xml
+     * @param string $tpl
+     *
+     * @return false|string
      */
     private function _xsltTransform(string $xml, string $tpl)
     {
         $this->domDocument->load("{$this->viewsPath}/$tpl.xsl");
         $this->xsltProcessor->importStylesheet($this->domDocument);
         $this->domDocument->loadXML($xml);
+
         return $this->xsltProcessor->transformToXML($this->domDocument);
     }
 }

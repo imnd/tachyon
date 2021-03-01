@@ -35,7 +35,6 @@
     'Property "tableName" is not set' => 'Не задано свойство "tableName"',
     'Relation "%relation" not declared in class: ' => 'Связь "%relationship" не объявлена в классе: ',
     'Determine the join condition of the table %table' => 'Определите условие присоединения таблицы %table',
-    'The primary key of the related table is not declared.' => 'Не объявлен первичный ключ связанной таблицы.',
 
     // HTTP
     'Action %action allowed only through post request.' => 'Действие %action разрешено только через POST запрос.',

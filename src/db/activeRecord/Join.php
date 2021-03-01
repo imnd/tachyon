@@ -11,39 +11,40 @@ class Join
 {
     use HasOwner;
 
-    public function innerJoin($join, $on, $alias)
+    public function innerJoin($join, $on, $alias): void
     {
         $this->setJoin($join, $on, 'INNER', $alias);
     }
-    
-    public function leftJoin($join, $on, $alias)
+
+    public function leftJoin($join, $on, $alias): void
     {
         $this->setJoin($join, $on, 'LEFT', $alias);
     }
-    
-    public function rightJoin($join, $on, $alias)
+
+    public function rightJoin($join, $on, $alias): void
     {
         $this->setJoin($join, $on, 'RIGHT', $alias);
     }
-    
-    public function outerJoin($join, $on, $alias)
+
+    public function outerJoin($join, $on, $alias): void
     {
         $this->setJoin($join, $on, 'FULL OUTER', $alias);
     }
-    
+
     /**
      * setJoin
      * Устанавливает джойн таблицы
-     * 
+     *
      * @param $join string | array
      *      string - название таблицы
      *      array - название таблицы => алиас
      * @param $on array по каким полям присоединяется пк => фк
      * @param $mode string тип
      * @param $alias string алиас главной таблицы запроса
-     * @return 
+     *
+     * @return Join
      */
-    public function setJoin($join, $on, $mode, $alias)
+    public function setJoin($join, $on, $mode, $alias): Join
     {
         if (is_array($join)) {
             $joinKeys = array_keys($join);
@@ -61,17 +62,15 @@ class Join
     }
 
     /**
-     * @param $join string | array 
+     * @param $join string | array
      * @return string
      */
     public function getRelationName($join)
     {
         if (is_array($join)) {
             $joinKeys = array_keys($join);
-            $relation = $joinKeys[0];
-        } else
-            $relation = $join;
-            
-        return $relation;
+            return $joinKeys[0];
+        }
+        return $join;
     }
 }

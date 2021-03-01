@@ -9,7 +9,7 @@ use tachyon\dic\Container,
 /**
  * Реализует паттерн "фабричный метод"
  * Инстанциирует соответствующий класс DBAL
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -40,6 +40,7 @@ class DbFactory
 
     /**
      * @return Db
+     * @throws DBALException
      */
     public function getDb(): Db
     {

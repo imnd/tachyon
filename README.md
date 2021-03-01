@@ -3,13 +3,13 @@
 **Tiny MVC php framework**
 
 Features:
-- Dependency Injection Container. At initial realisation it used setter methods and xml configuration files, now I changed it for using __constructor() methods and json configuration files. Also it uses controllers actions variables. You can embed dependencies both through class names and through interface names. In this case, the correspondence of interfaces must be specified in file app/config/implementations.php.
+- Dependency Injection Container. At initial realisation it used setter methods and xml configuration files, now I changed it for using __constructor() methods and json configuration files. Also, it uses controllers actions variables. You can embed dependencies both through class names and through interface names. In this case, the correspondence of interfaces must be specified in file app/config/implementations.php.
 - Front Controller with a simple (file system) routing;
 - PDO based DBAL. It works on both MySql and PgSql. Instantiation of the corresponding class occurs using the Factory Method pattern;
 - ORM 
     - Active Record with foreign keys support and special kind of models for sub-queries, which interacts with the database using the Bridge pattern via a DBAL. Related records can be loaded by "greedy" (by one request) or "lazy" way;
     - Data Mapper with Unit of work. 
-- 2 types of simplest (file system) caching for DB and http requests;
+- 2 types of simplest (file system) caching for the DB and http requests;
 - protection against XSS, CSRF assaults and SQL injections;
 - very simple i18n;
 - view layout: 
@@ -17,7 +17,7 @@ Features:
     - XSLT template.
 
 Components:
-- form generator, which picks up the model validation rules and turns them to JS (instead of AJAX-validation for speed sake). Usual server-side validation also exists. It depends on the "scenario" of model using;
+- form generator, which picks up the model validation rules and turns them to JS (instead of AJAX-validation for speed`s sake). Usual server-side validation also exists. It depends on the "scenario" of model using;
 - html tag helper;
 - grid widget;
 - model validator;
@@ -28,9 +28,9 @@ Components:
 - flash messages;
 - component for publishing js and css resource files.
 
-Tere is also JS library. It consists of separated components that can be selectively pluged to the page.  They are all clearified of whitespaces and glued together in one bundle you can serve up to the browser in a single <script> tag. A compressed gzip version is also created to reduce traffic.
+Tere is also JS library. It consists of separated components that can be selectively pluged to the page.  They are all clearified of whitespaces and glued together in one bundle you can serve up to the browser in a single <script> tag. A compressed gzip version also created to reduce traffic.
 
-The code was written in compliance with the PSR-2 standard.
+The code written in compliance with the PSR-2 standard.
 All PHP and JS code, except datepicker is written by me.
 
 

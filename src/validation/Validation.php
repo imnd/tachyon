@@ -2,6 +2,8 @@
 
 namespace tachyon\validation;
 
+use tachyon\exceptions\ValidationException;
+
 /**
  * Трейт валидации
  *
@@ -12,19 +14,21 @@ trait Validation
 {
     /**
      * сценарий валидации
+     *
      * @var string
      */
-    protected $scenario = '';
+    protected string $scenario = '';
     /**
      * ошибки валидации
+     *
      * @var array
      */
-    protected $errors = [];
+    protected array $errors = [];
 
     /**
      * Присваивание аттрибутов модели с учетом правил валидации
      *
-     * @param array $arr
+     * @param array   $arr
      * @param boolean $useModelName
      */
     public function attachAttributes(array $arr, bool $useModelName = false): void
@@ -59,10 +63,10 @@ trait Validation
     /**
      * Валидация полей модели
      *
-     * @param $attrs array массив полей
+     * @param array $attributes массив полей
      *
      * @return boolean
-     * @throws \tachyon\exceptions\ValidationException
+     * @throws ValidationException
      */
     public function validate(array $attributes = null): bool
     {
@@ -70,11 +74,21 @@ trait Validation
         return empty($errors);
     }
 
+    /**
+     * @param string $fieldName
+     *
+     * @return array
+     */
     public function getRules(string $fieldName): array
     {
         return $this->validator->getRules($this, $fieldName);
     }
 
+    /**
+     * @param string $fieldName
+     *
+     * @return bool
+     */
     public function isRequired(string $fieldName): bool
     {
         $rules = $this->rules();
@@ -104,7 +118,7 @@ trait Validation
      *
      * @return null|string
      */
-    public function getError(string $attr)
+    public function getError(string $attr): ?string
     {
         if ($errors = $this->validator->getErrors()) {
             return implode(' ', $errors[$attr] ?? []);
@@ -114,7 +128,7 @@ trait Validation
     /**
      * добавляет ошибку к списку ошибок
      *
-     * @param string $attr
+     * @param string $fieldName
      * @param string $message
      *
      * @return void
@@ -158,6 +172,7 @@ trait Validation
         $validationItems = [];
         $modelName = $this->getClassName();
         $rules = $this->rules();
+        $check = [];
         foreach ($rules as $fieldName => $fieldRules) {
             if (isset($fieldRules['on']) && $fieldRules['on'] !== $this->scenario) {
                 continue;

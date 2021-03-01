@@ -25,59 +25,59 @@ abstract class Db
      *
      * @var PDO
      */
-    protected $connection;
+    protected PDO $connection;
     /**
      * Компонент msg
      *
      * @var Message
      */
-    protected $msg;
+    protected Message $msg;
     /**
      * параметры БД
      *
      * @var array
      */
-    protected $options;
+    protected array $options;
     /**
      * Выводить ли анализ запросов в файл
      *
      * @var boolean
      */
-    protected $explain;
+    protected bool $explain;
     /**
      * поля для выборки/вставки/обновления
      *
      * @var array
      */
-    protected $fields = [];
+    protected array $fields = [];
     /**
      * условия для выборки
      *
      * @var array
      */
-    protected $where = [];
+    protected array $where = [];
     /**
      * @var string
      */
-    protected $join = '';
+    protected string $join = '';
     /**
      * Поле группировки
      *
      * @var string
      */
-    protected $groupBy = '';
+    protected string $groupBy = '';
     /**
      * Поля сортировки
      *
      * @var array
      */
-    protected $orderBy = [];
+    protected array $orderBy = [];
     /**
      * LIMIT
      *
      * @var string
      */
-    protected $limit = '';
+    protected string $limit = '';
 
     /**
      * Путь к файлу где лежит explain.xls
@@ -88,16 +88,15 @@ abstract class Db
 
     /**
      * @param Message $msg
-     * @param array   $config настройки
-     *
-     * @return void
+     * @param Config  $config настройки
+     * @param array   $options
      */
     public function __construct(Message $msg, Config $config, array $options)
     {
         $this->msg         = $msg;
         $this->config      = $config;
         $this->options     = $options;
-        if ($this->explain = ($this->options['explain'] ?? $this->config->get('env')==='debug')) {
+        if ($this->explain = $this->options['explain'] ?? $this->config->get('env')==='debug') {
             $this->explainPath = $this->options['explain_path'] ?? '../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
@@ -111,8 +110,9 @@ abstract class Db
      * Lazy loading
      *
      * @return void
+     * @throws DBALException
      */
-    protected function connect()
+    protected function connect(): void
     {
         if (!is_null($this->connection)) {
             return;
@@ -142,6 +142,7 @@ abstract class Db
      * @param string $tableName
      *
      * @return boolean
+     * @throws DBALException
      */
     abstract public function isTableExists(string $tableName): bool;
 
@@ -153,6 +154,7 @@ abstract class Db
      * @param array  $fields имена полей
      *
      * @return array
+     * @throws DBALException
      */
     public function select(
         string $tblName,
@@ -164,8 +166,9 @@ abstract class Db
         $conditions = $this->prepareConditions($where, 'where');
         $fields = array_merge($fields, $this->fields);
         $fields = $this->quoteFields($fields);
+        $fieldsStr = $fields ? implode(',', $fields) : '*';
         $query = "
-            SELECT $fields
+            SELECT $fieldsStr
             FROM $tblName
             {$this->join}
             {$conditions['clause']}
@@ -197,6 +200,7 @@ abstract class Db
      * @param array  $fields имена полей
      *
      * @return mixed
+     * @throws DBALException
      */
     public function selectOne(string $tblName, array $where = [], array $fields = [])
     {
@@ -210,11 +214,14 @@ abstract class Db
      * @param string $query
      *
      * @return mixed
+     * @throws DBALException
      */
     public function query(string $query)
     {
         $this->connect();
-        $stmt = $this->connection->prepare($query);
+        if (!$stmt = $this->connection->prepare($query)) {
+            throw new DBALException('Error during prepare query.');
+        }
         if (!$this->execute($stmt)) {
             return false;
         }
@@ -223,9 +230,11 @@ abstract class Db
 
     /**
      * Выполняет запрос $query и возвращает результат в виде массива записей
-     * 
+     *
      * @param string $query
+     *
      * @return array
+     * @throws DBALException
      */
     public function queryAll(string $query): array
     {
@@ -237,9 +246,11 @@ abstract class Db
 
     /**
      * Выполняет запрос $query и возвращает одну запись в виде массива
-     * 
+     *
      * @param string $query
+     *
      * @return array
+     * @throws DBALException
      */
     public function queryOne(string $query): array
     {
@@ -255,6 +266,7 @@ abstract class Db
      * @param array  $fieldValues массив: [имена => значения] полей
      *
      * @return mixed
+     * @throws DBALException
      */
     public function insert(string $tblName, array $fieldValues = [])
     {
@@ -263,7 +275,9 @@ abstract class Db
         $conditions = $this->prepareConditions($fieldValues, 'insert');
         $placeholder = $this->getPlaceholder($fieldValues);
         $query = "INSERT INTO `$tblName` ({$conditions['clause']}) VALUES ($placeholder)";
-        $stmt = $this->connection->prepare($query);
+        if (!$stmt = $this->connection->prepare($query)) {
+            throw new DBALException('Error during prepare insert statement.');
+        }
         $this->clearFields();
         if ($this->execute($stmt, $conditions['vals'])) {
             return $this->connection->lastInsertId();
@@ -279,6 +293,7 @@ abstract class Db
      * @param array  $where условие поиска
      *
      * @return boolean
+     * @throws DBALException
      */
     public function update(
         string $tblName,
@@ -291,7 +306,9 @@ abstract class Db
         $updateConditions = $this->prepareConditions($fieldValues, 'update');
         $whereConditions = $this->prepareConditions($where, 'where');
         $query = "UPDATE $tblName {$updateConditions['clause']} {$whereConditions['clause']}";
-        $stmt = $this->connection->prepare($query);
+        if (!$stmt = $this->connection->prepare($query)) {
+            throw new DBALException('Error during prepare update statement.');
+        }
         $this->clearWhere();
         $this->clearFields();
         return $this->execute($stmt, array_merge($updateConditions['vals'], $whereConditions['vals']));
@@ -304,13 +321,16 @@ abstract class Db
      * @param array  $where условие поиска
      *
      * @return boolean
+     * @throws DBALException
      */
     public function delete(string $tblName, array $where = []): bool
     {
         $this->connect();
         $where = array_merge($where, $this->where);
         $whereConditions = $this->prepareConditions($where, 'where');
-        $stmt = $this->connection->prepare("DELETE FROM `$tblName` {$whereConditions['clause']}");
+        if (!$stmt = $this->connection->prepare("DELETE FROM `$tblName` {$whereConditions['clause']}")) {
+            throw new DBALException('Error during prepare delete statement.');
+        }
         $this->clearWhere();
 
         return $this->execute($stmt, $whereConditions['vals']);
@@ -322,6 +342,7 @@ abstract class Db
      * @param string $tblName имя таблицы
      *
      * @return boolean
+     * @throws DBALException
      */
     public function truncate(string $tblName): bool
     {
@@ -332,8 +353,9 @@ abstract class Db
 
     /**
      * Инициирует транзакцию
-     * 
+     *
      * @return void
+     * @throws DBALException
      */
     public function beginTransaction(): void
     {
@@ -343,10 +365,10 @@ abstract class Db
 
     /**
      * Оканчивает транзакцию
-     * 
+     *
      * @return void
      */
-    public function endTransaction()
+    public function endTransaction(): void
     {
         $this->connection->commit();
     }
@@ -355,9 +377,9 @@ abstract class Db
 
     /**
      * Добавляет условие
-     * 
+     *
      * @param array $where условия
-     * 
+     *
      * @return Db
      */
     public function addWhere(array $where = null): Db
@@ -383,7 +405,7 @@ abstract class Db
 
     /**
      * Возвращает условие
-     * 
+     *
      * @return array
      */
     public function getWhere(): array
@@ -393,7 +415,7 @@ abstract class Db
 
     /**
      * Очищает условие
-     * 
+     *
      * @return Db
      */
     protected function clearWhere(): Db
@@ -404,7 +426,9 @@ abstract class Db
 
     /**
      * Добавляет поля для выборки
-     * 
+     *
+     * @param array $fieldNames
+     *
      * @return Db
      */
     public function addFields(array $fieldNames): Db
@@ -415,7 +439,9 @@ abstract class Db
 
     /**
      * Устанавливает поля для выборки
-     * 
+     *
+     * @param array $fieldNames
+     *
      * @return Db
      */
     public function setFields(array $fieldNames): Db
@@ -426,7 +452,7 @@ abstract class Db
 
     /**
      * Возвращает поля для выборки
-     * 
+     *
      * @return array
      */
     public function getFields(): array
@@ -436,7 +462,7 @@ abstract class Db
 
     /**
      * Очищает поля выборки
-     * 
+     *
      * @return Db
      */
     protected function clearFields(): Db
@@ -447,7 +473,7 @@ abstract class Db
 
     /**
      * Устанавливает строку для JOIN
-     * 
+     *
      * @param string $tblName
      * @param string $onCond
      * @param string $joinMode
@@ -461,7 +487,7 @@ abstract class Db
 
     /**
      * Добавляет строку для JOIN
-     * 
+     *
      * @param string $tblName
      * @param string $onCond
      * @param string $joinMode
@@ -486,7 +512,7 @@ abstract class Db
     /**
      * Добавляет в массив orderBy новый элемент
      *
-     * @param string $field
+     * @param string $fieldName
      * @param string $order
      *
      * @return Db
@@ -499,6 +525,9 @@ abstract class Db
 
     /**
      * Устанавливает orderBy
+     *
+     * @param $orderBy
+     *
      * @return Db
      */
     public function setOrderBy($orderBy): Db
@@ -528,16 +557,16 @@ abstract class Db
 
     /**
      * Строка order by cast
-     * 
+     *
      * @param string $colName
-     * 
+     *
      * @return string
      */
     abstract public function orderByCast(string $colName): string;
 
     /**
      * Возвращает форматированную строку ORDER BY
-     * 
+     *
      * @return string
      */
     private function orderByString(): string
@@ -555,13 +584,13 @@ abstract class Db
 
     /**
      * Устанавливает форматированную строку LIMIT
-     * 
-     * @param numeric $limit
-     * @param numeric $offset
-     * 
+     *
+     * @param int $limit
+     * @param int $offset
+     *
      * @return Db
      */
-    public function setLimit($limit, $offset = null): Db
+    public function setLimit(int $limit, int $offset = null): Db
     {
         $this->limit = $limit;
 
@@ -575,7 +604,7 @@ abstract class Db
 
     /**
      * Возвращает limit
-     * 
+     *
      * @return string
      */
     public function getLimit(): string
@@ -585,7 +614,7 @@ abstract class Db
 
     /**
      * Очищает limit
-     * 
+     *
      * @return Db
      */
     protected function clearLimit(): Db
@@ -596,7 +625,9 @@ abstract class Db
 
     /**
      * Устанавливает groupBy
-     * 
+     *
+     * @param string $fieldName
+     *
      * @return Db
      */
     public function setGroupBy(string $fieldName): Db
@@ -607,7 +638,7 @@ abstract class Db
 
     /**
      * Возвращает groupBy
-     * 
+     *
      * @return string
      */
     public function getGroupBy(): string
@@ -617,7 +648,7 @@ abstract class Db
 
     /**
      * Очищает groupBy
-     * 
+     *
      * @return Db
      */
     protected function clearGroupBy(): Db
@@ -628,7 +659,7 @@ abstract class Db
 
     /**
      * Возвращает форматированную строку GROUP BY
-     * 
+     *
      * @return string
      */
     private function groupByString(): string
@@ -641,14 +672,18 @@ abstract class Db
 
     /**
      * Форматирует условия для выборки, вставки или удаления
-     * 
-     * @param array $conditions
+     *
+     * @param array  $conditions
      * @param string $type
      * @param string $operator
-     * 
-     * @return string
+     *
+     * @return array
      */
-    protected function prepareConditions(array $conditions, string $type, string $operator = '='): array
+    protected function prepareConditions(
+        array $conditions,
+        string $type,
+        string $operator = '='
+    ): array
     {
         switch ($type) {
             case 'where':
@@ -657,20 +692,18 @@ abstract class Db
                 return $this->createConditions($conditions, 'SET', "$operator ?", ',');
             case 'insert':
                 return $this->createConditions($conditions, '', '', ',');
-            default:
-                return '';
         }
     }
 
     /**
      * Форматирует условия для выборки, вставки или удаления
-     * 
+     *
      * @param array  $conditions
      * @param string $keyword
      * @param string $operator
      * @param string $glue
-     * 
-     * @return string
+     *
+     * @return array
      */
     protected function createConditions(array $conditions, string $keyword, string $operator, string $glue): array
     {
@@ -680,13 +713,13 @@ abstract class Db
             $clauseArr = [];
             foreach ($conditions as $field => $val) {
                 if (preg_match('/ IN/', $field, $matches) !== 0) {
-                    $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
+                    $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = '(' . implode(',', $val) . ')';
                 } elseif (preg_match('/ LIKE/', $field, $matches) !== 0) {
-                    $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . " ?";
+                    $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = "%$val%";
                 } elseif (preg_match('/<=|<|>=|>/', $field, $matches) !== 0) {
-                    $clauseArr[] = $this->clearifyField($field, $matches[0]) . $matches[0] . ' ?';
+                    $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . ' ?';
                 } else {
                     $clauseArr[] = $this->quoteField($field) . $operator;
                 }
@@ -699,12 +732,12 @@ abstract class Db
 
     /**
      * Очистка поля
-     * 
+     *
      * @param string $field
      * @param string $text
      * @return string
      */
-    protected function clearifyField(string $field, string $text): string
+    protected function clarifyField(string $field, string $text): string
     {
         $field = str_replace($text, '', $field);
         $field = trim($field);
@@ -713,15 +746,12 @@ abstract class Db
 
     /**
      * Подготовка поля
-     * 
+     *
      * @param array $fields
-     * @return string
+     * @return array
      */
-    protected function quoteFields(array $fields): string
+    protected function quoteFields(array $fields): array
     {
-        if (count($fields) == 0) {
-            return '*';
-        }
         foreach ($fields as $key => &$field) {
             if (!is_numeric($key)) {
                 $field = "$key AS $field";
@@ -729,12 +759,12 @@ abstract class Db
                 $field = $this->quoteField($field);
             }
         }
-        return implode(',', $fields);
+        return $fields;
     }
 
     /**
      * Снабжение поля кавычками
-     * 
+     *
      * @param string $field
      * @return string
      */
@@ -758,7 +788,7 @@ abstract class Db
 
     /**
      * Возвращение одного поля из извлеченного массива строк
-     * 
+     *
      * @param array $rows
      * @return mixed
      */
@@ -772,7 +802,7 @@ abstract class Db
 
     /**
      * Подготовка извлеченного массива строк, удаление лишнего
-     * 
+     *
      * @param array $rows
      * @return array
      */
@@ -780,7 +810,7 @@ abstract class Db
     {
         foreach ($rows as &$row) {
             foreach ($row as $key => $value) {
-                if (is_integer($key)) {
+                if (is_int($key)) {
                     unset($row[$key]);
                 }
             }
@@ -790,12 +820,12 @@ abstract class Db
 
     /**
      * Выполнение запроса
-     * 
+     *
      * @param PDOStatemnt $stmt
      * @param array $fields
-     * 
+     *
      * @return boolean
-     * 
+     *
      * @throws DBALException
      */
     protected function execute($stmt, $fields = null): bool

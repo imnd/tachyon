@@ -30,65 +30,65 @@ class View
      *
      * @var Controller $controller
      */
-    protected $controller;
+    protected Controller $controller;
     /**
      * Путь к отображениям
      *
      * @var string $rootViewsPath
      */
-    protected $viewsPath;
+    protected string $viewsPath;
     /**
      * Путь к отображениям
      *
      * @var string $rootViewsPath
      */
-    protected $appViewsPath;
+    protected string $appViewsPath;
     /**
      * Путь к папке лэйаута
      *
      * @var string $layoutPath
      */
-    protected $layoutPath;
+    protected string $layoutPath;
     /**
      * Имя лэйаута
      *
      * @var string $layoutPath
      */
-    protected $layout;
+    protected string $layout;
     /**
      * Заголовок страницы
      *
      * @var string $pageTitle
      */
-    protected $pageTitle;
+    protected string $pageTitle;
 
     /**
      * @var Config $config
      */
-    protected $config;
+    protected Config $config;
     /**
      * @var AssetManager $assetManager
      */
-    protected $assetManager;
+    protected AssetManager $assetManager;
     /**
      * @var Message $msg
      */
-    protected $msg;
+    protected Message $msg;
     /**
      * Компонент построителя html-кода
      *
      * @var Html $html
      */
-    protected $html;
+    protected Html $html;
     /**
      * @var Flash
      */
-    protected $flash;
+    protected Flash $flash;
 
     /**
      * Сохраняем переменные между отрисовкой наследуемых лэйаутов
      */
-    protected $layoutVars = [];
+    protected array $layoutVars = [];
 
     /**
      * @param Config       $config
@@ -149,7 +149,13 @@ class View
         echo $this->_displayLayout($this->display($viewsPath, $vars, true), $vars);
     }
 
-    private function _displayLayout(string $viewContents, array $vars)
+    /**
+     * @param string $viewContents
+     * @param array  $vars
+     *
+     * @return string
+     */
+    private function _displayLayout(string $viewContents, array $vars): string
     {
         $layoutHtml = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
         if (false !== $extendsPos = strpos($layoutHtml, '@extends')) {

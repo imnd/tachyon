@@ -1,24 +1,24 @@
 <?php
 namespace tachyon\components;
 
-use tachyon\Config,
-    tachyon\components\Lang;
+use tachyon\Config;
 
 /**
  * class Message
  * Класс работы с текстовыми сообщениями
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
 class Message
 {
-    private $_messages = array();
+    private array $_messages = [];
 
     /**
      * Инициализация
-     * 
-     * @return void
+     *
+     * @param Config $config
+     * @param Lang   $lang
      */
     public function __construct(Config $config, Lang $lang)
     {
@@ -32,7 +32,7 @@ class Message
      * @param string $path
      * @return void
      */
-    private function loadMessages($path)
+    private function loadMessages(string $path): void
     {
         if (is_file($path)) {
             $this->_messages = array_merge($this->_messages, require($path));
@@ -41,12 +41,12 @@ class Message
 
     /**
      * Перевод текстового сообщения
-     * 
+     *
      * @param string $msg
-     * @param array $vars
+     * @param array  $vars
      * @return string
      */
-    public function i18n($msg, $vars = array())
+    public function i18n(string $msg, $vars = array()): string
     {
         if (!isset($this->_messages[$msg])) {
             return $msg;

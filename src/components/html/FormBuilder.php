@@ -1,17 +1,19 @@
 <?php
+
 namespace tachyon\components\html;
 
-use tachyon\Config,
-    tachyon\components\AssetManager,
-    tachyon\components\html\Html,
-    tachyon\View,
-    tachyon\components\Csrf,
-    tachyon\traits\ClassName
-;
-
+use ReflectionException;
+use tachyon\{
+    Config,
+    View,
+    traits\ClassName,
+};
+use tachyon\components\{
+    AssetManager, Csrf, widgets\Datepicker
+};
 /**
  * Построитель форм
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2010 IMND
  */
@@ -20,32 +22,33 @@ class FormBuilder
     use ClassName;
 
     /**
-     * @var tachyon\components\AssetManager $assetManager
+     * @var AssetManager $assetManager
      */
-    protected $assetManager;
+    protected AssetManager $assetManager;
     /**
      * Компонент построителя html-кода
-     * @var tachyon\components\html\Html $html
+     *
+     * @var Html $html
      */
-    protected $html;
+    protected Html $html;
     /**
-     * @var tachyon\components\Csrf $csrf
+     * @var Csrf $csrf
      */
-    protected $csrf;
+    protected Csrf $csrf;
     /**
-     * @var tachyon\View $view
+     * @var View $view
      */
-    protected $view;
-
+    protected View $view;
     /**
      * включать ли компонент защиты от csrf-атак
      */
-    private $_csrfCheck = false;
+    private $_csrfCheck;
     /**
      * Настройки формы
+     *
      * @var $_options array
      */
-    private $_options = [
+    private array $_options = [
         // сабмитить или посылать ajax-запрос
         'ajax' => false,
         // путь к шаблону
@@ -72,19 +75,21 @@ class FormBuilder
             'en' => [
                 'submitCaption' => 'Submit',
                 'required' => '* required fields',
-            ]
-        ]
+            ],
+        ],
     ];
     /**
      * Счетчик формы
+     *
      * @var integer $_formCnt
      */
-    private $_formCnt = 0;
+    private int $_formCnt = 0;
     /**
      * Список полей типа дэйтпикер
+     *
      * @var array $_dateFieldNames
      */
-    private $_dateFieldNames = array();
+    private array $_dateFieldNames = [];
 
     /**
      * @param Config $config
@@ -93,65 +98,65 @@ class FormBuilder
      * @param Csrf $csrf
      * @param View $view
      */
-    public function __construct(Config $config, AssetManager $assetManager, Html $html, Csrf $csrf, View $view)
-    {
+    public function __construct(
+        Config $config,
+        AssetManager $assetManager,
+        Html $html,
+        Csrf $csrf,
+        View $view
+    ) {
         $this->assetManager = $assetManager;
         $this->html = $html;
         $this->csrf = $csrf;
         $this->view = $view;
-
-        $this->_csrfCheck = $config->get('csrf_check');
+        $this->_csrfCheck = $config->get('csrf_check') ?? false;
         // текстовые
         $this->_options['text'] = $this->_options['text'][$config->get('lang')];
     }
 
     /**
-     * build
      * Отрисовка формы
-     * 
-     * @param $params array 
+     *
+     * @param $params array
      */
-    public function build($params = array())
+    public function build($params = []): void
     {
         // Custom опции
-        $options = isset($params['options']) ? $params['options'] : array();
-        $attrs = $this->_options['attrs'];
+        $options = $params['options'] ?? [];
         $this->_options = array_merge($this->_options, $options);
-
         $this->_options['attrs']['class'] = $this->_options['class'] ?? null;
         $this->_options['attrs']['action'] = $this->_options['action'] ?? '';
         $this->_options['attrs']['method'] = $this->_options['method'] ?? 'GET';
         $this->_options['text']['submitCaption'] = $this->_options['submitCaption'] ?? null;
         $this->_options['final'] = $this->_options['final'] ?? true;
-
         // генерируем для каждой формы уникальный id и уникальный name если он не задан в $options
         $this->_options['attrs']['id'] = $this->_options['attrs']['name'] = $this->_options['defId'] . '_frm_' . $this->_formCnt++;
         // инициализируем путь для отображения
         $this->view->setViewsPath($this->_options['viewsPath']);
-
         $formId = $this->_options['attrs']['id']; // для удобства записи
         $requiredFields = false;
-        $elements = array();
-        $controls = array();
+        $controls = [];
         // если поля формы определяются ч/з модель
         if (!empty($params['model']) && !empty($params['fields'])) {
-            $fieldValues = key_exists('fieldValues', $params) ? $params['fieldValues'] : array();
+            $fieldValues = array_key_exists('fieldValues', $params) ? $params['fieldValues'] : [];
             $model = $params['model'];
             foreach ($params['fields'] as $key => $options) {
                 if (is_numeric($key)) {
                     $field = $options;
-                    if (!$fieldTag = $model->getAttributeType($field))
+                    if (!$fieldTag = $model->getAttributeType($field)) {
                         $fieldTag = 'input';
+                    }
                 } else {
                     $field = $key;
-                    if (is_array($options) && isset($options['listData']))
+                    if (is_array($options) && isset($options['listData'])) {
                         $fieldTag = 'select';
-                    else
+                    } else {
                         $fieldTag = 'input';
+                    }
                 }
                 $attrs = [
                     'name' => $field,
-                    'value' => isset($fieldValues[$field]) ? $fieldValues[$field] : (!is_null($model->$field) ? $model->$field : ''),
+                    'value' => $fieldValues[$field] ?? ($model->$field ?: ''),
                 ];
                 if ($required = $model->isRequired($field)) {
                     $attrs['class'] = 'required';
@@ -159,17 +164,17 @@ class FormBuilder
                 $control = [
                     'label' => $model->getAttributeName($field),
                     'tag' => $fieldTag,
-                    'type' =>is_array($options) && isset($options['type']) ? $options['type'] : '',
+                    'type' => is_array($options) && ($options['type'] ?? ''),
                     'model' => $model,
                     'required' => $required,
                     'attrs' => $attrs,
                 ];
-                if ($fieldTag==='input') {
+                if ($fieldTag === 'input') {
                     $control['attrs']['type'] = 'text';
-                } elseif ($fieldTag==='select') {
-                    $control['options'] = (!empty($options['listData'])) ? $options['listData'] : array();
+                } elseif ($fieldTag === 'select') {
+                    $control['options'] = (!empty($options['listData'])) ? $options['listData'] : [];
                 }
-                if ($control['type']==='date') {
+                if ($control['type'] === 'date') {
                     $this->_dateFieldNames[] = $control['attrs']['name'];
                 }
                 $controls[] = $control;
@@ -182,34 +187,44 @@ class FormBuilder
             // TODO: обработка для select, check и пр.
             foreach ($params['controls'] as &$control) {
                 $control['tag'] = isset($control['tag']) ? $control['tag'] : $this->_options['tagDef'];
-                if (!isset($control['attrs']['type']) && $control['tag']==='input')
+                if (!isset($control['attrs']['type']) && $control['tag'] === 'input') {
                     $control['attrs']['type'] = 'text';
-                if (isset($control['disabled']))
+                }
+                if (isset($control['disabled'])) {
                     $control['attrs']['class'] = 'disabled';
+                }
             }
-            if (!isset($this->_options['labels']) || $this->_options['labels']!=='outer')
-                 foreach ($params['controls'] as &$control) {
-                    if ($control['tag']==='input') {
+            if (!isset($this->_options['labels']) || $this->_options['labels'] !== 'outer') {
+                foreach ($params['controls'] as &$control) {
+                    if ($control['tag'] === 'input') {
                         $ctrlVal = $control['label'];
                         $control['attrs']['value'] = $ctrlVal;
                         // обработчик для подписей в полях (чтобы исчезали)
-                        $control['attrs']['onfocus'] = str_replace('capt_value', $ctrlVal, "if(this.value==='capt_value') this.value=''");
-                        $control['attrs']['onblur'] = str_replace('capt_value', $ctrlVal, "if(this.value=='') this.value='capt_value'");
+                        $control['attrs']['onfocus'] = str_replace(
+                            'capt_value',
+                            $ctrlVal,
+                            "if(this.value==='capt_value') this.value=''"
+                        );
+                        $control['attrs']['onblur'] = str_replace(
+                            'capt_value',
+                            $ctrlVal,
+                            "if(this.value=='') this.value='capt_value'"
+                        );
                     }
                     $control['label'] = '';
                 }
-                
+            }
             $controls = array_merge($controls, $params['controls']);
         }
-        $elements = array();
+        $elements = [];
         // напоминание об обязательных полях
-        if ($requiredFields && !empty($this->_options['notice']))
+        if ($requiredFields && !empty($this->_options['notice'])) {
             $elements[] = [
                 'tag' => 'div',
-                'attrs' => array('class' => 'msg clear'),
-                'contents' => $this->_options['text']['required']
+                'attrs' => ['class' => 'msg clear'],
+                'contents' => $this->_options['text']['required'],
             ];
-
+        }
         $elements = array_merge($elements, compact('controls'));
         // кнопка submit
         $elements['submit'] = [
@@ -218,13 +233,13 @@ class FormBuilder
                 'class' => 'button',
                 'id' => "submit_$formId",
                 'value' => $this->_options['submitCaption'],
-            ]
+            ],
         ];
         $elements['errors'] = [
             'tag' => 'div',
             'attrs' => [
                 'class' => 'error',
-                'id' => 'errors_list'
+                'id' => 'errors_list',
             ],
         ];
         // csrf token
@@ -241,19 +256,24 @@ class FormBuilder
         if ($this->_options['final']) {
             $this->_renderScripts();
         }
-        $this->view->display($this->_options['view'], [
-            'form' => $this,
-            'model' => isset($model) ? $model : null,
-            'elements' => $elements,
-            'attrs' => $this->_options['attrs']
-        ]);
+        $this->view->display(
+            $this->_options['view'],
+            [
+                'form' => $this,
+                'model' => $model ?? null,
+                'elements' => $elements,
+                'attrs' => $this->_options['attrs'],
+            ]
+        );
         // включаем дэйтпикеры
         if (!empty($this->_dateFieldNames)) {
-            $this->view->widget([
-                'class' => 'tachyon\components\widgets\Datepicker',
-                'controller' => $this,
-                'fieldNames' => $this->_dateFieldNames,
-            ]);
+            $this->view->widget(
+                [
+                    'class' => Datepicker::class,
+                    'controller' => $this,
+                    'fieldNames' => $this->_dateFieldNames,
+                ]
+            );
         }
         // включаем скрипт валидации
         if (
@@ -269,14 +289,17 @@ class FormBuilder
                     $formHandler;
                 }
                 return false;
-            };");
+            };"
+            );
         }
     }
 
     /**
      * Выводим скрипты и стили формы
+     *
+     * @throws ReflectionException
      */
-    private function _renderScripts()
+    private function _renderScripts(): void
     {
         $assetsSourcePath = __DIR__ . '/assets';
         $assetsPublicPath = lcfirst($this->getClassName());
@@ -284,10 +307,12 @@ class FormBuilder
             $this->assetManager->coreJs('obj'),
             $this->assetManager->css('style', $assetsPublicPath, $assetsSourcePath),
             // скрипт валидации
-            $this->assetManager->js('validation', $assetsPublicPath, $assetsSourcePath)
-        ;
+            $this->assetManager->js('validation', $assetsPublicPath, $assetsSourcePath);
     }
 
+    /**
+     * @return bool|mixed
+     */
     public function getCsrfCheck()
     {
         return $this->_csrfCheck;
@@ -296,7 +321,7 @@ class FormBuilder
     /**
      * @return Html
      */
-    public function getHtml()
+    public function getHtml(): Html
     {
         return $this->html;
     }

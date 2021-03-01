@@ -1,4 +1,5 @@
 <?php
+
 namespace tachyon\components;
 
 use
@@ -16,13 +17,13 @@ class TestCase extends BaseTestCase
     /**
      * @var Container
      */
-    protected $container;
+    protected Container $container;
     /**
-     * @var \tachyon\Config
+     * @var Config
      */
-    protected $config;
+    protected Config $config;
     /**
-     * @var GuzzleHttp\Client $client
+     * @var HttpClient $client
      */
     protected $httpClient;
 
@@ -32,19 +33,18 @@ class TestCase extends BaseTestCase
     public function __construct($name = null, array $data = [], $dataName = '')
     {
         $this->container = new Container;
-
         $this->config = $this->container->get(Config::class);
-        
         $baseUrl = $this->config->get('base_url');
-        if (substr($baseUrl, -1)!=='/') {
+        if (substr($baseUrl, -1) !== '/') {
             $baseUrl = "$baseUrl/";
         }
-        $this->httpClient = new HttpClient([
-            'base_uri' => $baseUrl,
-            'timeout' => 10,
-            'http_errors' => false,
-        ]);
-
+        $this->httpClient = new HttpClient(
+            [
+                'base_uri' => $baseUrl,
+                'timeout' => 10,
+                'http_errors' => false,
+            ]
+        );
         parent::__construct($name, $data, $dataName);
     }
 }

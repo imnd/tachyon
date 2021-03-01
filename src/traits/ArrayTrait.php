@@ -4,19 +4,24 @@ namespace tachyon\traits;
 /**
  * class ArrayHelper
  * Содержит полезные функции для работы с массивами
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
 trait ArrayTrait
 {
-    public function convertObjToArr($object)
+    /**
+     * @param $object
+     *
+     * @return array
+     */
+    public function convertObjToArr($object): array
     {
         $tmpArr = array();
         $object = (array)$object;
         foreach ($object as $key => $value) {
             if (is_object($value)) {
-                $tmpArr[$key] = self::convertObjToArr($value);    
+                $tmpArr[$key] = self::convertObjToArr($value);
             } elseif (is_array($value)){
                 $tmpArr[$key] = self::convertObjToArr($value);
             } else {
@@ -28,6 +33,11 @@ trait ArrayTrait
 
     /**
      * Суммирует значения, извлекаемые из ассоциативного массива по ключу $key
+     *
+     * @param $array
+     * @param $key
+     *
+     * @return int|mixed
      */
     public function sum($array, $key)
     {
@@ -41,8 +51,13 @@ trait ArrayTrait
     /**
      * Превращает массив ассоциативных массивов в обычный, извлекая из ассоциативных
      * массивов значения по ключу $key
+     *
+     * @param $array
+     * @param $key
+     *
+     * @return array
      */
-    public function flatten($array, $key)
+    public function flatten($array, $key): array
     {
         $result = array();
         if (is_array($key)) {
@@ -66,12 +81,13 @@ trait ArrayTrait
     }
 
     /**
-     * 
+     * @param array $arr
      * @param mixed $from
      * @param mixed $to
+     *
      * @return void
      */
-    public function changeKey(&$arr, $from, $to)
+    public function changeKey(array &$arr, $from, $to): void
     {
         $arr[$to] = $arr[$from];
         unset($arr[$from]);
@@ -79,23 +95,38 @@ trait ArrayTrait
 
     /**
      * Выбирает максимальное значение поля $key массива $array
+     *
+     * @param array $array
+     * @param mixed $key
+     *
+     * @return mixed
      */
-    public function max($array, $key)
+    public function max(array $array, $key)
     {
-        $array = self::flatten($array, $key);
+        $array = $this->flatten($array, $key);
         return max($array);
     }
 
     /**
      * Выбирает минимальное значение поля $key массива $array
+     *
+     * @param $array
+     * @param $key
+     *
+     * @return mixed
      */
     public function min($array, $key)
     {
-        $array = self::flatten($array, $key);
+        $array = $this->flatten($array, $key);
         return min($array);
     }
 
-    public function transposeArray($array)
+    /**
+     * @param $array
+     *
+     * @return array
+     */
+    public function transposeArray($array): array
     {
         $transposed = array();
         foreach ($array as $key => $params) {

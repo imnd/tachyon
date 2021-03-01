@@ -4,7 +4,7 @@ namespace tachyon\db;
 
 /**
  * Трейт отвечающий за генерацию SQL выражений условий выборки
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -46,10 +46,10 @@ trait Terms
      * @return array
      */
     public function lt(
-        array $where,
+        array  $where,
         string $field,
         string $arrKey,
-        bool $precise = false
+        bool   $precise = false
     ): array
     {
         if (!empty($where[$arrKey])) {
@@ -63,6 +63,8 @@ trait Terms
      *
      * @param array  $where
      * @param string $field
+     *
+     * @return array
      */
     public function like(array $where, string $field): array
     {

@@ -2,8 +2,8 @@
 namespace tachyon\dic;
 
 use ReflectionClass,
-    ErrorException,
     tachyon\exceptions\ContainerException;
+use ReflectionException;
 
 /**
  * Dependency Injection Container
@@ -17,37 +17,39 @@ class Container implements ContainerInterface
      * Массив инстанциированных компонентов
      * @var array
      */
-    protected $services = array();
+    protected array $services = [];
+
     /**
      * Конфигурация компонентов и их параметров
      * @var array
      */
-    protected $config = array();
+    protected array $config = [];
+
     /**
      * Сопоставление интерфейсов и их реализаций
      * @var array
      */
-    protected $implementations;
+    protected array $implementations;
 
     public function __construct()
     {
         $this->_loadConfig();
     }
 
-    public function boot()
+    public function boot(): void
     {
     }
 
     /**
      * Загружаем компоненты и параметры компонентов в массив $config
      */
-    private function _loadConfig()
+    private function _loadConfig(): void
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         $elements = include "$basePath/dic/services.php";
         if (
-                file_exists($appConfPath = "$basePath/../../app/config/services.php")
-            and $appElements = include $appConfPath
+               file_exists($appConfPath = "$basePath/../../app/config/services.php")
+            && $appElements = include $appConfPath
         ) {
             $elements = array_merge($elements, $appElements);
         }
@@ -75,10 +77,11 @@ class Container implements ContainerInterface
     /**
      * Создает экземпляр сервиса
      *
-     * @param string $name
-     * @param mixed $owner объект "хозяин" сервиса
-     * @param array $params динамически назначаемые параметры
+     * @param string $className
+     * @param array  $params динамически назначаемые параметры
+     *
      * @return mixed
+     * @throws ContainerException | ReflectionException
      */
     public function get($className, array $params = array())
     {
@@ -94,13 +97,17 @@ class Container implements ContainerInterface
         return $this->resolve($className, $params);
     }
 
-    public function has($name)
+    public function has($id): bool
     {
-        return isset($this->services[$name]);
+        return isset($this->services[$id]);
     }
 
     /**
      * Извлечение реализации интерфейса
+     *
+     * @param $interface
+     *
+     * @return mixed|null
      */
     public function getImplementation($interface)
     {
@@ -110,17 +117,19 @@ class Container implements ContainerInterface
     /**
      * Создает экземпляр сервиса
      *
-     * @param array $config
-     * @param array $params
-     * @return void
+     * @param string $name
+     * @param array  $params
+     *
+     * @return object
      * @throws ContainerException
+     * @throws ReflectionException
      */
     private function resolve(string $name, array $params = array())
     {
         $implementName = $name;
         try {
             $reflection = new ReflectionClass($implementName);
-        } catch (ErrorException $e) {
+        } catch (ReflectionException $e) {
             throw new ContainerException($e->getMessage());
         }
         if ($reflection->isInterface()) {
@@ -142,38 +151,33 @@ class Container implements ContainerInterface
             $variables = array_merge($variables, $parentVariables);
         }
 
-        if (empty($reflection->getConstructor())) {
+        if ($reflection->getConstructor() === null) {
             $params = array();
-        } else {
-            if (!empty($dependencies)) {
-                $params = array_merge($dependencies, $params);
-            }
+        } elseif (!empty($dependencies)) {
+            $params = array_merge($dependencies, $params);
         }
-        try {
-            $service = $reflection->newInstanceArgs($params);
-        } catch (ErrorException $e) {
-            throw new ContainerException($e->getMessage());
-        }
-
+        $service = $reflection->newInstanceArgs($params);
         $this->_setVariables($service, $variables);
 
         return $service;
     }
 
     /**
-     * @param array $params
+     * @param string $className
+     * @param string $methodName
      *
      * @return array
      * @throws ContainerException
+     * @throws ReflectionException
      */
-    public function getDependencies($className, $methodName = null)
+    public function getDependencies(string $className, string $methodName = null): array
     {
         $dependencies = array();
         $reflection = new ReflectionClass($className);
         if (is_null($methodName)) {
             if (
                    !$constructor = $reflection->getConstructor()
-                or $constructor->getDeclaringClass()==$reflection->getParentClass()
+                or $constructor->getDeclaringClass()===$reflection->getParentClass()
             ) {
                 return $dependencies;
             }
@@ -185,15 +189,16 @@ class Container implements ContainerInterface
             $params = $method->getParameters();
         }
         foreach ($params as $param) {
-            if ('params'==$param->getName()) {
+            if ('params'===$param->getName()) {
                 continue;
             }
-            // get the type hinted class
-            if (!is_null($dependency = $param->getClass())) {
-                // get dependency resolved
-                if ($instance = $this->get($dependency->name)) {
-                    $dependencies[] = $instance;
-                }
+            if (
+                   // get the type hinted class
+                   !is_null($dependency = $param->getClass())
+                   // get dependency resolved
+                && $instance = $this->get($dependency->name)
+            ) {
+                $dependencies[] = $instance;
             }
         }
         return array_filter($dependencies);
@@ -205,12 +210,9 @@ class Container implements ContainerInterface
      * @param string $className
      * @return array
      */
-    private function _getVariables($className)
+    private function _getVariables($className): array
     {
-        if (isset($this->config[$className])) {
-            return $this->config[$className];
-        }
-        return array();
+        return $this->config[$className] ?? [];
     }
 
     /**

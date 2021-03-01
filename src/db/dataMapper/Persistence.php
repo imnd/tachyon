@@ -2,8 +2,12 @@
 
 namespace tachyon\db\dataMapper;
 
-use tachyon\db\dbal\DbFactory,
-    tachyon\traits\HasOwner;
+use ErrorException;
+use tachyon\db\dbal\{
+    Db, DbFactory
+};
+use tachyon\traits\HasOwner;
+use tachyon\exceptions\DBALException;
 
 class Persistence
 {
@@ -11,25 +15,31 @@ class Persistence
 
     /**
      * Имя текущей (главной) таблицы запроса
+     * @var string
      */
-    protected $tableName;
+    protected string $tableName;
     /**
      * Алиас текущей (главной) таблицы запроса
+     * @var string
      */
-    protected $tableAlias = 't';
+    protected string $tableAlias = 't';
     /**
      * Поля выборки.
-     * выпилить. переместить в DB
+     * TODO: выпилить. переместить в DB
+     *
+     * @var array
      */
-    protected $select = [];
+    protected array $select = [];
 
     /**
-     * @var \tachyon\db\dbal\Db
+     * @var Db
      */
-    protected $db;
+    protected Db $db;
 
     /**
-     * @return void
+     * @param DbFactory $dbFactory
+     *
+     * @throws DBALException
      */
     public function __construct(DbFactory $dbFactory)
     {
@@ -39,12 +49,20 @@ class Persistence
     /**
      * Находит все записи по условию $where, отсортированные по $sort
      *
-     * @param array $where
-     * @param array $fields
-     * @param array $sort
+     * @param array  $where
+     * @param array  $sortBy
+     * @param array  $fields
      * @param string $tableName
+     *
+     * @return array
+     * @throws DBALException
      */
-    public function findAll(array $where = [], array $sortBy = [], array $fields = [], $tableName = null): array
+    public function findAll(
+        array $where = [],
+        array $sortBy = [],
+        array $fields = [],
+        $tableName = null
+    ): array
     {
         if (!is_null($tableName)) {
             $this->tableName = $tableName;
@@ -59,23 +77,14 @@ class Persistence
     }
 
     /**
-     * Делает запрос $query к БД и извлекает результаты в виде массива.
-     *
-     * @param string $query
-     *
-     * @return array
-     */
-    public function queryAll(string $query)
-    {
-        return $this->db->queryAll($query);
-    }
-
-    /**
      * Находит все записи по условию $where, отсортированные по $sort
      *
-     * @param array $where
-     * @param array $fields
+     * @param array  $where
+     * @param array  $fields
      * @param string $tableName
+     *
+     * @return array|null
+     * @throws DBALException
      */
     public function findOne(array $where = [], array $fields = [], $tableName = null): ?array
     {
@@ -89,7 +98,7 @@ class Persistence
     /**
      * @return void
      */
-    private function _alias()
+    private function _alias(): void
     {
         if (!is_null($this->tableAlias)) {
             $this->tableName .= " AS {$this->tableAlias}";
@@ -99,8 +108,11 @@ class Persistence
     /**
      * Находит запись по первичному ключу
      *
+     * @param mixed  $pk
      * @param string $tableName
-     * return mixed;
+     *
+     * @return mixed
+     * @throws DBALException
      */
     public function findByPk($pk, string $tableName = null)
     {
@@ -118,6 +130,7 @@ class Persistence
      * @param string $tableName
      *
      * @return boolean
+     * @throws DBALException
      */
     public function updateByPk($pk, array $fieldValues, string $tableName = null): bool
     {
@@ -134,8 +147,9 @@ class Persistence
      * @param string $tableName
      *
      * @return boolean
+     * @throws DBALException
      */
-    public function insert(array $fieldValues, string $tableName = null)
+    public function insert(array $fieldValues, string $tableName = null): bool
     {
         if (!is_null($tableName)) {
             $this->tableName = $tableName;
@@ -150,6 +164,7 @@ class Persistence
      * @param string $tableName
      *
      * @return boolean
+     * @throws DBALException
      */
     public function deleteByPk($pk, string $tableName = null): bool
     {
@@ -162,15 +177,17 @@ class Persistence
     /**
      * Truncates table $this->tableName
      *
-     * @return boolean
+     * @return void
+     * @throws DBALException
      */
-    public function clear(): bool
+    public function clear(): void
     {
         $this->db->truncate($this->tableName);
     }
 
     /**
      * @return void
+     * @throws DBALException
      */
     public function beginTransaction(): void
     {
@@ -211,7 +228,10 @@ class Persistence
         if (!in_array($onPrimaryKey, $this->select)) {
             $this->select[] = $onPrimaryKey;
         }
-        $this->db->setJoin("$withTableName AS $withAlias", "$onPrimaryKey = $onForeignKey");
+        $this->db->setJoin(
+            "$withTableName AS $withAlias",
+            "$onPrimaryKey = $onForeignKey"
+        );
         return $this;
     }
 
@@ -244,16 +264,17 @@ class Persistence
     /**
      * Устанавливает поля сортировки.
      *
-     * @param mixed $field
+     * @param mixed  $field
      * @param string $order
      *
      * @return Persistence
+     * @throws ErrorException
      */
     public function orderBy($field, string $order = null): Persistence
     {
         if (is_null($order)) {
             if (!is_array($field)) {
-                throw new \ErrorException('Неправильный формат аргументов в методе Persistence::orderBy()');
+                throw new ErrorException('Неправильный формат аргументов в методе Persistence::orderBy()');
             }
             $order = key($field);
             $field = current($field);
@@ -265,7 +286,7 @@ class Persistence
     /**
      * Устанавливает поля сортировки.
      *
-     * @param string $fields
+     * @param string $fieldName
      *
      * @return Persistence
      */
@@ -291,13 +312,13 @@ class Persistence
     /**
      * Устанавливает поля выборки.
      *
-     * @param array $fields
+     * @param mixed $fields
      *
      * @return Persistence
      */
-    public function select(array $fields): Persistence
+    public function select($fields): Persistence
     {
-        $this->db->setFields($fields);
+        $this->db->setFields((array)$fields);
         return $this;
     }
 

@@ -1,28 +1,30 @@
 <?php
 namespace tachyon\db\activeRecord;
 
-use tachyon\db\activeRecord\Join,
-    tachyon\db\Alias;
+use tachyon\components\Message;
+use tachyon\db\Alias;
 
 /**
  * Класс реализующий связь "многие ко многим" между моделями
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
-class ManytomanyRelation extends Relation
+class ManyToManyRelation extends Relation
 {
     /**
-     * @var \tachyon\db\Alias $Alias
+     * @var Alias $Alias
      */
-    protected $alias;
+    protected Alias $alias;
     /**
-     * @var \tachyon\db\activeRecord\Join $join
+     * @var Join $join
      */
-    protected $join;
+    protected Join $join;
 
-    public function __construct(Alias $alias, Join $join)
+    public function __construct(Message $msg, Alias $alias, Join $join)
     {
+        parent::__construct($msg, $alias);
+
         $this->join = $join;
     }
 
@@ -30,8 +32,8 @@ class ManytomanyRelation extends Relation
      * для алиасинга полей расшивочной таблицы
      */
     const LINK_TBL_SUFF = '_lnk';
-    
-    public function joinWith($owner)
+
+    public function joinWith($owner): void
     {
         $linkParams = $this->params[2];
         $linkModelName = "\\models\\{$linkParams[0]}";
@@ -40,27 +42,36 @@ class ManytomanyRelation extends Relation
         $tableAliases[$linkTableName] = $linkTableAlias;
         $linkRelativeKey = $linkParams[1];
         $linkThisKey = $linkParams[2];
-        $this->join->leftJoin("$linkTableName AS $linkTableAlias", " $linkTableAlias.$linkRelativeKey={$owner->getTableName()}.{$owner->getPkName()}", $this->getTableAlias(), $owner);
-        $this->join->leftJoin("{$this->tableName} AS {$this->tableAlias}", " $linkTableAlias.$linkThisKey={$this->tableAlias}.{$this->pkName}", $this->getTableAlias(), $owner);
+        $this->join->leftJoin(
+            "$linkTableName AS $linkTableAlias",
+            " $linkTableAlias.$linkRelativeKey={$owner->getTableName()}.{$owner->getPkName()}",
+            $this->getTableAlias()
+        );
+        $this->join->leftJoin(
+            "{$this->tableName} AS {$this->tableAlias}",
+            " $linkTableAlias.$linkThisKey={$this->tableAlias}.{$this->pkName}",
+            $this->getTableAlias()
+        );
         if (isset($linkParams[3])) {
             $owner->setSelectFields(array_merge($owner->getSelectFields(), $this->alias->aliasFields($linkParams[3], $linkTableName, self::LINK_TBL_SUFF)));
         }
     }
 
-    /**
-     * убираем суффиксы у ключей
-     */
-    public function trimSuffixes($with)
+    public function trimSuffixes($with = ''): void
     {
         parent::trimSuffixes($with);
-        
+
         $this->values = $this->alias->trimSuffixes($this->values, self::LINK_TBL_SUFF, $with);
     }
-    
+
     /**
      * выбираем значения внешних полей
+     *
+     * @param $itemArray
+     *
+     * @return Relation
      */
-    public function setValues($itemArray)
+    public function setValues($itemArray): Relation
     {
         $relationKeys = array_flip($this->params[3]);
         $relationKeys = $this->alias->appendSuffixToKeys($relationKeys, $this->aliasSuffix);
@@ -76,7 +87,6 @@ class ManytomanyRelation extends Relation
 
     public function attachWithObject($retItem, $with)
     {
-        $retItemWith = $retItem->$with;
         if (is_null($retItem->$with)) {
             $retItem->$with = array($this->model);
         } else {

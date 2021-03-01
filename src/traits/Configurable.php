@@ -4,7 +4,7 @@ namespace tachyon\traits;
 /**
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
- */ 
+ */
 trait Configurable
 {
     /**
@@ -12,9 +12,10 @@ trait Configurable
      * @param array $params
      * @return void
      */
-    public function setVariables(array $params = array())
+    public function setVariables(array $params = array()): void
     {
-        foreach ($params as $param => $value)
+        foreach ($params as $param => $value) {
             $this->$param = $value;
+        }
     }
 }

@@ -1,9 +1,13 @@
 <?php
+
 namespace tachyon\db\dbal;
+
+use Exception;
+use tachyon\exceptions\DBALException;
 
 /**
  * PostgreSQL DBAL
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -24,13 +28,12 @@ class PgSql extends Db
     public function isTableExists(string $tableName): bool
     {
         $this->connect();
-
         $stmt = $this->connection->prepare("SELECT * FROM pg_catalog.pg_tables");
-        $this->execute($stmt, array(str_replace('`', '', $tableName)));
+        $this->execute($stmt, [str_replace('`', '', $tableName)]);
         // если такая таблица существует
         return count($stmt->fetchAll()) > 0;
     }
-    
+
     # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
 
     /**
@@ -41,9 +44,14 @@ class PgSql extends Db
         return "$colName::int";
     }
 
-    protected function prepareField($field)
+    /**
+     * @param $field
+     *
+     * @return string
+     */
+    protected function prepareField($field): string
     {
-        if (preg_match('/[.( ]/', $field)===0) {
+        if (preg_match('/[.( ]/', $field) === 0) {
             $field = trim($field);
         }
         return $field;
@@ -51,12 +59,17 @@ class PgSql extends Db
 
     /**
      * выдает отчет EXPLAIN
+     *
+     * @param      $query
+     * @param      $conditions1
+     * @param null $conditions2
+     *
+     * @throws DBALException
      */
-    protected function explain($query, $conditions1, $conditions2=null)
+    protected function explain($query, $conditions1, $conditions2 = null): void
     {
-        $query = trim(preg_replace('!\s+!', ' ', str_replace(array("\r", "\n"), ' ', $query)));
+        $query = trim(preg_replace('!\s+!', ' ', str_replace(["\r", "\n"], ' ', $query)));
         $output = "query: $query\r\nid\tselect_type\ttable\ttype\tpossible_keys\tkey\tkey_len\tref\trows\tExtra\r\n";
-
         $fields = $conditions1['vals'];
         if (!is_null($conditions2)) {
             $fields = array_merge($fields, $conditions2['vals']);
@@ -68,16 +81,17 @@ class PgSql extends Db
             $rows = $stmt->fetchAll();
             foreach ($rows as $row) {
                 foreach ($row as $key => $value) {
-                    if (is_numeric($key))
+                    if (is_numeric($key)) {
                         $output .= "$value\t";
+                    }
                 }
                 $output .= "\r\n";
             }
             $file = fopen($this->explainPath, "w");
             fwrite($file, $output);
             fclose($file);
-        } catch (\Exception $e) {
-            throw new \tachyon\exceptions\DBALException($e->getMessage());
+        } catch (Exception $e) {
+            throw new DBALException($e->getMessage());
         }
     }
 }

@@ -1,5 +1,6 @@
-<?=$this->assetManager->coreJs("ajax")?>
 <?php
+echo $this->assetManager->coreJs("ajax");
+
 foreach ($buttons as $key => $button) {
     $action = $button['action'];
     if (in_array($action, array('delete'))) {
@@ -10,7 +11,7 @@ foreach ($buttons as $key => $button) {
     }
     if (isset($button['options']['type']) && $button['options']['type']==='ajax') {
         $confirmMsgs = $widget->getConfirmMsgs();
-        $confirmMsg = isset($button['options']['confirmMsg']) ? $button['options']['confirmMsg'] : isset($confirmMsgs[$action]) ? $confirmMsgs[$action] : 'уверены?';
+        $confirmMsg = (isset($button['options']['confirmMsg']) ? $button['options']['confirmMsg'] : isset($confirmMsgs[$action])) ? $confirmMsgs[$action] : 'уверены?';
         foreach ($items as $item) {
         ?>
         <script>
@@ -36,7 +37,7 @@ foreach ($buttons as $key => $button) {
                 return false;
             });
         </script>
-        <?php 
+        <?php
         }
     }
 }

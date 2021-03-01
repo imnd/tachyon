@@ -6,7 +6,7 @@ use ReflectionClass,
 
 /**
  * кеширование
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -21,7 +21,10 @@ abstract class Cache
 
     /**
      * Инициализация
-     * @return void
+     *
+     * @param Config $config
+     *
+     * @throws \ReflectionException
      */
     public function __construct(Config $config)
     {
@@ -50,14 +53,19 @@ abstract class Cache
      */
     abstract public function end($contents = null);
 
+    /**
+     * @param $key
+     *
+     * @return false|mixed|string|void
+     */
     protected function getContents($key)
     {
         $this->setKey($key);
         $this->setCacheFilePath();
         if (file_exists($this->cacheFile)) {
-            $modifTime = filemtime($this->cacheFile);
+            $modifiedAt = filemtime($this->cacheFile);
             $time = time();
-            $age = $time - $modifTime;
+            $age = $time - $modifiedAt;
             if ($this->duration < $age) {
                 return;
             }
@@ -70,18 +78,17 @@ abstract class Cache
             ob_end_clean();
             return $contents;
         }
-        return;
     }
 
-    protected function setKey($key)
+    protected function setKey($key): void
     {
         $this->key = md5($key);
     }
-    
+
     /**
      * @inheritdoc
      */
-    protected function save($contents)
+    protected function save($contents): void
     {
         $this->setCacheFilePath();
         if ($this->serialize) {

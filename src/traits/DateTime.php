@@ -2,7 +2,10 @@
 
 namespace tachyon\traits;
 
+use ReflectionException;
 use tachyon\dic\Container;
+use tachyon\exceptions\ContainerException;
+use tachyon\components\Lang;
 
 /**
  * Трейт аутентификации
@@ -12,13 +15,13 @@ use tachyon\dic\Container;
  */
 trait DateTime
 {
-    private $_months = [
+    private array $_months = [
         'ru' => [
             'short' => [
                 'nom' => ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
                 'gen' => ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
             ],
-            'long'  => [
+            'long' => [
                 'nom' => [
                     'январь',
                     'февраль',
@@ -52,57 +55,76 @@ trait DateTime
     ];
 
     /**
-     * @param $glue string
-     * @param $mode string (long | short)
+     * @param        $date
+     * @param        $glue string
+     * @param string $length
+     * @param string $case
      *
      * @return string
+     * @throws ReflectionException
+     * @throws ContainerException
      */
-    public function convDateToReadable($date, $glue = ' ', $length = 'long', $case = 'gen'): string
-    {
+    public function convDateToReadable(
+        $date,
+        $glue = ' ',
+        $length = 'long',
+        $case = 'gen'
+    ): string {
         if (empty($date)) {
             return '';
         }
         $dateArr = explode('-', $date);
         $dateArr = array_reverse($dateArr);
-        $dateArr[1] = $this->_months[(new Container)->get('\tachyon\components\Lang')->getLanguage()][$length][$case][(int)$dateArr[1] - 1];
+        $dateArr[1] = $this->_months[(new Container)->get(Lang::class)->getLanguage(
+        )][$length][$case][(int)$dateArr[1] - 1];
         return implode($glue, $dateArr) . ' г.';
     }
 
     /**
+     * @param null $date
+     *
      * @return string
      */
-    public function getDay($date = null)
+    public function getDay($date = null): string
     {
         $dateArr = explode('-', $date ?? $this->date);
-
         return $dateArr[2];
     }
 
     /**
+     * @param null   $date
+     * @param string $length
+     * @param string $case
+     *
      * @return string
+     * @throws ContainerException
+     * @throws ReflectionException
      */
-    public function getMonth($date = null, $length='long', $case='gen')
+    public function getMonth($date = null, $length = 'long', $case = 'gen')
     {
         $dateArr = explode('-', $date ?? $this->date);
-
-        return $this->_months[(new Container)->get('\tachyon\components\Lang')->getLanguage()][$length][$case][(int)$dateArr[1] - 1];
+        return $this->_months[
+            (new Container)
+                ->get(Lang::class)
+                ->getLanguage()
+        ][$length][$case][(int)$dateArr[1] - 1];
     }
 
     /**
+     * @param null $date
+     *
      * @return string
      */
-    public function getYear($date = null)
+    public function getYear($date = null): string
     {
         $dateArr = explode('-', $date ?? $this->date);
-
         return $dateArr[0];
     }
 
-    public function timestampToDateTime($timestamp)
+    public function timestampToDateTime($timestamp): string
     {
-        $date = new DateTime;
+        $date = new \DateTime;
         $date->setTimestamp($timestamp);
-
         return $date->format('Y-m-d H:i:s');
     }
 
@@ -111,13 +133,12 @@ trait DateTime
      *
      * @return array
      */
-    public function getYearBorders()
+    public function getYearBorders(): array
     {
         $curYear = date('Y');
-
         return [
             'first' => "$curYear-01-01",
-            'last'  => "$curYear-12-31",
+            'last' => "$curYear-12-31",
         ];
     }
 
@@ -128,7 +149,7 @@ trait DateTime
      *
      * @return array
      */
-    public function setYearBorders(array $conditions = [])
+    public function setYearBorders(array $conditions = []): array
     {
         if (!isset($conditions['dateFrom'])) {
             $conditions['dateFrom'] = $this->getYearBorders()['first'];
@@ -140,8 +161,7 @@ trait DateTime
             $this->gt($conditions, 'date', 'dateFrom'),
             $this->lt($conditions, 'date', 'dateTo')
         );
-        unset($conditions['dateFrom']);
-        unset($conditions['dateTo']);
+        unset($conditions['dateFrom'], $conditions['dateTo']);
 
         return array_merge($where, $conditions);
     }

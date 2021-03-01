@@ -12,7 +12,7 @@ use
 
 /**
  * Базовый класс для всех контроллеров
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -21,15 +21,10 @@ class Controller
     use ClassName;
 
     /**
-     * Язык сайта
-     * @var $language string
-     */
-    protected $language;
-    /**
      * Общий шаблон сайта
      * @var $layout string
      */
-    protected $layout = 'main';
+    protected string $layout = 'main';
     /**
      * id контроллера
      * @var $id string
@@ -168,10 +163,10 @@ class Controller
     /**
      * Отображает файл представления $view
      * передавая ему параметры $vars в виде массива
-     * 
+     *
      * @param $view string файл представления
      * @param $vars array переменные представления
-     * @param $return boolean показывать или возвращать 
+     * @param $return boolean показывать или возвращать
      * @return string
      */
     public function display($view=null, array $vars=array(), $return=false)
@@ -185,9 +180,9 @@ class Controller
     /**
      * Отображает файл представления, передавая ему параметры
      * в виде массива в заданном лэйауте
-     * 
+     *
      * @param $view string
-     * @param $vars array 
+     * @param $vars array
      * @return void
      */
     public function view($view=null, array $vars=array()): void
@@ -202,7 +197,7 @@ class Controller
 
     /**
      * Перенаправляет пользователя на адрес: $path
-     * 
+     *
      * @param $path string
      * @return void
      */
@@ -216,7 +211,7 @@ class Controller
 
     /**
      * Страница, с которой редиректились
-     * 
+     *
      * @return string
      */
     public function getReferer()
@@ -226,7 +221,7 @@ class Controller
 
     /**
      * Запоминаем страницу, с которой редиректимся
-     * 
+     *
      * @return void
      */
     public function setReferer()
@@ -244,7 +239,7 @@ class Controller
 
     /**
      * Шорткат
-     * 
+     *
      * @param $queryType string
      * @return array
      */
@@ -258,7 +253,7 @@ class Controller
 
     /**
      * Шорткат для $_GET
-     * 
+     *
      * @param $index string
      * @return mixed
      */
@@ -272,7 +267,7 @@ class Controller
 
     /**
      * Шорткат для $_POST
-     * 
+     *
      * @param $index string
      * @return mixed
      */

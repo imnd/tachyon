@@ -1,25 +1,24 @@
 <?php
 namespace tachyon\components;
 
-use tachyon\components\Encrypt,
-    tachyon\Config;
+use tachyon\Config;
 
 /**
  * Компонент защиты от CSRF-атак
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
 class Csrf
 {
     /**
-     * @var tachyon\Config $config
+     * @var Config $config
      */
     protected $config;
     /**
-     * @var tachyon\components\Encrypt $encrypt
+     * @var Encrypt $encrypt
      */
-    protected $encrypt;
+    protected Encrypt $encrypt;
 
     public function __construct(Config $config, Encrypt $encrypt)
     {
@@ -27,9 +26,9 @@ class Csrf
         $this->encrypt = $encrypt;
     }
 
-    private $_started = false;
+    private bool $_started = false;
 
-    private function start()
+    private function start(): Csrf
     {
         if (!isset($_SESSION) && !$this->_started) {
             session_start();
@@ -41,10 +40,10 @@ class Csrf
     /**
      * получение уникального id token`а
      * (извлечение из $_SESSION либо генерация случайного)
-     * 
+     *
      * @return string
      */
-    public function getTokenId()
+    public function getTokenId(): string
     {
         $this->start();
         if (!isset($_SESSION['token_id'])) {
@@ -56,24 +55,24 @@ class Csrf
     /**
      * получение значения token`а
      * (извлечение из $_SESSION либо генерация случайного)
-     * 
+     *
      * @return string
      */
-    public function getTokenVal()
+    public function getTokenVal(): string
     {
         $this->start();
         if (!isset($_SESSION['token_value'])) {
             $_SESSION['token_value'] = $this->encrypt->randString();
         }
-        return $_SESSION['token_value']; 
+        return $_SESSION['token_value'];
     }
 
     /**
      * проверка token`ов, передаваемых ч/з запросы
-     * 
+     *
      * @return boolean
      */
-    public function isTokenValid()
+    public function isTokenValid(): bool
     {
         return
                $this->config->get('csrf_check')!==true
@@ -83,11 +82,13 @@ class Csrf
 
     /**
      * проверка token`а
-     * 
+     *
      * @return boolean
      */
-    private function _isValid($var)
+    private function _isValid($var): bool
     {
-        return isset($var[$this->getTokenId()]) && $var[$this->getTokenId()]===$this->getTokenVal();
+        return
+               isset($var[$this->getTokenId()])
+            && $var[$this->getTokenId()]===$this->getTokenVal();
     }
 }

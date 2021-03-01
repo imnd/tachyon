@@ -2,11 +2,8 @@
 namespace tachyon\db\dataMapper;
 
 use Iterator,
-    tachyon\db\dataMapper\Entity,
-    tachyon\db\dataMapper\Persistence,
     tachyon\db\Terms,
-    tachyon\traits\ClassName,
-    tachyon\db\dataMapper\RepositoryInterface
+    tachyon\traits\ClassName
 ;
 
 /**
@@ -28,17 +25,17 @@ abstract class Repository implements RepositoryInterface
      * Имя таблицы БД
      * @var string
      */
-    protected $tableName;
+    protected string $tableName;
     /**
-     * Имя класса сущности
-     * @var string
+     * Класс сущности
+     * @var Entity
      */
-    protected $entity;
+    protected Entity $entity;
     /**
      * Массив сущностей
      * @var array
      */
-    protected $collection = [];
+    protected array $collection = [];
 
     public function __construct(Persistence $persistence)
     {
@@ -63,7 +60,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function create($mark = true): ?Entity
+    public function create($mark = true): Entity
     {
         $entity = clone($this->entity);
         if ($mark) {
@@ -108,7 +105,8 @@ abstract class Repository implements RepositoryInterface
      */
     public function findOneRaw(array $where = array()): ?Entity
     {
-        return $this->persistence
+        return $this
+            ->persistence
             ->from($this->tableName)
             ->findOne($where);
     }

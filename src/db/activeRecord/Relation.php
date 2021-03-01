@@ -1,16 +1,13 @@
 <?php
 namespace tachyon\db\activeRecord;
 
-use tachyon\{
-    components\Message,
-    db\Alias,
-    dic\Container
-};
+use tachyon\{components\Message, db\Alias, dic\Container, exceptions\ContainerException};
+use ReflectionException;
 
 /**
  * class Relation
  * Класс реализующий связи между моделями
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -19,11 +16,11 @@ abstract class Relation
     /**
      * @var Message $msg
      */
-    protected $msg;
+    protected Message $msg;
     /**
      * @var Alias $Alias
      */
-    protected $alias;
+    protected Alias $alias;
 
     protected $tableName;
     protected $fields;
@@ -36,7 +33,17 @@ abstract class Relation
     protected $aliasSuffix;
     protected $linkKey;
     protected $relationKeys;
-    
+
+    /**
+     * Relation constructor.
+     *
+     * @param Message $msg
+     * @param Alias   $alias
+     * @param array   $params
+     *
+     * @throws ReflectionException
+     * @throws ContainerException
+     */
     public function __construct(Message $msg, Alias $alias, array $params = array())
     {
         $this->msg = $msg;
@@ -56,30 +63,33 @@ abstract class Relation
     /**
      * trimSuffixes
      * Убираем суффиксы у ключей
-     * @param $with array
+     *
+     * @param string $with
      */
-    public function trimSuffixes($with='')
+    public function trimSuffixes($with = ''): void
     {
         $this->values = $this->alias->trimSuffixes($this->values, $this->aliasSuffix, $with);
     }
-    
+
     /**
      * attachWithObject
-     * Приделываем $with к соотв. эл-ту массива $retItems
-     * 
-     * @param $retItem array
-     * @param $with array
+     * Приделываем $with к соотв. эл-ту объекта $retItem
+     *
+     * @param mixed  $retItem
+     * @param string $with
      */
     abstract public function attachWithObject($retItem, $with);
 
     /**
      * Формируем условие join
+     *
+     * @param $owner
      */
-    abstract public function joinWith($owner);
+    abstract public function joinWith($owner): void;
 
     # Геттеры и сеттеры
 
-    public function setModelAttrs()
+    public function setModelAttrs(): Relation
     {
         $this->model = $this->get($this->modelName);
         $this->model->setAttributes($this->values);
@@ -91,7 +101,7 @@ abstract class Relation
         return $this->tableName;
     }
 
-    public function setTableName($tableName)
+    public function setTableName($tableName): Relation
     {
         $this->tableName = $tableName;
         return $this;
@@ -102,22 +112,25 @@ abstract class Relation
         return $this->fields;
     }
 
-    public function setFields($fields)
+    public function setFields($fields): Relation
     {
         $this->fields = $fields;
         return $this;
     }
 
-    public function getTableAlias()
+    public function getTableAlias(): string
     {
         return $this->tableAlias;
     }
 
     /**
      * Выбираем значения внешних полей
+     *
      * @param $itemArray array
+     *
+     * @return Relation
      */
-    public function setValues($itemArray)
+    public function setValues($itemArray): Relation
     {
         $this->values = array_intersect_key($itemArray, $this->relationKeys);
         return $this;
@@ -126,10 +139,5 @@ abstract class Relation
     public function getValues()
     {
         return $this->values;
-    }
-
-    public function getDb()
-    {
-        return $this->owner->getDb();
     }
 }
