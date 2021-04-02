@@ -13,6 +13,7 @@ use tachyon\traits\{
     HasOwner,
     HasProperties
 };
+use tachyon\exceptions\ViewException;
 
 /**
  * class View
@@ -60,7 +61,7 @@ class View
      *
      * @var string $pageTitle
      */
-    protected string $pageTitle;
+    protected string $pageTitle = '';
 
     /**
      * @var Config $config
@@ -192,9 +193,7 @@ class View
     {
         $filePath = "$filePath.php";
         if (!file_exists($filePath)) {
-            $error = "{$this->msg->i18n('No view file found')}: \"$filePath\"\n";
-            echo "<div class='error'>$error</div>";
-            die;
+            throw new ViewException("{$this->msg->i18n('No view file found')}: \"$filePath\"");
         }
         $buffer = file_get_contents($filePath);
         if (false !== strpos($buffer, '{{')) {
