@@ -1,20 +1,28 @@
 <?php
 namespace tachyon;
 
-use
-    ReflectionClass,
-    // exceptions
+// exceptions
+use Exception,
     Error,
     ReflectionException,
-    BadMethodCallException,
-    tachyon\exceptions\ContainerException,
-    tachyon\exceptions\HttpException,
-    // dependencies
+    BadMethodCallException;
+use tachyon\exceptions\{
+    ErrorException,
+    ContainerException,
+    DBALException,
+    FileNotFoundException,
+    HttpException,
+    MapperException,
+    ModelException,
+    NotFoundException,
+    ValidationException,
+    ViewException
+};
+// dependencies
+use
     app\ServiceContainer,
     tachyon\cache\Output as OutputCache,
-    tachyon\components\Message
-;
-use tachyon\exceptions\ViewException;
+    tachyon\components\Message;
 
 /**
  * Front Controller приложения
@@ -80,21 +88,21 @@ final class Router
      */
     public function dispatch(): void
     {
-        // кеширование
+        // start caching
         $this->cache->start($_SERVER['REQUEST_URI']);
 
         Request::set('get', $_GET);
         Request::set('post', $_POST);
         Request::set('files', $_FILES);
 
-        // разбираем запрос
+        // parse the request
         $path = Request::parseUri();
         if (!$this->_parseRoute($path)) {
             $requestArr = explode('/', $path);
-            // Извлекаем имя контроллера и экшна
+            // retrieving the name of the controller and action
             Request::set('controller', 'app\controllers\\' . ucfirst($this->_getNameFromRequest($requestArr)) . 'Controller');
             Request::set('action', $this->_getNameFromRequest($requestArr));
-            // Разбираем массив параметров
+            // parse the array of parameters
             if (!empty($requestArr)) {
                 Request::set('inline', array_shift($requestArr));
                 $requestArr = array_chunk($requestArr, 2);
@@ -108,10 +116,10 @@ final class Router
 
         $this->container->boot();
 
-        // запускаем контроллер
+        // start the controller
         $this->_startController();
 
-        // кеширование
+        // end caching
         $this->cache->end();
     }
 
@@ -167,7 +175,7 @@ final class Router
                 $actionName = $controller->getDefaultAction();
             }
             if (!method_exists($controller, $actionName)) {
-                throw new BadMethodCallException;
+                throw new HttpException($this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')), HttpException::NOT_FOUND);
             }
             $controller
                 ->setAction($actionName)
@@ -197,46 +205,36 @@ final class Router
             ini_set('session.cookie_httponly', 1);
 
             echo ob_get_clean();
-        } catch (BadMethodCallException $e) {
-            $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
-        } catch (HttpException | ViewException $e) {
-            $this->_error($e->getCode(), $e->getMessage());
-        } /*catch (ReflectionException | ContainerException $e) {
-            $this->_error(
-                HttpException::INTERNAL_SERVER_ERROR,
-                $this->config->get('env')==='prod' ? $this->msg->i18n('Some error occurs') : "
-                    Message: {$e->getMessage()}<br/>
-                    File: {$e->getFile()}<br/>
-                    Line: {$e->getLine()}
-                "
-            );
-        } catch (Error $e) {
-            $this->_error(500, $e->getMessage());
-        }*/
-    }
+        } catch (
+              ReflectionException
+            | ErrorException
+            | ContainerException
+            | DBALException
+            | FileNotFoundException
+            | HttpException
+            | MapperException
+            | ModelException
+            | NotFoundException
+            | ValidationException
+            | ViewException
+        $e) {
+            // Обработчик неправильного запроса. Вывод сообщения об ошибке
+            $code = is_a($e, 'tachyon\exceptions\HttpException') ? $e->getCode() : HttpException::INTERNAL_SERVER_ERROR;
 
-    /**
-     * Обработчик неправильного запроса. Вывод сообщения об ошибке
-     *
-     * @param integer $code код ошибки
-     * @param string  $msg  текст ошибки
-     *
-     * @return void
-     */
-    private function _error(int $code, string $msg): void
-    {
-        http_response_code($code);
-        header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
+            http_response_code($code);
+            header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
 
-        /*$backtrace = debug_backtrace();
-        $msg .= "<br/><h3>Call stack:</h3>";
-        foreach ($backtrace as $index => $item) {
-            $msg .= "
-                <br/><br/><b>File:</b> {$item['file']}
-                <br/><b>Line:</b> {$item['line']}
-            ";
-        }*/
-        echo "Error $code: $msg";
-        die;
+            echo "Error $code: {$e->getMessage()}\n";
+
+            $trace = $e->getTrace();
+            echo "<br/><h3>Stack trace:</h3>\n";
+            foreach ($trace as $item) {
+                echo "
+                    <b>File:</b> {$item['file']}<br/>
+                    <b>Line:</b> {$item['line']}<br/>
+                    <b>Function:</b> {$item['function']}<br/><br/>
+                ";
+            }
+        }
     }
 }

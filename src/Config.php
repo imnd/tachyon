@@ -39,7 +39,7 @@ class Config
         // read .env file
         $envFileName = ($this->_options['mode']==='test') ? '.env-test' : '.env';
         if (!$envFile = file("$basePath/../../$envFileName")) {
-            throw new \ErrorException("File $envFile not found");
+            return;
         }
         foreach ($envFile as $string) {
             if ("\n"===$string || "\r\n"===$string) {
