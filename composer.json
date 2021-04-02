@@ -1,5 +1,6 @@
 {
     "name": "imnd/tachyon",
+    "description": "Tiny framework",
     "license": "MIT",
     "type": "project",
     "version": "2.0.0",
@@ -12,7 +13,6 @@
         "php": ">=7.4",
         "ext-gd": "*",
         "ext-dom": "*",
-        "ext-xsl": "*",
         "guzzlehttp/guzzle": "^6.4",
         "psr/container": "^1.0"
     }
