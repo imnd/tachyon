@@ -63,7 +63,7 @@ abstract class ActiveRecord extends Model
     /**
      * Имя таблицы в БД или алиаса
      */
-    protected static $tableName;
+    protected static string $tableName;
     /**
      * Имя поля первичного ключа
      */
@@ -188,6 +188,7 @@ abstract class ActiveRecord extends Model
         if (is_null(static::$tableName)) {
             throw new ModelException($this->msg->i18n('Property "tableName" is not set'));
         }
+
         parent::__construct(...$params);
     }
 
@@ -351,6 +352,7 @@ abstract class ActiveRecord extends Model
         if ($items = $this->findAllRaw($conditions)) {
             return $items[0];
         }
+        return null;
     }
 
     /**
@@ -1261,9 +1263,9 @@ abstract class ActiveRecord extends Model
      *
      * @param string $key
      *
-     * @return array
+     * @return string
      */
-    public function getAttributeName(string $key): array
+    public function getAttributeName(string $key): string
     {
         if (!$this->attributeNames) {
             $this->attributeNames = $this->fields;

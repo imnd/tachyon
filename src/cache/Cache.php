@@ -2,6 +2,7 @@
 namespace tachyon\cache;
 
 use ReflectionClass,
+    ReflectionException,
     tachyon\Config;
 
 /**
@@ -24,7 +25,7 @@ abstract class Cache
      *
      * @param Config $config
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function __construct(Config $config)
     {

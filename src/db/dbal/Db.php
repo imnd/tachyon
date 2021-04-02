@@ -114,9 +114,6 @@ abstract class Db
      */
     protected function connect(): void
     {
-        if (!is_null($this->connection)) {
-            return;
-        }
         try {
             $this->connection = new PDO(
                 $this->getDsn(),

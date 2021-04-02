@@ -3,6 +3,8 @@
  *
  * @constructor
  * @this {datepicker}
+ * @author Андрей Сердюк
+ * @copyright (c) 2020 IMND
  */
 
 const datepicker = (function() {

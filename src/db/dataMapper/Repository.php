@@ -28,13 +28,7 @@ abstract class Repository implements RepositoryInterface
      *
      * @var string
      */
-    protected string $tableName;
-    /**
-     * Имя класса сущности
-     *
-     * @var Entity
-     */
-    protected Entity $entityName;
+    protected string $tableName = '';
     /**
      * Класс сущности
      *
@@ -82,7 +76,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function setSearchConditions(array $conditions = []): Repository
+    public function setSearchConditions(array $conditions = []): self
     {
         $this->where($conditions);
         return $this;
@@ -193,9 +187,9 @@ abstract class Repository implements RepositoryInterface
      *
      * @param array $where
      *
-     * @return Repository
+     * @return self
      */
-    public function where($where): Repository
+    public function where($where): self
     {
         $this->persistence->setWhere($where);
         return $this;
@@ -206,9 +200,9 @@ abstract class Repository implements RepositoryInterface
      *
      * @param array $fields
      *
-     * @return Repository
+     * @return self
      */
-    public function select($fields): Repository
+    public function select($fields): self
     {
         $this->persistence->select((array)$fields);
         return $this;
@@ -219,10 +213,10 @@ abstract class Repository implements RepositoryInterface
      *
      * @param array $attrs
      *
-     * @return Repository
+     * @return self
      * @throws ErrorException
      */
-    public function setSort($attrs): Repository
+    public function setSort($attrs): self
     {
         if (isset($attrs['order'])) {
             $this->addSortBy($attrs['field'], $attrs['order']);

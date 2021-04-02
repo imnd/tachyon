@@ -20,7 +20,7 @@ class Cookie
      * Время жизни куки дней
      * @var integer $duration
      */
-    private int $duration;
+    private int $duration = 1;
     /**
      * Защищенные куки могут быть переданы только через шифрованное соединение
      * @var boolean $secure

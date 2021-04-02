@@ -10,10 +10,11 @@ use
     tachyon\exceptions\ContainerException,
     tachyon\exceptions\HttpException,
     // dependencies
-    tachyon\dic\Container,
+    app\ServiceContainer,
     tachyon\cache\Output as OutputCache,
     tachyon\components\Message
 ;
+use tachyon\exceptions\ViewException;
 
 /**
  * Front Controller приложения
@@ -40,9 +41,9 @@ final class Router
      */
     private View $view;
     /**
-     * @var Container $container
+     * @var ServiceContainer $container
      */
-    private Container $container;
+    private ServiceContainer $container;
     /**
      * @var array $routes
      */
@@ -53,16 +54,15 @@ final class Router
      * @param OutputCache $cache
      * @param Message $msg
      * @param View $view
-     * @param Container $container
+     * @param ServiceContainer $container
      */
     public function __construct(
         Config $config,
         OutputCache $cache,
         Message $msg,
         View $view,
-        Container $container
-    )
-    {
+        ServiceContainer $container
+    ) {
         $this->config    = $config;
         $this->cache     = $cache;
         $this->msg       = $msg;
@@ -105,7 +105,9 @@ final class Router
                 }
             }
         }
+
         $this->container->boot();
+
         // запускаем контроллер
         $this->_startController();
 
@@ -151,7 +153,7 @@ final class Router
     }
 
     /**
-     * запускаем контроллер
+     * Запускаем контроллер
      */
     private function _startController(): void
     {
@@ -179,6 +181,14 @@ final class Router
                 throw new HttpException($this->msg->i18n('Method "beforeAction" returned false'), HttpException::BAD_REQUEST);
             }
 
+            ob_start();
+            $actionVars = $this->container->getDependencies($controllerClass, $actionName);
+            if (!is_null($inline = Request::get('inline'))) {
+                $actionVars[] = $inline;
+            }
+            $controller->$actionName(...$actionVars);
+            $controller->afterAction();
+
             // всё в порядке, отдаём страницу
             header('HTTP/1.1 200 OK');
             // защита от кликджекинга
@@ -186,17 +196,12 @@ final class Router
             // Защита от XSS. HTTP Only
             ini_set('session.cookie_httponly', 1);
 
-            $actionVars = $this->container->getDependencies($controllerClass, $actionName);
-            if (!is_null($inline = Request::get('inline'))) {
-                $actionVars[] = $inline;
-            }
-            $controller->$actionName(...$actionVars);
-            $controller->afterAction();
+            echo ob_get_clean();
         } catch (BadMethodCallException $e) {
             $this->_error(HttpException::NOT_FOUND, $this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')));
-        } catch (HttpException $e) {
+        } catch (HttpException | ViewException $e) {
             $this->_error($e->getCode(), $e->getMessage());
-        } catch (ReflectionException | Error | ContainerException $e) {
+        } /*catch (ReflectionException | ContainerException $e) {
             $this->_error(
                 HttpException::INTERNAL_SERVER_ERROR,
                 $this->config->get('env')==='prod' ? $this->msg->i18n('Some error occurs') : "
@@ -205,40 +210,33 @@ final class Router
                     Line: {$e->getLine()}
                 "
             );
-        }
+        } catch (Error $e) {
+            $this->_error(500, $e->getMessage());
+        }*/
     }
 
     /**
-     * Обработчик неправильного запроса
-     * Вывод сообщения об ошибке
+     * Обработчик неправильного запроса. Вывод сообщения об ошибке
      *
      * @param integer $code код ошибки
-     * @param string  $msg текст ошибки
+     * @param string  $msg  текст ошибки
      *
      * @return void
      */
-    private function _error($code, $msg): void
+    private function _error(int $code, string $msg): void
     {
         http_response_code($code);
         header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
 
-        if (!$this->_parseRoute('error')) {
-            echo "Error $code: $msg";
-            die;
-        }
-
-        try {
-            $controllerName = Request::get('controller');
-            $controllerId = lcfirst(str_replace('Controller', '', (new ReflectionClass($controllerName))->getShortName()));
-            $this->container
-                ->get($controllerName)
-                ->setAction('error')
-                ->setId($controllerId)
-                ->start()
-                ->view('error', compact('code', 'msg'));
-        } catch (ContainerException | ReflectionException $e) {
-            echo "Error $code: $msg";
-        }
+        /*$backtrace = debug_backtrace();
+        $msg .= "<br/><h3>Call stack:</h3>";
+        foreach ($backtrace as $index => $item) {
+            $msg .= "
+                <br/><br/><b>File:</b> {$item['file']}
+                <br/><b>Line:</b> {$item['line']}
+            ";
+        }*/
+        echo "Error $code: $msg";
         die;
     }
 }

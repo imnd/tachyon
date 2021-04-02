@@ -153,6 +153,7 @@ trait RepositoryListTrait
 
     /**
      * @param string $valueField
+     *
      * @return void
      */
     public function setValueField(string $valueField): void
@@ -162,6 +163,7 @@ trait RepositoryListTrait
 
     /**
      * @param string $valsGlue
+     *
      * @return void
      */
     public function setValsGlue(string $valsGlue): void
@@ -171,6 +173,7 @@ trait RepositoryListTrait
 
     /**
      * @param string $pkField
+     *
      * @return void
      */
     public function setPkField(string $pkField): void
@@ -180,6 +183,7 @@ trait RepositoryListTrait
 
     /**
      * @param string $emptyVal
+     *
      * @return void
      */
     public function setEmptyVal(string $emptyVal): void

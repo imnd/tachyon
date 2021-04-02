@@ -2,11 +2,10 @@
 namespace tachyon\dic;
 
 use
-    ErrorException,
-    Psr\Container\ContainerInterface,
+    /*Psr\Container\ContainerInterface,*/
     ReflectionClass,
-    tachyon\exceptions\ContainerException;
-use ReflectionException;
+    tachyon\exceptions\ContainerException,
+    ReflectionException;
 
 /**
  * Dependency Injection Container
@@ -14,7 +13,7 @@ use ReflectionException;
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
-class Container implements ContainerInterface
+class Container /*implements ContainerInterface*/
 {
     /**
      * Массив инстанциированных компонентов
@@ -32,15 +31,16 @@ class Container implements ContainerInterface
      * Сопоставление интерфейсов и их реализаций
      * @var array
      */
-    protected array $implementations;
+    protected array $implementations = [];
 
     public function __construct()
     {
         $this->_loadConfig();
     }
 
-    public function boot(): void
+    public function boot(): Container
     {
+        return $this;
     }
 
     /**
@@ -144,17 +144,24 @@ class Container implements ContainerInterface
         } elseif (!$reflection->isInstantiable()) {
             throw new ContainerException("Class $name is not instantiable.");
         }
+
         $variables = $this->_getVariables($implementName);
         $dependencies = $this->getDependencies($implementName);
         $parents = class_parents($implementName);
+
+        $constructor = $reflection->getConstructor();
         foreach ($parents as $parentClassName) {
+            // случай, когда у потомка нет своего конструктора
+            if ($constructor !== null && $constructor->class === $parentClassName) {
+                continue;
+            }
             $parentDependencies = $this->getDependencies($parentClassName);
             $dependencies = array_merge($dependencies, $parentDependencies);
             $parentVariables = $this->_getVariables($parentClassName);
             $variables = array_merge($variables, $parentVariables);
         }
 
-        if ($reflection->getConstructor() === null) {
+        if ($constructor === null) {
             $params = array();
         } elseif (!empty($dependencies)) {
             $params = array_merge($dependencies, $params);
@@ -185,14 +192,13 @@ class Container implements ContainerInterface
                 return $dependencies;
             }
             $params = $constructor->getParameters();
+        } elseif (!$method = $reflection->getMethod($methodName)) {
+            return $dependencies;
         } else {
-            if (!$method = $reflection->getMethod($methodName)) {
-                return $dependencies;
-            }
             $params = $method->getParameters();
         }
         foreach ($params as $param) {
-            if ('params'===$param->getName()) {
+            if ('params' === $param->getName()) {
                 continue;
             }
             if (
