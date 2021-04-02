@@ -2,6 +2,8 @@
 
 namespace tachyon\components;
 
+use RuntimeException;
+
 /**
  * Класс работы с файлами
  *
@@ -77,7 +79,7 @@ class Upload
         $thumbPath = $this->uploadPath . $this->thumbDir . '/';
         if (!file_exists($thumbPath)) {
             if (!mkdir($thumbPath) && !is_dir($thumbPath)) {
-                throw new \RuntimeException(sprintf('Directory "%s" was not created', $thumbPath));
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $thumbPath));
             }
         }
         $picName = $this->uploadPath . $thumbName;

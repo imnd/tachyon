@@ -2,10 +2,11 @@
 namespace tachyon\components;
 
 use tachyon\Config;
+use RuntimeException;
 
 /**
  * Работа со скриптами и стилями
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -224,7 +225,7 @@ class AssetManager
             $path .= "/$subPath";
             if (!is_dir($path)) {
                 if (!mkdir($path) && !is_dir($path)) {
-                    throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
+                    throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
                 }
             }
         }
@@ -249,14 +250,14 @@ class AssetManager
         $publicPath .= "/$dirName";
         $sourceDir = dir($sourcePath);
         while ($fileName = $sourceDir->read()) {
-            if ($fileName{0} != '.') {
+            if ($fileName[0] != '.') {
                 $pathinfo = pathinfo($fileName);
                 $name = $pathinfo['filename'];
                 $ext = $pathinfo['extension'];
                 $text = $this->_readFile($name, $ext, $sourcePath);
                 $this->_writeFile($name, $ext, $text, $publicPath);
             }
-        } 
+        }
         $sourceDir->close();
     }
 

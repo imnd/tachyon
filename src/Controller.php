@@ -1,4 +1,5 @@
 <?php
+
 namespace tachyon;
 
 use
@@ -7,8 +8,7 @@ use
     tachyon\components\Csrf,
     tachyon\components\Lang,
     tachyon\components\Message,
-    tachyon\traits\ClassName
-;
+    tachyon\traits\ClassName;
 
 /**
  * Базовый класс для всех контроллеров
@@ -22,16 +22,19 @@ class Controller
 
     /**
      * Общий шаблон сайта
+     *
      * @var $layout string
      */
     protected string $layout = 'main';
     /**
      * id контроллера
+     *
      * @var $id string
      */
     protected $id;
     /**
      * id экшна
+     *
      * @var string $action
      */
     protected $action;
@@ -56,14 +59,16 @@ class Controller
     protected $files;
     /**
      * Экшны только для $_POST запросов
+     *
      * @var mixed
      */
-    protected $postActions = array();
+    protected $postActions = [];
     /**
      * Экшны только для аутентифицированных юзеров
+     *
      * @var mixed
      */
-    protected $protectedActions = array();
+    protected $protectedActions = [];
 
     # Компоненты
 
@@ -90,10 +95,10 @@ class Controller
 
     /**
      * @param Message $msg
-     * @param Cookie $cookie
-     * @param Lang $lang
-     * @param View $view
-     * @param Csrf $csrf
+     * @param Cookie  $cookie
+     * @param Lang    $lang
+     * @param View    $view
+     * @param Csrf    $csrf
      *
      * @return void
      */
@@ -110,10 +115,11 @@ class Controller
      * Инициализация
      *
      * @param array $requestVars
+     *
      * @return Controller
      * @throws HttpException
      */
-    public function start(array $requestVars = array())
+    public function start(array $requestVars = [])
     {
         // переменные запроса
         foreach (['get', 'post', 'files'] as $name) {
@@ -121,19 +127,20 @@ class Controller
         }
         // проверка на isRequestPost по списку экшнов
         if (in_array($this->action, $this->postActions) && !$this->isRequestPost()) {
-            throw new HttpException($this->msg->i18n('Action %action allowed only through post request.', ['action' => $this->action]), HttpException::BAD_REQUEST);
+            throw new HttpException(
+                $this->msg->i18n('Action %action allowed only through post request.', ['action' => $this->action]),
+                HttpException::BAD_REQUEST
+            );
         }
         // проверка CSRF токена
         if (!$this->csrf->isTokenValid()) {
             throw new HttpException($this->msg->i18n('Wrong CSRF token.', HttpException::BAD_REQUEST));
         }
-
         $this->view->setController($this);
         // путь к отображениям
         $this->view->setViewsPath("{$this->view->getViewsPath()}/{$this->id}");
         // текущий язык сайта
         $this->language = $this->lang->getLanguage();
-
         return $this;
     }
 
@@ -146,6 +153,7 @@ class Controller
 
     /**
      * Хук, срабатывающий перед запуском экшна
+     *
      * @return boolean
      */
     public function beforeAction()
@@ -167,9 +175,10 @@ class Controller
      * @param $view string файл представления
      * @param $vars array переменные представления
      * @param $return boolean показывать или возвращать
+     *
      * @return string
      */
-    public function display($view=null, array $vars=array(), $return=false)
+    public function display($view = null, array $vars = [], $return = false)
     {
         if (empty($view)) {
             $view = lcfirst($this->action);
@@ -183,12 +192,12 @@ class Controller
      *
      * @param $view string
      * @param $vars array
+     *
      * @return void
      */
-    public function view($view=null, array $vars=array()): void
+    public function view($view = null, array $vars = []): void
     {
         $this->view->setLayout($this->layout);
-
         if (empty($view)) {
             $view = lcfirst($this->action);
         }
@@ -199,6 +208,7 @@ class Controller
      * Перенаправляет пользователя на адрес: $path
      *
      * @param $path string
+     *
      * @return void
      */
     public function redirect($path)
@@ -234,13 +244,14 @@ class Controller
      */
     public function isRequestPost(): bool
     {
-        return $_SERVER['REQUEST_METHOD']==='POST';
+        return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
     /**
      * Шорткат
      *
      * @param $queryType string
+     *
      * @return array
      */
     public function getQuery(string $queryType = null): array
@@ -255,6 +266,7 @@ class Controller
      * Шорткат для $_GET
      *
      * @param $index string
+     *
      * @return mixed
      */
     public function getGet(string $index = null)
@@ -269,6 +281,7 @@ class Controller
      * Шорткат для $_POST
      *
      * @param $index string
+     *
      * @return mixed
      */
     public function getPost(string $index = null)
@@ -305,6 +318,7 @@ class Controller
 
     /**
      * @param int $id
+     *
      * @return string
      */
     public function setId($id)
@@ -315,6 +329,7 @@ class Controller
 
     /**
      * @param string $actionName
+     *
      * @return string
      */
     public function setAction(string $actionName)
@@ -333,6 +348,7 @@ class Controller
 
     /**
      * @param string $layout
+     *
      * @return Controller
      */
     public function setLayout(string $layout)
