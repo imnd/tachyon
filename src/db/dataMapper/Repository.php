@@ -46,7 +46,7 @@ abstract class Repository implements RepositoryInterface
     {
         $this->persistence = $persistence;
         $this->persistence->setOwner($this);
-        if (is_null($this->tableName)) {
+        if (empty($this->tableName)) {
             $tableNameArr = preg_split('/(?=[A-Z])/', str_replace('Repository', '', static::class));
             array_shift($tableNameArr);
             $this->tableName = strtolower(implode('_', $tableNameArr));
