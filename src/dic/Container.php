@@ -49,24 +49,24 @@ class Container /*implements ContainerInterface*/
     private function _loadConfig(): void
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-        $elements = include "$basePath/dic/services.php";
+        $services = include "$basePath/dic/services.php";
         if (
                file_exists($appConfPath = "$basePath/../../app/config/services.php")
             && $appElements = include $appConfPath
         ) {
             $elements = array_merge($elements, $appElements);
         }
-        foreach ($elements as $element) {
-            $class = $element['class'];
+        foreach ($services as $service) {
+            $class = $service['class'];
             if (isset($this->config[$class])) {
                 continue;
             }
             $serviceConf = [
                 'variables' => array(),
-                'singleton' => !empty($element['singleton']),
+                'singleton' => !empty($service['singleton']),
             ];
-            if (isset($element['properties'])) {
-                foreach ($element['properties'] as $property) {
+            if (isset($service['properties'])) {
+                foreach ($service['properties'] as $property) {
                     $propName = $property['name'];
                     if (!empty($property['value'])) {
                         $serviceConf['variables'][$propName] = $property['value'];

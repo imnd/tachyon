@@ -7,5 +7,4 @@ namespace tachyon\exceptions;
  */
 class FileNotFoundException extends \Exception
 {
-
 }
