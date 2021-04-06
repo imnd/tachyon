@@ -1,4 +1,5 @@
 <?php
+
 namespace tachyon\db\dataMapper;
 
 use tachyon\{
@@ -13,6 +14,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Имя таблицы БД
+     *
      * @var string
      */
     protected $tableName;
@@ -27,19 +29,22 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * Подписи для поля сущностей
+     *
      * @var array
      */
-    protected array $attributeCaptions = array();
+    protected array $attributeCaptions = [];
     /**
      * Первичный ключ
+     *
      * @var mixed
      */
     protected $pk = 'id';
     /**
      * Ошибки валидации
+     *
      * @var array $errors
      */
-    protected $errors = array();
+    protected $errors = [];
 
     /**
      * @return void
@@ -75,26 +80,44 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      * Подпись для поля сущности
      *
      * @param string $attribute имя сущности
+     *
      * @return string
      */
     public function getCaption(string $attribute): string
     {
-        return $this->attributeCaptions[$attribute] ?? $attribute;
+        return $this->attributeCaptions[$attribute] ?? $this->attributeCaptions[$this->getAttrName($attribute)] ?? $attribute;
     }
 
     /**
      * Извлечение значения аттрибута $attribute
      *
      * @param string $attribute
+     *
      * @return mixed
      */
     public function getAttribute($attribute)
     {
-        $methodName = 'get' . ucfirst($attribute);
-        if (method_exists($this, $methodName)) {
-            return $this->$methodName();
+        $method = 'get' . ucfirst($this->getAttrName($attribute));
+        if (method_exists($this, $method)) {
+            return $this->$method();
         }
     }
+
+    /**
+     * Переводит из snake_case в camelCase
+     *
+     * @param string $attribute
+     * @return string
+     */
+    private function getAttrName(string $attribute): string
+    {
+        $arr = array_map(
+            static fn($elem) => ucfirst($elem),
+            explode('_', $attribute)
+        );
+        return lcfirst(implode('', $arr));
+    }
+
 
     /**
      * Присваивание значения $value аттрибуту $attribute
@@ -163,6 +186,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * @param Entity $entity
+     *
      * @return bool
      */
     public function isNew()
@@ -172,6 +196,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * @param Entity $entity
+     *
      * @return bool
      */
     public function isDirty(Entity $entity)
@@ -181,6 +206,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * @param Entity $entity
+     *
      * @return bool
      */
     public function isDeleted(Entity $entity)
@@ -224,13 +250,14 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      */
     public function rules(): array
     {
-        return array();
+        return [];
     }
 
     /**
      * Валидация полей сущности
      *
-     * @param  array $attributesмассив полей
+     * @param array $attributesмассив полей
+     *
      * @return boolean
      */
     public function validate(array $attributes = null): bool
@@ -241,6 +268,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     /**
      * @param string $fieldName
+     *
      * @return array
      */
     public function getRules(string $fieldName): array
@@ -253,6 +281,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      *
      * @param string $fieldName
      * @param string $message
+     *
      * @return void
      */
     public function addError(string $fieldName, string $message): void
@@ -273,7 +302,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * Сообщение об ошибках
      *
-     * @return array
+     * @return string
      */
     public function getErrorsSummary(): string
     {

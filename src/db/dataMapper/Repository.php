@@ -22,7 +22,6 @@ abstract class Repository implements RepositoryInterface
      * @var Persistence
      */
     protected Persistence $persistence;
-
     /**
      * Имя таблицы БД
      *

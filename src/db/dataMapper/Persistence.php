@@ -17,7 +17,7 @@ class Persistence
      * Имя текущей (главной) таблицы запроса
      * @var string
      */
-    protected string $tableName;
+    protected ?string $tableName = null;
     /**
      * Алиас текущей (главной) таблицы запроса
      * @var string

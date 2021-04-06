@@ -9,7 +9,7 @@ use tachyon\{
 
 /**
  * Класс содержащий правила валидации
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
  */
@@ -196,12 +196,11 @@ class Validator
 
     /**
      * Валидация полей модели/сущности
-     * 
+     *
      * @param mixed $object
      * @param array $attrs массив полей
      *
      * @return array
-     * 
      * @throws ValidationException
      */
     public function validate($object, array $attrs = null): array

@@ -25,7 +25,7 @@ abstract class Db
      *
      * @var PDO
      */
-    protected PDO $connection;
+    protected ?PDO $connection = null;
     /**
      * Компонент msg
      *
@@ -115,15 +115,17 @@ abstract class Db
     protected function connect(): void
     {
         try {
-            $this->connection = new PDO(
-                $this->getDsn(),
-                $this->options['user'],
-                $this->options['password']
-            );
+            if (is_null($this->connection)) {
+                $this->connection = new PDO(
+                    $this->getDsn(),
+                    $this->options['user'],
+                    $this->options['password']
+                );
+                $this->connection->exec("SET NAMES {$this->options['charset']}");
+            }
         } catch (PDOException $e) {
             throw new DBALException($this->msg->i18n('Unable to connect to database.') . "\n{$e->getMessage()}");
         }
-        $this->connection->exec("SET NAMES {$this->options['charset']}");
     }
 
     /**

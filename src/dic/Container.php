@@ -2,7 +2,7 @@
 namespace tachyon\dic;
 
 use
-    /*Psr\Container\ContainerInterface,*/
+    Psr\Container\ContainerInterface,
     ReflectionClass,
     tachyon\exceptions\ContainerException,
     ReflectionException;
@@ -35,19 +35,7 @@ class Container /*implements ContainerInterface*/
 
     public function __construct()
     {
-        $this->_loadConfig();
-    }
-
-    public function boot(): Container
-    {
-        return $this;
-    }
-
-    /**
-     * Загружаем компоненты и параметры компонентов в массив $config
-     */
-    private function _loadConfig(): void
-    {
+        // Загружаем компоненты и параметры компонентов в массив $config
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         $services = include "$basePath/dic/services.php";
         if (
@@ -77,6 +65,11 @@ class Container /*implements ContainerInterface*/
         }
     }
 
+    public function boot(): Container
+    {
+        return $this;
+    }
+
     /**
      * Создает экземпляр сервиса
      *
@@ -86,10 +79,10 @@ class Container /*implements ContainerInterface*/
      * @return mixed
      * @throws ContainerException | ReflectionException
      */
-    public function get($className, array $params = array())
+    public function get(string $className, array $params = array())
     {
         if (
-                $config = $this->_getVariables($className)
+                $config = $this->getVariables($className)
             and !empty($config['singleton'])
         ) {
             if (!isset($this->services[$className])) {
@@ -108,11 +101,11 @@ class Container /*implements ContainerInterface*/
     /**
      * Извлечение реализации интерфейса
      *
-     * @param $interface
+     * @param string $interface
      *
      * @return mixed|null
      */
-    public function getImplementation($interface)
+    private function getImplementation(string $interface)
     {
         return $this->implementations[$interface] ?? null;
     }
@@ -124,8 +117,7 @@ class Container /*implements ContainerInterface*/
      * @param array  $params
      *
      * @return object
-     * @throws ContainerException
-     * @throws ReflectionException
+     * @throws ContainerException | ReflectionException
      */
     private function resolve(string $name, array $params = array())
     {
@@ -145,7 +137,7 @@ class Container /*implements ContainerInterface*/
             throw new ContainerException("Class $name is not instantiable.");
         }
 
-        $variables = $this->_getVariables($implementName);
+        $variables = $this->getVariables($implementName);
         $dependencies = $this->getDependencies($implementName);
         $parents = class_parents($implementName);
 
@@ -157,7 +149,7 @@ class Container /*implements ContainerInterface*/
             }
             $parentDependencies = $this->getDependencies($parentClassName);
             $dependencies = array_merge($dependencies, $parentDependencies);
-            $parentVariables = $this->_getVariables($parentClassName);
+            $parentVariables = $this->getVariables($parentClassName);
             $variables = array_merge($variables, $parentVariables);
         }
 
@@ -167,7 +159,7 @@ class Container /*implements ContainerInterface*/
             $params = array_merge($dependencies, $params);
         }
         $service = $reflection->newInstanceArgs($params);
-        $this->_setVariables($service, $variables);
+        $this->setVariables($service, $variables);
 
         return $service;
     }
@@ -219,7 +211,7 @@ class Container /*implements ContainerInterface*/
      * @param string $className
      * @return array
      */
-    private function _getVariables($className): array
+    private function getVariables($className): array
     {
         return $this->config[$className] ?? [];
     }
@@ -231,7 +223,7 @@ class Container /*implements ContainerInterface*/
      * @param array $config
      * @return void
      */
-    private function _setVariables($service, array $config): void
+    private function setVariables($service, array $config): void
     {
         if (empty($config)) {
             return;
