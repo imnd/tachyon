@@ -2,10 +2,13 @@
 namespace tachyon;
 
 // exceptions
-use Exception,
+use
+    BadMethodCallException,
+    Exception,
     Error,
-    ReflectionException,
-    BadMethodCallException;
+    PDOException,
+    ReflectionException
+;
 use tachyon\exceptions\{
     ErrorException,
     ContainerException,
@@ -207,6 +210,7 @@ final class Router
             echo ob_get_clean();
         } catch (
               ReflectionException
+            | Error
             | ErrorException
             | ContainerException
             | DBALException
@@ -215,6 +219,7 @@ final class Router
             | MapperException
             | ModelException
             | NotFoundException
+            | PDOException
             | ValidationException
             | ViewException
         $e) {
@@ -227,14 +232,18 @@ final class Router
             echo "Error $code: {$e->getMessage()}\n";
 
             $trace = $e->getTrace();
-            echo "<br/><h3>Stack trace:</h3>\n";
+            echo "<br/><h3>Stack trace:</h3>\n
+            <table>";
             foreach ($trace as $item) {
                 echo "
-                    <b>File:</b> {$item['file']}<br/>
-                    <b>Line:</b> {$item['line']}<br/>
-                    <b>Function:</b> {$item['function']}<br/><br/>
+                <tr>
+                    <td><b>File:</b>&nbsp; {$item['file']}</td>
+                    <td><b>Line:</b>&nbsp; {$item['line']}&nbsp;&nbsp;</td>
+                    <td>" . (isset($item['class']) ? $item['class'] . ':' : '') . "{$item['function']}()</td>
+                </tr>
                 ";
             }
+            echo "</table>";
         }
     }
 }
