@@ -151,6 +151,18 @@ class Validator
     }
 
     /**
+     * @param $model
+     * @param $fieldName
+     */
+    public function in($model, $fieldName): void
+    {
+        if (!$fieldVal = $model->getAttribute($fieldName)) {
+            return;
+        }
+
+    }
+
+    /**
      * @return bool
      */
     public function safe(): bool
@@ -173,8 +185,8 @@ class Validator
     }
 
     /**
-     * @param $object
-     * @param $fieldName
+     * @param mixed $object
+     * @param mixed $fieldName
      *
      * @return array
      */
@@ -185,10 +197,7 @@ class Validator
         foreach ($rules as $key => $rule) {
             $fieldNames = array_map('trim', explode(',', $key));
             if (in_array($fieldName, $fieldNames)) {
-                if (!is_array($rule)) {
-                    $rule = [$rule];
-                }
-                $rulesArray = array_merge($rulesArray, $rule);
+                $rulesArray = array_merge($rulesArray, (array)$rule);
             }
         }
         return $rulesArray;
