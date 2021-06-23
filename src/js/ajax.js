@@ -5,7 +5,7 @@
  * @this {ajax}
  */
 const ajax = (function() {
-    const
+    let
         appendPath = function(path, data) {
             for (let key in data) {
                 path += "&" + key + "=" + data[key];
@@ -41,7 +41,7 @@ const ajax = (function() {
          * @return {void}
          */
         sendRequest = function(options) {
-            const xhr = this.createRequest();
+            const xhr = createRequest();
             if (!xhr) {
                 alert("Браузер не поддерживает AJAX");
                 return;
@@ -57,7 +57,7 @@ const ajax = (function() {
             ;
 
             if (requestType==="GET") {
-                path = this.appendPath(path, data);
+                path = appendPath(path, data);
             } else if (contentType==="multipart/form-data") {
                 const boundary = String(Math.random()).slice(2);
                 contentType += '; boundary=' + boundary;
@@ -65,7 +65,7 @@ const ajax = (function() {
                 delete data.fileName;
                 delete data.fileType;
                 delete data.data;
-                path = this.appendPath(path, data);
+                path = appendPath(path, data);
             } else {
                 sendData = [];
                 for (var key in data) {
@@ -116,7 +116,7 @@ const ajax = (function() {
                 callback = data;
                 data = {};
             }
-            this.sendRequest({
+            sendRequest({
                 path : path,
                 data : data,
                 callback : callback,
@@ -136,7 +136,7 @@ const ajax = (function() {
          * @return {void}
          */
         post : function (path, data, callback, respType, contentType) {
-            this.sendRequest({
+            sendRequest({
                 path : path,
                 data : data,
                 callback : callback,

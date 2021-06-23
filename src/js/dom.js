@@ -6,6 +6,8 @@
  */
 const dom = (function () {
     return {
+        obj: null,
+
         ready: function (a) {
             let b = document;
             let c = "addEventListener";
@@ -37,6 +39,7 @@ const dom = (function () {
             }
             return doc.querySelectorAll(string);
         },
+
         findObj: function (obj, doc) {
             return typeof (obj) === "object" ? obj : this.findById(obj, doc) || this.findByName(obj, doc);
         },
@@ -104,7 +107,7 @@ const dom = (function () {
             if (obj === null || obj === undefined) {
                 return "";
             }
-            if (value === undefined) {
+            if (html === undefined) {
                 return obj.innerHTML
             }
             obj.innerHTML = html;
@@ -137,7 +140,7 @@ const dom = (function () {
                 }
             } else if (obj.value !== undefined) {
                 if (
-                       objType === "text"
+                    objType === "text"
                     || objType === "password"
                     || objType === "hidden"
                     || objType === "select-one"
@@ -149,7 +152,7 @@ const dom = (function () {
                     }
                 }
                 if (
-                       objType === "textarea"
+                    objType === "textarea"
                     || objType === "submit"
                 ) {
                     if (value === undefined) {
@@ -231,7 +234,7 @@ const dom = (function () {
                 obj.selectedIndex = 0;
             } else if (obj.value !== undefined) {
                 if (
-                       objType === "text"
+                    objType === "text"
                     || objType === "password"
                     || objType === "hidden"
                     || objType === "textarea"
