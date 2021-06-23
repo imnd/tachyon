@@ -58,15 +58,13 @@ class PgSql extends Db
     }
 
     /**
-     * выдает отчет EXPLAIN
-     *
-     * @param      $query
-     * @param      $conditions1
-     * @param null $conditions2
-     *
-     * @throws DBALException
+     * @inheritdoc
      */
-    protected function explain($query, $conditions1, $conditions2 = null): void
+    protected function explain(
+        string $query,
+        array  $conditions1,
+        array  $conditions2 = null
+    ): void
     {
         $query = trim(preg_replace('!\s+!', ' ', str_replace(["\r", "\n"], ' ', $query)));
         $output = "query: $query\r\nid\tselect_type\ttable\ttype\tpossible_keys\tkey\tkey_len\tref\trows\tExtra\r\n";

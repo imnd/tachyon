@@ -42,9 +42,13 @@ class MySql extends Db
     }
 
     /**
-     * выдает отчет EXPLAIN
+     * @inheritdoc
      */
-    protected function explain($query, $conditions1, $conditions2 = null): void
+    protected function explain(
+        string $query,
+        array  $conditions1,
+        array  $conditions2 = null
+    ): void
     {
         $query = trim(preg_replace('!\s+!', ' ', str_replace(["\r", "\n"], ' ', $query)));
         $output = "query: $query\r\nid\tselect_type\ttable\ttype\tpossible_keys\tkey\tkey_len\tref\trows\tExtra\r\n";

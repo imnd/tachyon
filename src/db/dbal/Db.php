@@ -4,9 +4,14 @@ namespace tachyon\db\dbal;
 
 use PDO,
     PDOException,
+    PDOStatement,
     tachyon\exceptions\DBALException,
     tachyon\components\Message,
-    tachyon\Config;
+    tachyon\Config
+;
+use tachyon\db\dbal\conditions\{
+    WhereBuilder, UpdateBuilder, InsertBuilder
+};
 
 /**
  * DBAL
@@ -20,6 +25,18 @@ abstract class Db
      * @var Config $config
      */
     protected $config;
+    /**
+     * @var WhereBuilder $whereBuilder
+     */
+    protected $whereBuilder;
+    /**
+     * @var UpdateBuilder $updateBuilder
+     */
+    protected $updateBuilder;
+    /**
+     * @var InsertBuilder $insertBuilder
+     */
+    protected $insertBuilder;
     /**
      * соединение с БД
      *
@@ -91,12 +108,21 @@ abstract class Db
      * @param Config  $config настройки
      * @param array   $options
      */
-    public function __construct(Message $msg, Config $config, array $options)
-    {
-        $this->msg         = $msg;
-        $this->config      = $config;
-        $this->options     = $options;
-        if ($this->explain = $this->options['explain'] ?? $this->config->get('env')==='debug') {
+    public function __construct(
+        Message $msg,
+        Config $config,
+        WhereBuilder $whereBuilder,
+        UpdateBuilder $updateBuilder,
+        InsertBuilder $insertBuilder,
+        array $options
+    ) {
+        $this->msg          = $msg;
+        $this->config       = $config;
+        $this->whereBuilder = $whereBuilder;
+        $this->updateBuilder = $updateBuilder;
+        $this->insertBuilder = $insertBuilder;
+        $this->options      = $options;
+        if ($this->explain  = $this->options['explain'] ?? $this->config->get('env')==='debug') {
             $this->explainPath = $this->options['explain_path'] ?? '../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
@@ -136,6 +162,22 @@ abstract class Db
     abstract protected function getDsn(): string;
 
     /**
+     * Выдает отчет EXPLAIN
+     *
+     * @param string     $query
+     * @param array      $conditions1
+     * @param array|null $conditions2
+     *
+     * @throws DBALException
+     * @return void
+     */
+    abstract protected function explain(
+        string $query,
+        array  $conditions1,
+        array  $conditions2 = null
+    ): void;
+
+    /**
      * Проверка существования таблицы $tableName
      *
      * @param string $tableName
@@ -162,19 +204,24 @@ abstract class Db
     ): array {
         $this->connect();
         $where = array_merge($where, $this->where);
-        $conditions = $this->prepareConditions($where, 'where');
         $fields = array_merge($fields, $this->fields);
-        $fields = $this->quoteFields($fields);
-        $fieldsStr = $fields ? implode(',', $fields) : '*';
+        $conditions = $this->whereBuilder->prepareConditions($where);
         $query = "
-            SELECT $fieldsStr
+            SELECT {$this->whereBuilder->prepareFields($fields)}
             FROM $tblName
             {$this->join}
             {$conditions['clause']}
-        "
-            . $this->groupByString()
-            . $this->orderByString()
-            . $this->limit;
+            {$this->groupByString()}
+            {$this->orderByString()}
+            {$this->limit}
+        ";
+
+        if ($this->explain) {
+            $this->explain($query, $conditions);
+        }
+	    if (!$stmt = $this->connection->prepare($query)) {
+		    throw new DBALException($this->msg->i18n('Error during prepare query.'));
+	    }
         // очищаем переменные
         $this
             ->clearOrderBy()
@@ -184,10 +231,6 @@ abstract class Db
             ->clearGroupBy()
             ->clearLimit();
 
-        if ($this->explain) {
-            $this->explain($query, $conditions);
-        }
-        $stmt = $this->connection->prepare($query);
         return $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : [];
     }
 
@@ -208,6 +251,106 @@ abstract class Db
     }
 
     /**
+     * Вставляет записи со значениями $fields в таблицу $tblName
+     *
+     * @param string $tblName имя таблицы
+     * @param array  $fields массив: [имена => значения] полей
+     *
+     * @return mixed
+     * @throws DBALException
+     */
+    public function insert(string $tblName, array $fields = [])
+    {
+        $this->connect();
+        $fields = array_merge($fields, $this->fields);
+        $conditions = $this->insertBuilder->prepareConditions($fields);
+        if (!$stmt = $this->connection->prepare("
+            INSERT INTO `$tblName`
+            ({$conditions['clause']}) 
+            VALUES ({$this->getPlaceholder($fields)})
+        ")) {
+            throw new DBALException('Error during prepare insert statement.');
+        }
+        $this->clearFields();
+        if ($this->execute($stmt, $conditions['vals'])) {
+            return $this->connection->lastInsertId();
+        }
+        return false;
+    }
+
+    /**
+     * Обновляет поля таблицы $tblName $fields записей по условию $where
+     *
+     * @param string $tblName имя таблицы
+     * @param array  $fields массив: [имена => значения] полей
+     * @param array  $where условие поиска
+     *
+     * @return boolean
+     * @throws DBALException
+     */
+    public function update(
+        string $tblName,
+        array $fields = [],
+        array $where = []
+    ): bool {
+        $this->connect();
+        $where = array_merge($where, $this->where);
+        $fields = array_merge($fields, $this->fields);
+        $updateConditions = $this->updateBuilder->prepareConditions($fields);
+        $whereConditions = $this->whereBuilder->prepareConditions($fields);
+        if (!$stmt = $this->connection->prepare("
+            UPDATE $tblName 
+            {$updateConditions['clause']} 
+            {$whereConditions['clause']}
+        ")) {
+            throw new DBALException('Error during prepare update statement.');
+        }
+        $this->clearWhere();
+        $this->clearFields();
+        return $this->execute($stmt, array_merge($updateConditions['vals'], $whereConditions['vals']));
+    }
+
+    /**
+     * Удаляет записи из таблицы $tblName по условию $where
+     *
+     * @param string $tblName имя таблицы
+     * @param array  $where условие поиска
+     *
+     * @return boolean
+     * @throws DBALException
+     */
+    public function delete(string $tblName, array $where = []): bool
+    {
+        $this->connect();
+        $where = array_merge($where, $this->where);
+        $whereConditions = $this->whereBuilder->prepareConditions($where);
+        if (!$stmt = $this->connection->prepare("
+            DELETE FROM `$tblName`
+            {$whereConditions['clause']}
+        ")) {
+            throw new DBALException('Error during prepare delete statement.');
+        }
+        $this->clearWhere();
+
+        return $this->execute($stmt, $whereConditions['vals']);
+    }
+
+    /**
+     * Быстро очищает таблицу $tblName
+     *
+     * @param string $tblName имя таблицы
+     *
+     * @return boolean
+     * @throws DBALException
+     */
+    public function truncate(string $tblName): bool
+    {
+        $this->connect();
+        $stmt = $this->connection->prepare("TRUNCATE `$tblName`");
+        return $this->execute($stmt);
+    }
+
+    /**
      * Выполняет запрос $query
      *
      * @param string $query
@@ -219,7 +362,7 @@ abstract class Db
     {
         $this->connect();
         if (!$stmt = $this->connection->prepare($query)) {
-            throw new DBALException('Error during prepare query.');
+            throw new DBALException($this->msg->i18n('Error during prepare query.'));
         }
         if (!$this->execute($stmt)) {
             return false;
@@ -256,98 +399,6 @@ abstract class Db
         if ($stmt = $this->query($query)) {
             return $this->prepareRows($stmt->fetch());
         }
-    }
-
-    /**
-     * Вставляет записи со значениями $fieldValues в таблицу $tblName
-     *
-     * @param string $tblName имя таблицы
-     * @param array  $fieldValues массив: [имена => значения] полей
-     *
-     * @return mixed
-     * @throws DBALException
-     */
-    public function insert(string $tblName, array $fieldValues = [])
-    {
-        $this->connect();
-        $fieldValues = array_merge($fieldValues, $this->fields);
-        $conditions = $this->prepareConditions($fieldValues, 'insert');
-        $placeholder = $this->getPlaceholder($fieldValues);
-        $query = "INSERT INTO `$tblName` ({$conditions['clause']}) VALUES ($placeholder)";
-        if (!$stmt = $this->connection->prepare($query)) {
-            throw new DBALException('Error during prepare insert statement.');
-        }
-        $this->clearFields();
-        if ($this->execute($stmt, $conditions['vals'])) {
-            return $this->connection->lastInsertId();
-        }
-        return false;
-    }
-
-    /**
-     * Обновляет поля таблицы $tblName $fieldValues записей по условию $where
-     *
-     * @param string $tblName имя таблицы
-     * @param array  $fieldValues массив: [имена => значения] полей
-     * @param array  $where условие поиска
-     *
-     * @return boolean
-     * @throws DBALException
-     */
-    public function update(
-        string $tblName,
-        array $fieldValues = [],
-        array $where = []
-    ): bool {
-        $this->connect();
-        $where = array_merge($where, $this->where);
-        $fieldValues = array_merge($fieldValues, $this->fields);
-        $updateConditions = $this->prepareConditions($fieldValues, 'update');
-        $whereConditions = $this->prepareConditions($where, 'where');
-        $query = "UPDATE $tblName {$updateConditions['clause']} {$whereConditions['clause']}";
-        if (!$stmt = $this->connection->prepare($query)) {
-            throw new DBALException('Error during prepare update statement.');
-        }
-        $this->clearWhere();
-        $this->clearFields();
-        return $this->execute($stmt, array_merge($updateConditions['vals'], $whereConditions['vals']));
-    }
-
-    /**
-     * Удаляет записи из таблицы $tblName по условию $where
-     *
-     * @param string $tblName имя таблицы
-     * @param array  $where условие поиска
-     *
-     * @return boolean
-     * @throws DBALException
-     */
-    public function delete(string $tblName, array $where = []): bool
-    {
-        $this->connect();
-        $where = array_merge($where, $this->where);
-        $whereConditions = $this->prepareConditions($where, 'where');
-        if (!$stmt = $this->connection->prepare("DELETE FROM `$tblName` {$whereConditions['clause']}")) {
-            throw new DBALException('Error during prepare delete statement.');
-        }
-        $this->clearWhere();
-
-        return $this->execute($stmt, $whereConditions['vals']);
-    }
-
-    /**
-     * Быстро очищает таблицу $tblName
-     *
-     * @param string $tblName имя таблицы
-     *
-     * @return boolean
-     * @throws DBALException
-     */
-    public function truncate(string $tblName): bool
-    {
-        $this->connect();
-        $stmt = $this->connection->prepare("TRUNCATE `$tblName`");
-        return $this->execute($stmt);
     }
 
     /**
@@ -670,112 +721,6 @@ abstract class Db
     }
 
     /**
-     * Форматирует условия для выборки, вставки или удаления
-     *
-     * @param array  $conditions
-     * @param string $type
-     * @param string $operator
-     *
-     * @return array
-     */
-    protected function prepareConditions(
-        array $conditions,
-        string $type,
-        string $operator = '='
-    ): array
-    {
-        switch ($type) {
-            case 'where':
-                return $this->createConditions($conditions, 'WHERE', "$operator ?", 'AND');
-            case 'update':
-                return $this->createConditions($conditions, 'SET', "$operator ?", ',');
-            case 'insert':
-                return $this->createConditions($conditions, '', '', ',');
-        }
-    }
-
-    /**
-     * Форматирует условия для выборки, вставки или удаления
-     *
-     * @param array  $conditions
-     * @param string $keyword
-     * @param string $operator
-     * @param string $glue
-     *
-     * @return array
-     */
-    protected function createConditions(array $conditions, string $keyword, string $operator, string $glue): array
-    {
-        $clause = '';
-        $vals = [];
-        if (count($conditions) !== 0) {
-            $clauseArr = [];
-            foreach ($conditions as $field => $val) {
-                if (preg_match('/ IN/', $field, $matches) !== 0) {
-                    $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . " ?";
-                    $val = '(' . implode(',', $val) . ')';
-                } elseif (preg_match('/ LIKE/', $field, $matches) !== 0) {
-                    $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . " ?";
-                    $val = "%$val%";
-                } elseif (preg_match('/<=|<|>=|>/', $field, $matches) !== 0) {
-                    $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . ' ?';
-                } else {
-                    $clauseArr[] = $this->quoteField($field) . $operator;
-                }
-                $vals[] = $val;
-            }
-            $clause = "$keyword " . implode(" $glue ", $clauseArr);
-        }
-        return compact('clause', 'vals');
-    }
-
-    /**
-     * Очистка поля
-     *
-     * @param string $field
-     * @param string $text
-     * @return string
-     */
-    protected function clarifyField(string $field, string $text): string
-    {
-        $field = str_replace($text, '', $field);
-        $field = trim($field);
-        return $this->quoteField($field);
-    }
-
-    /**
-     * Подготовка поля
-     *
-     * @param array $fields
-     * @return array
-     */
-    protected function quoteFields(array $fields): array
-    {
-        foreach ($fields as $key => &$field) {
-            if (!is_numeric($key)) {
-                $field = "$key AS $field";
-            } else {
-                $field = $this->quoteField($field);
-            }
-        }
-        return $fields;
-    }
-
-    /**
-     * Снабжение поля кавычками
-     *
-     * @param string $field
-     * @return string
-     */
-    protected function quoteField(string $field): string
-    {
-        if (preg_match('/[.( ]/', $field) === 0) {
-            $field = "`" . trim($field) . "`";
-        }
-        return $field;
-    }
-
-    /**
      * @param array $fields
      * @return string
      */
@@ -799,28 +744,40 @@ abstract class Db
         }
     }
 
-    /**
-     * Подготовка извлеченного массива строк, удаление лишнего
-     *
-     * @param array $rows
-     * @return array
-     */
-    protected function prepareRows(array $rows = []): array
-    {
-        foreach ($rows as &$row) {
-            foreach ($row as $key => $value) {
-                if (is_int($key)) {
-                    unset($row[$key]);
-                }
-            }
-        }
-        return $rows;
-    }
+	/**
+	 * Подготовка извлеченного массива строк, удаление лишнего
+	 *
+	 * @param array $rows
+	 * @return array
+	 */
+	protected function prepareRows(array $rows = []): array
+	{
+		foreach ($rows as &$row) {
+			$row = $this->prepareRow($row);
+		}
+		return $rows;
+	}
+
+	/**
+	 * Подготовка извлеченной строки, удаление лишнего
+	 *
+	 * @param array $row
+	 * @return array
+	 */
+	protected function prepareRow(array $row = []): array
+	{
+		foreach ($row as $key => $value) {
+			if (is_int($key)) {
+				unset($row[$key]);
+			}
+		}
+		return $row;
+	}
 
     /**
      * Выполнение запроса
      *
-     * @param PDOStatemnt $stmt
+     * @param PDOStatement $stmt
      * @param array $fields
      *
      * @return boolean
