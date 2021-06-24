@@ -128,7 +128,7 @@ abstract class Db
         $this->updateBuilder = $updateBuilder;
         $this->insertBuilder = $insertBuilder;
         $this->options      = $options;
-        if ($this->explain  = $this->options['explain'] ?? $this->env->isDebug()) {
+        if ($this->explain  = $this->options['explain'] ?? $this->env->isDevelop()) {
             $this->explainPath = $this->options['explain_path'] ?? '../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
