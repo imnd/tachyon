@@ -171,6 +171,7 @@ class View
         }
         $layoutHtml = $this->_replaceTag($layoutHtml, $viewContents, '@contents');
         $this->assetManager->finalize($layoutHtml);
+
         return $layoutHtml;
     }
 

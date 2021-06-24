@@ -100,11 +100,11 @@ final class Router
 
         // parse the request
         $path = Request::parseUri();
-        if (!$this->_parseRoute($path)) {
+        if (!$this->parseRoute($path)) {
             $requestArr = explode('/', $path);
             // retrieving the name of the controller and action
-            Request::set('controller', 'app\controllers\\' . ucfirst($this->_getNameFromRequest($requestArr)) . 'Controller');
-            Request::set('action', $this->_getNameFromRequest($requestArr));
+            Request::set('controller', 'app\controllers\\' . ucfirst($this->getNameFromRequest($requestArr)) . 'Controller');
+            Request::set('action', $this->getNameFromRequest($requestArr));
             // parse the array of parameters
             if (!empty($requestArr)) {
                 Request::set('inline', array_shift($requestArr));
@@ -120,7 +120,7 @@ final class Router
         $this->container->boot();
 
         // start the controller
-        $this->_startController();
+        $this->startController();
 
         // end caching
         $this->cache->end();
@@ -133,7 +133,7 @@ final class Router
      *
      * @return bool
      */
-    private function _parseRoute($path): bool
+    private function parseRoute($path): bool
     {
         if (!isset($this->routes[$path])) {
            return false;
@@ -152,7 +152,7 @@ final class Router
      * @param $requestArr array Массив параметров
      * @return string|null
      */
-    private function _getNameFromRequest(array &$requestArr): ?string
+    private function getNameFromRequest(array &$requestArr): ?string
     {
         if (
                count($requestArr)===0
@@ -166,7 +166,7 @@ final class Router
     /**
      * Запускаем контроллер
      */
-    private function _startController(): void
+    private function startController(): void
     {
         try {
             if (!$controllerClass = Request::get('controller')) {

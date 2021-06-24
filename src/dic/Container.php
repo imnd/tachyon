@@ -174,7 +174,7 @@ class Container /*implements ContainerInterface*/
      */
     public function getDependencies(string $className, string $methodName = null): array
     {
-        $dependencies = array();
+        $dependencies = [];
         $reflection = new ReflectionClass($className);
         if (is_null($methodName)) {
             if (
