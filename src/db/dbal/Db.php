@@ -7,7 +7,8 @@ use PDO,
     PDOStatement,
     tachyon\exceptions\DBALException,
     tachyon\components\Message,
-    tachyon\Config
+    tachyon\Config,
+    tachyon\Env
 ;
 use tachyon\db\dbal\conditions\{
     WhereBuilder, UpdateBuilder, InsertBuilder
@@ -22,10 +23,6 @@ use tachyon\db\dbal\conditions\{
 abstract class Db
 {
     /**
-     * @var Config $config
-     */
-    protected $config;
-    /**
      * @var WhereBuilder $whereBuilder
      */
     protected $whereBuilder;
@@ -38,17 +35,23 @@ abstract class Db
      */
     protected $insertBuilder;
     /**
-     * соединение с БД
-     *
-     * @var PDO
-     */
-    protected ?PDO $connection = null;
-    /**
      * Компонент msg
      *
      * @var Message
      */
     protected Message $msg;
+    /**
+     * @var Env $env
+     */
+    protected $env;
+
+    /**
+     * соединение с БД
+     *
+     * @var PDO
+     */
+    protected ?PDO $connection = null;
+
     /**
      * параметры БД
      *
@@ -104,25 +107,28 @@ abstract class Db
     protected $explainPath;
 
     /**
+     * @param Env     $env
      * @param Message $msg
-     * @param Config  $config настройки
+     * @param WhereBuilder $whereBuilder
+     * @param UpdateBuilder $updateBuilder
+     * @param InsertBuilder $insertBuilder
      * @param array   $options
      */
     public function __construct(
+        Env $env,
         Message $msg,
-        Config $config,
         WhereBuilder $whereBuilder,
         UpdateBuilder $updateBuilder,
         InsertBuilder $insertBuilder,
         array $options
     ) {
+        $this->env          = $env;
         $this->msg          = $msg;
-        $this->config       = $config;
         $this->whereBuilder = $whereBuilder;
         $this->updateBuilder = $updateBuilder;
         $this->insertBuilder = $insertBuilder;
         $this->options      = $options;
-        if ($this->explain  = $this->options['explain'] ?? $this->config->get('env')==='debug') {
+        if ($this->explain  = $this->options['explain'] ?? $this->env->isDebug()) {
             $this->explainPath = $this->options['explain_path'] ?? '../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {

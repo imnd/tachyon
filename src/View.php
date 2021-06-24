@@ -64,10 +64,6 @@ class View
     protected string $pageTitle = '';
 
     /**
-     * @var Config $config
-     */
-    protected Config $config;
-    /**
      * @var AssetManager $assetManager
      */
     protected AssetManager $assetManager;
@@ -85,6 +81,10 @@ class View
      * @var Flash
      */
     protected Flash $flash;
+    /**
+     * @var Env $env
+     */
+    protected $env;
 
     /**
      * Сохраняем переменные между отрисовкой наследуемых лэйаутов
@@ -92,6 +92,7 @@ class View
     protected array $layoutVars = [];
 
     /**
+     * @param Env          $env
      * @param Config       $config
      * @param AssetManager $assetManager
      * @param Message      $msg
@@ -99,14 +100,15 @@ class View
      * @param Flash        $flash
      */
     public function __construct(
+        Env $env,
         Config $config,
         AssetManager $assetManager,
         Message $msg,
         Html $html,
         Flash $flash
     ) {
-        $this->config = $config;
-        $this->appViewsPath = $this->viewsPath = $this->config->get('base_path') . '/../../app/views';
+        $this->env = $env;
+        $this->appViewsPath = $this->viewsPath = $config->get('base_path') . '/../../app/views';
         $this->assetManager = $assetManager;
         $this->msg = $msg;
         $this->html = $html;
@@ -201,7 +203,7 @@ class View
             $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
             if (
                    // в debug mode скомпиленные шаблоны переписываются всегда
-                   $this->config->get('env')!=='production'
+                   !$this->env->isProduction()
                 || !file_exists($tempViewFilePath)
             ) {
                 while (false !== $echoPos = strpos($buffer, '{{')) {

@@ -4,6 +4,7 @@ namespace tachyon\cache;
 use ReflectionClass,
     ReflectionException,
     tachyon\Config;
+use tachyon\Env;
 
 /**
  * кеширование
@@ -13,6 +14,11 @@ use ReflectionClass,
  */
 abstract class Cache
 {
+    /**
+     * @var Env $env
+     */
+    protected $env;
+
     protected $duration = 60;
     protected $cacheFolder = '../runtime/cache/';
     protected $cacheFile = '';
@@ -23,15 +29,17 @@ abstract class Cache
     /**
      * Инициализация
      *
+     * @param Env    $env
      * @param Config $config
      *
      * @throws ReflectionException
      */
-    public function __construct(Config $config)
+    public function __construct(Env $env, Config $config)
     {
+        $this->env = $env;
         $type = strtolower((new ReflectionClass($this))->getShortName());
         $cache = $config->get('cache');
-        if ($config->get('env')!=='production' || !isset($cache[$type])) {
+        if ($this->env->isProduction() || !isset($cache[$type])) {
             return;
         }
         $options = $cache[$type];
