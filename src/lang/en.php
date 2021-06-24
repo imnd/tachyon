@@ -21,4 +21,5 @@
     'email' => 'The field is not a valid email address.',
     'equals' => 'Field values are not equal.',
     'unique' => 'The field is not unique.',
+    'in' => 'The field is not in the list %list.',
 ];

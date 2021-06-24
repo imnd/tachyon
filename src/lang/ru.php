@@ -25,6 +25,8 @@
     'email' => 'Поле не является правильным email адресом.',
     'equals' => 'Значения полей не равны.',
     'unique' => 'Поле не уникально.',
+    'in' => 'Поле не встречается в списке %list.',
+    'There is no validator: %name.' => 'Валидатора с именем %name нет.',
 
     // SetterContainer
     'Unable to set property %property to service %service.' => 'Невозможно установить свойство %property в сервис %service.',
@@ -33,7 +35,7 @@
     // DB
     'The primary key of the related table is not declared.' => 'Не объявлен первичный ключ связанной таблицы.',
     'Property "tableName" is not set' => 'Не задано свойство "tableName"',
-    'Relation "%relation" not declared in class: ' => 'Связь "%relationship" не объявлена в классе: ',
+    'Relation "%relation" not declared in class: ' => 'Связь "%relation" не объявлена в классе: ',
     'Determine the join condition of the table %table' => 'Определите условие присоединения таблицы %table',
 
     // HTTP
