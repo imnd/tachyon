@@ -1,6 +1,6 @@
 <?php
 
-namespace tachyon\validation;
+namespace tachyon\components\validation;
 
 use tachyon\{
     exceptions\ValidationException,
@@ -18,8 +18,11 @@ class Validator
     /**
      * @var Message
      */
-    protected Message $msg;
-    private array $_errors = [];
+    private Message $msg;
+    /**
+     * @var array
+     */
+    private array $errors = [];
 
     public function __construct(Message $msg)
     {
@@ -27,10 +30,10 @@ class Validator
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function required($model, $fieldName): void
+    public function required($model, string $fieldName): void
     {
         if ($model->getAttribute($fieldName) === '') {
             $this->addError($fieldName, $this->msg->i18n('fieldRequired'));
@@ -38,58 +41,66 @@ class Validator
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function integer($model, $fieldName): void
+    public function integer($model, string $fieldName): void
     {
-        $val = $model->getAttribute($fieldName);
-        if (!empty($val) && preg_match('/[^0-9]+/', $val) > 0) {
+        if (!$fieldVal = $model->getAttribute($fieldName)) {
+            return;
+        }
+        if (!empty($fieldVal) && preg_match('/[^0-9]+/', $fieldVal) > 0) {
             $this->addError($fieldName, $this->msg->i18n('alpha'));
         }
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function numerical($model, $fieldName): void
+    public function numerical($model, string $fieldName): void
     {
-        $val = $model->getAttribute($fieldName);
-        if (!empty($val) && preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $val) === 0) {
+        if (!$fieldVal = $model->getAttribute($fieldName)) {
+            return;
+        }
+        if (!empty($fieldVal) && preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $fieldVal) === 0) {
             $this->addError($fieldName, $this->msg->i18n('alpha'));
         }
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function alpha($model, $fieldName): void
+    public function alpha($model, string $fieldName): void
     {
-        $val = $model->getAttribute($fieldName);
-        if (!empty($val) && preg_match('/[^А-ЯЁа-яёA-Za-z ]+/u', $val) > 0) {
+        if (!$fieldVal = $model->getAttribute($fieldName)) {
+            return;
+        }
+        if (!empty($fieldVal) && preg_match('/[^А-ЯЁа-яёA-Za-z ]+/u', $fieldVal) > 0) {
             $this->addError($fieldName, $this->msg->i18n('alpha'));
         }
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function alphaExt($model, $fieldName): void
+    public function alphaExt($model, string $fieldName): void
     {
-        $val = $model->getAttribute($fieldName);
-        if (!empty($val) && preg_match('/[^А-ЯЁа-яёA-Za-z-_.,0-9 ]+/u', $val) > 0) {
+        if (!$fieldVal = $model->getAttribute($fieldName)) {
+            return;
+        }
+        if (!empty($fieldVal) && preg_match('/[^А-ЯЁа-яёA-Za-z-_.,0-9 ]+/u', $fieldVal) > 0) {
             $this->addError($fieldName, $this->msg->i18n('alpha'));
         }
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function phone($model, $fieldName): void
+    public function phone($model, string $fieldName): void
     {
         if (!preg_match('/^\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}$/', $model->getAttribute($fieldName))) {
             $this->addError($fieldName, $this->msg->i18n('phone'));
@@ -97,22 +108,24 @@ class Validator
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function password($model, $fieldName): void
+    public function password($model, string $fieldName): void
     {
-        $val = $model->getAttribute($fieldName);
-        if (!empty($val) && preg_match('/[^A-Za-z0-9]+/u', $val) > 0) {
+        if (!$fieldVal = $model->getAttribute($fieldName)) {
+            return;
+        }
+        if (!empty($fieldVal) && preg_match('/[^A-Za-z0-9]+/u', $fieldVal) > 0) {
             $this->addError($fieldName, $this->msg->i18n('password'));
         }
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function email($model, $fieldName): void
+    public function email($model, string $fieldName): void
     {
         if (!preg_match(
             '/^[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/',
@@ -123,11 +136,15 @@ class Validator
     }
 
     /**
-     * @param      $model
-     * @param null $fieldName1
-     * @param null $fieldName2
+     * @param Model       $model
+     * @param string|null $fieldName1
+     * @param string|null $fieldName2
      */
-    public function equals($model, $fieldName1 = null, $fieldName2 = null): void
+    public function equals(
+        Model $model,
+        string $fieldName1 = null,
+        string $fieldName2 = null
+    ): void
     {
         $val1 = $model->getAttribute($fieldName1);
         $val2 = $model->getAttribute($fieldName2);
@@ -137,10 +154,10 @@ class Validator
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function unique($model, $fieldName): void
+    public function unique($model, string $fieldName): void
     {
         if (!$fieldVal = $model->getAttribute($fieldName)) {
             return;
@@ -151,15 +168,22 @@ class Validator
     }
 
     /**
-     * @param $model
-     * @param $fieldName
+     * @param mixed $model
+     * @param string $fieldName
      */
-    public function in($model, $fieldName): void
+    public function in($model, string $fieldName, $vals): void
     {
         if (!$fieldVal = $model->getAttribute($fieldName)) {
             return;
         }
-
+        if (!is_array($vals)) {
+            $vals = explode(',', $vals);
+        }
+        if (!in_array($fieldVal, $vals)) {
+            $this->addError($fieldName, $this->msg->i18n('in', [
+                'list' => implode(', ', $vals),
+            ]));
+        }
     }
 
     /**
@@ -178,10 +202,10 @@ class Validator
      */
     public function addError(string $fieldName, string $message): void
     {
-        if (empty($this->_errors[$fieldName])) {
-            $this->_errors[$fieldName] = [];
+        if (empty($this->errors[$fieldName])) {
+            $this->errors[$fieldName] = [];
         }
-        $this->_errors[$fieldName][] = $message;
+        $this->errors[$fieldName][] = $message;
     }
 
     /**
@@ -219,7 +243,7 @@ class Validator
         if (!is_null($attrs)) {
             $attrsArray = array_intersect_key($attrsArray, array_flip($attrs));
         }
-        $methodNotExist = 'Валидатора с таким именем нет.';
+        $methodNotExist = 'There is no validator: %name.';
         foreach ($attrsArray as $fieldName => $fieldValue) {
             // если существует правило валидации для данного поля
             if ($fieldRules = $this->getRules($object, $fieldName)) {
@@ -240,7 +264,9 @@ class Validator
                                 continue;
                             }
                             if (!method_exists($this, $subRule)) {
-                                throw new ValidationException($methodNotExist);
+                                throw new ValidationException($this->msg->i18n($methodNotExist, [
+                                    'name' => $subRule,
+                                ]));
                             }
                             $this->$subRule($object, $fieldName);
                         }
@@ -253,14 +279,20 @@ class Validator
                     if (!is_numeric($key)) {
                         continue;
                     }
-                    if (!method_exists($this, $rule)) {
-                        throw new ValidationException($methodNotExist);
+                    if ($colon = strpos($rule, ':')) {
+                        $params = substr($rule, $colon + 1);
+                        $rule = substr($rule, 0, $colon);
                     }
-                    $this->$rule($object, $fieldName);
+                    if (!method_exists($this, $rule)) {
+                        throw new ValidationException($this->msg->i18n($methodNotExist, [
+                            'name' => $rule,
+                        ]));
+                    }
+                    $this->$rule($object, $fieldName, $params ?? null);
                 }
             }
         }
-        return $this->_errors;
+        return $this->errors;
     }
 
     /**
@@ -287,7 +319,7 @@ class Validator
      */
     public function getErrors(): array
     {
-        return $this->_errors;
+        return $this->errors;
     }
 
     /**
@@ -300,7 +332,7 @@ class Validator
     public function getErrorsSummary($object): string
     {
         $summary = '';
-        foreach ($this->_errors as $attribute => $errors) {
+        foreach ($this->errors as $attribute => $errors) {
             $summary .= "{$object->getCaption($attribute)}: " . implode(', ', $errors) . "\n";
         }
         return $summary;

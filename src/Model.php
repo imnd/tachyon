@@ -2,7 +2,7 @@
 
 namespace tachyon;
 
-use tachyon\validation\{
+use tachyon\components\validation\{
     ValidationInterface,
     Validator,
     Validation

@@ -1,6 +1,6 @@
 <?php
 
-namespace tachyon\validation;
+namespace tachyon\components\validation;
 
 use tachyon\exceptions\ValidationException;
 

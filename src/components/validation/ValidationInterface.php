@@ -1,6 +1,6 @@
 <?php
 
-namespace tachyon\validation;
+namespace tachyon\components\validation;
 
 /**
  * @author Андрей Сердюк
