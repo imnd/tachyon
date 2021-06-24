@@ -4,8 +4,8 @@
  * @constructor
  * @this {ajax}
  */
-const ajax = (function() {
-    let
+export let ajax = (function() {
+    const
         appendPath = function(path, data) {
             for (let key in data) {
                 path += "&" + key + "=" + data[key];
@@ -68,7 +68,7 @@ const ajax = (function() {
                 path = appendPath(path, data);
             } else {
                 sendData = [];
-                for (var key in data) {
+                for (let key in data) {
                     sendData.push(key + "=" + data[key]);
                 }
                 sendData = sendData.join("&");
@@ -78,7 +78,7 @@ const ajax = (function() {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
-                        var rData = xhr.responseText;
+                        let rData = xhr.responseText;
                         if (respType==="json") {
                             if (rData==="true") {
                                 return {success: true};
@@ -143,6 +143,20 @@ const ajax = (function() {
                 respType : respType,
                 type : "POST",
                 contentType : contentType,
+            });
+        },
+        /**
+         * Посылка delete запроса
+         *
+         * @param {string} path
+         * @param {function} callback
+         * @return {void}
+         */
+        delete : function (path, callback) {
+            sendRequest({
+                path : path,
+                callback : callback,
+                type : "DELETE"
             });
         },
     };

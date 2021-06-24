@@ -1,10 +1,10 @@
 /**
  * Набор методов-шорткатов
- * 
+ *
  * @constructor
  * @this  {obj}
  */
-var obj = (function() {
+export let obj = (function() {
     return {
         isArray : function(obj) {return obj.constructor === Array},
         inArray : function(arr, obj) {arr.indexOf(obj) !== -1},
@@ -25,3 +25,6 @@ var obj = (function() {
         },
     };
 })();
+
+// export default {obj};
+
