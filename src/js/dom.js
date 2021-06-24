@@ -140,7 +140,7 @@ const dom = (function () {
                 }
             } else if (obj.value !== undefined) {
                 if (
-                    objType === "text"
+                       objType === "text"
                     || objType === "password"
                     || objType === "hidden"
                     || objType === "select-one"
@@ -152,7 +152,7 @@ const dom = (function () {
                     }
                 }
                 if (
-                    objType === "textarea"
+                       objType === "textarea"
                     || objType === "submit"
                 ) {
                     if (value === undefined) {
@@ -234,7 +234,7 @@ const dom = (function () {
                 obj.selectedIndex = 0;
             } else if (obj.value !== undefined) {
                 if (
-                    objType === "text"
+                       objType === "text"
                     || objType === "password"
                     || objType === "hidden"
                     || objType === "textarea"

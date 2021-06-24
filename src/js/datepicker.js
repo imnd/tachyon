@@ -80,8 +80,8 @@ const datepicker = (function() {
 </div>';
 
                     let
-                        hidden = true,
-                        id = (new Date()).getTime(),
+                        isHidden = true,
+                        time = (new Date()).getTime(),
                         daysOfWeek = "",
                         value,
                         curMonthName,
@@ -98,11 +98,11 @@ const datepicker = (function() {
                         hide
                     ;
                     /**
-                     * Считает количество дней в месяце month года year
-                     * @param month
-                     * @param year
+                     * Считает количество дней в месяце _month года year
+                     * @param _month
+                     * @param _year
                      */
-                    const getDaysInMonth = (month, year) => 32 - new Date(year, month, 32).getDate();
+                    const getDaysInMonth = (_month, _year) => 32 - new Date(_year, _month, 32).getDate();
 
                     /**
                      * Заполняет массив рядом числел от start до end
@@ -119,10 +119,10 @@ const datepicker = (function() {
 
                     const refreshTemplate = datepickerWrapper => {
                         if (datepickerWrapper===undefined) {
-                            datepickerWrapper = dom.findById("datepicker-wrapper-" + id);
+                            datepickerWrapper = dom.findById("datepicker-wrapper-" + time);
                         }
                         dom.replace(datepickerWrapper, dom.renderTemplate(template, {
-                            "id" : id,
+                            "id" : time,
                             "value" : value,
                             "curMonthName" : curMonthName,
                             "curYear" : curYear,
@@ -131,32 +131,32 @@ const datepicker = (function() {
                             "datepickerDays" : datepickerDays,
                         }));
 
-                        const datepickerInput = dom.findById("datepicker-input-" + id);
-                        const datepicker = dom.findById("datepicker-" + id);
+                        const datepickerInput = dom.findById("datepicker-input-" + time);
+                        const datepickerContainer = dom.findById("datepicker-" + time);
 
-                        if (hidden === false) {
-                            dom.removeClass(datepicker, "hidden");
+                        if (isHidden === false) {
+                            dom.removeClass(datepickerContainer, "hidden");
                         }
 
                         // навешиваем обработчики события
                         // показать или спрятать окно при клике на инпут
                         dom.click(datepickerInput, (e) => {
-                            showDatepicker(datepicker);
+                            showDatepicker(datepickerContainer);
                             e.stopPropagation();
                         });
-                        dom.click(datepicker, (e) => {
+                        dom.click(datepickerContainer, (e) => {
                             hide = false;
                             e.stopPropagation();
                         });
                         dom.click(window, (e) => {
                             if (hide) {
-                                hideDatepicker(datepicker);
+                                hideDatepicker(datepickerContainer);
                             }
                             hide = true;
                         });
 
                         // навигация
-                        dom.click(dom.findById("on-prev-month-" + id), () => {
+                        dom.click(dom.findById("on-prev-month-" + time), () => {
                             curMonth--;
                             if (curMonth === -1) {
                                 curMonth = 11;
@@ -164,7 +164,7 @@ const datepicker = (function() {
                             }
                             buildDatepicker();
                         });
-                        dom.click(dom.findById("on-next-month-" + id), () => {
+                        dom.click(dom.findById("on-next-month-" + time), () => {
                             curMonth++;
                             if (curMonth === 12) {
                                 curMonth = 0;
@@ -172,11 +172,11 @@ const datepicker = (function() {
                             }
                             buildDatepicker();
                         });
-                        dom.click(dom.findById("on-prev-year-" + id), () => {
+                        dom.click(dom.findById("on-prev-year-" + time), () => {
                             curYear--;
                             buildDatepicker();
                         });
-                        dom.click(dom.findById("on-next-year-" + id), () => {
+                        dom.click(dom.findById("on-next-year-" + time), () => {
                             curYear++;
                             buildDatepicker();
                         });
@@ -191,8 +191,8 @@ const datepicker = (function() {
                         for (let i in days) {
                             let date = days[i];
                             // Заполняем input
-                            dom.click(dom.findById("datepicker-date-" + id + date + month), () => {
-                                hidden = true;
+                            dom.click(dom.findById("datepicker-date-" + time + date + month), () => {
+                                isHidden = true;
 
                                 selectedDate = date;
                                 selectedMonth = month;
@@ -252,17 +252,17 @@ const datepicker = (function() {
                             if (date === selectedDate && month === selectedMonth && curYear === selectedYear) {
                                 _spanClass += ' is-active';
                             }
-                            datepickerDays += '<li><span id="datepicker-date-' + id + date + month + '" class="' + _spanClass + '">' + date + '</span></li>';
+                            datepickerDays += '<li><span id="datepicker-date-' + time + date + month + '" class="' + _spanClass + '">' + date + '</span></li>';
                         }
                     };
 
                     const showDatepicker = function (datepicker) {
-                        hidden = false;
+                        isHidden = false;
                         dom.removeClass(datepicker, "hidden");
                     };
 
                     const hideDatepicker = datepicker => {
-                        hidden = true;
+                        isHidden = true;
                         dom.addClass(datepicker, "hidden");
                     };
 
@@ -294,11 +294,10 @@ const datepicker = (function() {
                     buildDatepicker(datepickerInput);
                 });
                 // применяем стили
-                var style = document.createElement("style");
-                style.innerHTML = styles;
-                document.getElementsByTagName("head")[0].appendChild(style);
+                let styleTag = document.createElement("style");
+                styleTag.innerHTML = styles;
+                document.getElementsByTagName("head")[0].appendChild(styleTag);
             });
         },
     };
 })();
-

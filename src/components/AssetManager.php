@@ -2,7 +2,7 @@
 
 namespace tachyon\components;
 
-use tachyon\Config;
+use tachyon\Env;
 use RuntimeException;
 
 /**
@@ -25,9 +25,9 @@ class AssetManager
     ];
 
     /**
-     * @var Config $config
+     * @var Env $env
      */
-    protected $config;
+    protected $env;
 
     /**
      * Путь к публичной папке со скриптами
@@ -50,6 +50,8 @@ class AssetManager
      */
     private static $js = [];
 
+    private static $varIndex = 0;
+
     /**
      * Массив стилей для склеивания и публикации
      *
@@ -70,11 +72,11 @@ class AssetManager
     private static $finalized = false;
 
     /**
-     * @param Config $config
+     * @param Env $env
      */
-    public function __construct(Config $config)
+    public function __construct(Env $env)
     {
-        $this->config = $config;
+        $this->env = $env;
     }
 
     /**
@@ -151,40 +153,38 @@ class AssetManager
     private function _getFileContents(string $name, string $ext, string $sourcePath)
     {
         $text = file_get_contents("$sourcePath/$name.$ext");
-        // удаляем лишние символы
-        if ($this->config->get('env') === 'production') {
-            $text = $this->_clearify($text);
-        }
-        if ($ext === 'js' && strpos($name, '.min') === false) {
-            $text = $this->_minimize($text, $name);
+
+        if ($this->env->isProduction()) {
+            $this->_clearify($text);
+//            $this->_obfuscate($text);
         }
         return $text;
     }
 
     /**
+     * удаляем лишние символы
+     *
      * @param string $text
      *
      * @return string|string[]|null
      */
-    private function _clearify(string $text)
+    private function _clearify(string &$text)
     {
         $text = str_replace(['https://', 'http://'], '', $text);
+        // вырезать слэши на концах строк в строковых переменных
+        $text = str_replace("\\\n", '', $text);
         // вырезать многострочные комменты
         $text = preg_replace('!/\*.*?\*/!s', '', $text);
         // вырезать однострочные комменты
         $text = preg_replace('/\/{2,}.*\n/', '', $text);
         // все whitespaces заменить на пробелы
-        $text = preg_replace('/[\n\t\r]/', ' ', $text);
-        // вырезать слэши
-        $text = str_replace('\\', ' ', $text);
+        $text = str_replace(["\n", "\t", "\r"], ' ', $text);
         // вырезать лишние пробелы
         $text = trim(preg_replace('/[ ]{2,}/', ' ', $text));
-        $text = preg_replace('/([\(\)\{\}=+-])( )/', '${1}', $text);
-        $text = preg_replace('/( )([()\{\}=+-])/', '${2}', $text);
+        $text = preg_replace('/([\(\)\{\}=+-,;:|])( )/', '${1}', $text);
+        $text = preg_replace('/( )([()\{\}=+-,;:|])/', '${2}', $text);
         // лишние "," и ";"
         $text = preg_replace('/[,;](})/', '$1', $text);
-
-        return $text;
     }
 
     /**
@@ -194,19 +194,56 @@ class AssetManager
      *
      * @return string
      */
-    private function _minimize(string $text)
+    private function _obfuscate(string &$text)
     {
-        /*
-        $keywords = ['window', 'document', 'abstract', 'arguments', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'eval', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield', 'class', 'enum', 'export', 'extends', 'import', 'super', 'ActiveXObject', 'XMLHttpRequest', 'Msxml2.XMLHTTP', 'Microsoft.XMLHTTP'];
-        $varNames = array_merge(range('a', 'z'), range('A', 'Z'));
-        $words = array_filter(preg_split('/[^a-zA-Z0-9"]/', $text));
-        $i = 0;
-        foreach ($words as $word) {
-            if (!in_array($word, $keywords)) {
-                $text = preg_replace("/$word/", $varNames[$i++], $text);
+        // объявленные переменные
+        preg_match_all('/(var|let|const)[ ]([^;]+)/', $text, $matches);
+        foreach ($matches[2] as $i => $varNameGroup) {
+            $varExpressions = explode(',', $varNameGroup);
+            if ($i === 0) {
+                $varExpression = $varExpressions[0];
+                // первая переменная, название модуля.
+                $moduleVarName = substr($varExpression, 0, strpos($varExpression, '='));
+                continue;
             }
-        }*/
-        return $text;
+            foreach ($varExpressions as $varName) {
+                if ($equalSignPos = strpos($varName, '=')) {
+                    $varName = substr($varName, 0, $equalSignPos);
+                }
+                preg_match('/[^a-zA-Z0-9]/', $varName, $nonAlpha);
+                if (!empty($nonAlpha)) {
+                    continue;
+                }
+                if (is_numeric($varName)) {
+                    continue;
+                }
+                if ($moduleVarName===$varName) {
+                    continue;
+                }
+                $this->_replaceVar($text, $varName);
+            }
+        }
+        // параметры ф-й
+        preg_match_all('/[(]([a-zA-Z_]{1}[^)(.="\/ ]*)[)]/', $text, $matches);
+        foreach ($matches[1] as $i => $varNameGroup) {
+            $varNames = explode(',', $varNameGroup);
+            foreach ($varNames as $varName) {
+                if ($moduleVarName===$varName) {
+                    continue;
+                }
+                $this->_replaceVar($text, $varName);
+            }
+        }
+    }
+
+    /**
+     * @param string $text
+     * @param string $varName
+     * @return void
+     */
+    private function _replaceVar(&$text, $varName)
+    {
+        $text = preg_replace("/([^a-zA-Z0-9])($varName)([^a-zA-Z0-9])/", '$1v' . self::$varIndex++ . '$3', $text);
     }
 
     /**
@@ -287,13 +324,13 @@ class AssetManager
                 mkdir($publicPath);
             }
             $filePath = "$publicPath/$spriteName.$ext";
-            if (
-                   $this->config->get('env') !== 'production'
-                || !is_file($filePath)
-            ) {
+//            if (
+//                   !$this->env->isProduction()
+//                || !is_file($filePath)
+//            ) {
                 file_put_contents($filePath, $spriteText);
                 file_put_contents("$filePath.gz", gzencode($spriteText, 9));
-            }
+//            }
             $spritesTags .= "{$this->$tag($filePath)} ";
         }
         if (empty($spritesTags)) {
