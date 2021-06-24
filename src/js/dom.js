@@ -256,8 +256,8 @@ const dom = (function () {
             while (openCurlPos !== -1) {
                 closeCurlPos = template.indexOf("}}");
                 let varName = template.substr(openCurlPos + 2, closeCurlPos - openCurlPos - 2).trim();
-                prev = template.substr(0, openCurlPos)
-                post = template.substr(closeCurlPos + 2)
+                prev = template.substr(0, openCurlPos);
+                post = template.substr(closeCurlPos + 2);
                 template = template.substr(0, openCurlPos) + vars[varName] + template.substr(closeCurlPos + 2);
 
                 openCurlPos = template.indexOf("{{");

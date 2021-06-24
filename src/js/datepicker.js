@@ -44,6 +44,7 @@ const datepicker = (function() {
                 "monthNames" : ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
             };
 
+            data = data || {};
             for (let ind in data) {
                 if (data.hasOwnProperty(ind)) {
                     options[ind] = data[ind];
@@ -211,7 +212,7 @@ const datepicker = (function() {
                                 buildDatepicker();
                             });
                         }
-                    }
+                    };
 
                     /**
                      * Высчитываем дни календаря
@@ -253,7 +254,7 @@ const datepicker = (function() {
                             }
                             datepickerDays += '<li><span id="datepicker-date-' + id + date + month + '" class="' + _spanClass + '">' + date + '</span></li>';
                         }
-                    }
+                    };
 
                     const showDatepicker = function (datepicker) {
                         hidden = false;
@@ -270,12 +271,12 @@ const datepicker = (function() {
                         const monthFormatted = (selectedMonth + 1).toString().padStart(2, '0');
 
                         value = dateFormatted + '.' + monthFormatted + '.' + selectedYear;
-                    }
+                    };
 
                     placeholder = options.placeholder;
                     obj.forEach(options.daysOfWeek, function(day) {
                         daysOfWeek += "<li>" + day + "</li>"
-                    })
+                    });
 
                     let date = dom.val(datepickerInput);
                     if (date !== '' && date !== null && date !== undefined) {

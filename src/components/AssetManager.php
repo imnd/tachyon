@@ -1,4 +1,5 @@
 <?php
+
 namespace tachyon\components;
 
 use tachyon\Config;
@@ -17,9 +18,9 @@ class AssetManager
     /** @const Путь к исходникам скриптов */
     const CORE_JS_SOURCE_PATH = __DIR__ . '/../js';
     /** @const спец. символы javascript */
-    const SPEC_SYMBOLS = '\?{}\(\)\[\],;:|=-';
+    const SPEC_SYMBOLS = '\+\?{}\(\)\[\]*\/,;:|=-["]';
     const TAGS = [
-        'js'  => 'script',
+        'js' => 'script',
         'css' => 'link',
     ];
 
@@ -30,33 +31,43 @@ class AssetManager
 
     /**
      * Путь к публичной папке со скриптами
+     *
      * @var string $assetsPath
      */
     private $assetsPublicPath = 'assets';
 
     /**
      * Путь к папке со скриптами
+     *
      * @var string $assetsSource
      */
     private $assetsSourcePath;
 
     /**
      * Массив скриптов для склеивания и публикации
+     *
      * @var array $js
      */
-    private static $js = array();
+    private static $js = [];
 
     /**
      * Массив стилей для склеивания и публикации
+     *
      * @var array $css
      */
-    private static $css = array();
+    private static $css = [];
 
     /**
      * Опубликованные скрипты
+     *
      * @var string $scripts
      */
-    private static $files = array();
+    private static $files = [];
+
+    /**
+     * core скрипты опубликованы
+     */
+    private static $finalized = false;
 
     /**
      * @param Config $config
@@ -67,8 +78,8 @@ class AssetManager
     }
 
     /**
-     * @param string $name
-     * @param string $publicPath
+     * @param string        $name
+     * @param string        $publicPath
      * @param string | null $sourcePath
      *
      * @return string
@@ -79,8 +90,8 @@ class AssetManager
     }
 
     /**
-     * @param string $name
-     * @param string $publicPath
+     * @param string        $name
+     * @param string        $publicPath
      * @param string | null $sourcePath
      *
      * @return string
@@ -91,9 +102,9 @@ class AssetManager
     }
 
     /**
-     * @param string $name
-     * @param string $ext
-     * @param string $publicPath
+     * @param string        $name
+     * @param string        $ext
+     * @param string        $publicPath
      * @param string | null $sourcePath
      *
      * @return string
@@ -108,10 +119,11 @@ class AssetManager
         $filePath = "$publicPath/$name.$ext";
         if (!isset(self::$files[$filePath])) {
             if (!is_null($sourcePath) && !is_file($filePath)) {
-                $text = $this->_readFile($name, $ext, $sourcePath);
+                $text = $this->_getFileContents($name, $ext, $sourcePath);
                 $this->_writeFile($name, $ext, $text, $publicPath);
             }
             $tag = self::TAGS[$ext];
+
             return self::$files[$filePath] = $this->$tag($filePath);
         }
         return '';
@@ -119,26 +131,13 @@ class AssetManager
 
     /**
      * @param string $name
+     *
      * @return void
      */
     public function coreJs(string $name): void
     {
-        $this->_registerFile($name, 'js', self::CORE_JS_SOURCE_PATH);
-    }
-
-    /**
-     * @param string $name
-     * @param string $ext
-     * @param string | null $sourcePath
-     * @return void
-     */
-    private function _registerFile(string $name, string $ext, string $sourcePath = null): void
-    {
-        if (is_null($sourcePath)) {
-            $sourcePath = self::PUBLIC_PATH . "/$ext";
-        }
-        if (!isset(self::$$ext[$name]) && !is_null($sourcePath)) {
-            self::$$ext[$name] = $this->_readFile($name, $ext, $sourcePath);
+        if (!isset(self::$js[$name])) {
+            self::$js[$name] = $this->_getFileContents($name, 'js', self::CORE_JS_SOURCE_PATH);
         }
     }
 
@@ -149,16 +148,15 @@ class AssetManager
      *
      * @return string | string[] | null
      */
-    private function _readFile(string $name, string $ext, string $sourcePath)
+    private function _getFileContents(string $name, string $ext, string $sourcePath)
     {
         $text = file_get_contents("$sourcePath/$name.$ext");
         // удаляем лишние символы
-        if ($this->config->get('env')==='production') {
+        if ($this->config->get('env') === 'production') {
             $text = $this->_clearify($text);
         }
-
-        if ($ext==='js' && strpos($name, '.min')===false) {
-//            $text = $this->_minimize($text, $name);
+        if ($ext === 'js' && strpos($name, '.min') === false) {
+            $text = $this->_minimize($text, $name);
         }
         return $text;
     }
@@ -171,37 +169,43 @@ class AssetManager
     private function _clearify(string $text)
     {
         $text = str_replace(['https://', 'http://'], '', $text);
-        // многострочные комменты
+        // вырезать многострочные комменты
         $text = preg_replace('!/\*.*?\*/!s', '', $text);
-        // однострочные комменты
+        // вырезать однострочные комменты
         $text = preg_replace('/\/{2,}.*\n/', '', $text);
-        // все whitespaces
+        // все whitespaces заменить на пробелы
         $text = preg_replace('/[\n\t\r]/', ' ', $text);
-        // лишние пробелы
+        // вырезать слэши
+        $text = str_replace('\\', ' ', $text);
+        // вырезать лишние пробелы
         $text = trim(preg_replace('/[ ]{2,}/', ' ', $text));
-        $text = preg_replace("/([" . self::SPEC_SYMBOLS . "])[ ]/", '$1', $text);
-        $text = preg_replace("/[ ]([" . self::SPEC_SYMBOLS . "])/", '$1', $text);
+        $text = preg_replace('/([\(\)\{\}=+-])( )/', '${1}', $text);
+        $text = preg_replace('/( )([()\{\}=+-])/', '${2}', $text);
         // лишние "," и ";"
         $text = preg_replace('/[,;](})/', '$1', $text);
+
         return $text;
     }
 
     /**
+     * переименовать переменные
+     *
      * @param string $text
      *
-     * @return string|string[]|null
+     * @return string
      */
     private function _minimize(string $text)
     {
-        $keywords = ['abstract', 'arguments', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'eval', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield', 'class', 'enum', 'export', 'extends', 'import', 'super'];
+        /*
+        $keywords = ['window', 'document', 'abstract', 'arguments', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'eval', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield', 'class', 'enum', 'export', 'extends', 'import', 'super', 'ActiveXObject', 'XMLHttpRequest', 'Msxml2.XMLHTTP', 'Microsoft.XMLHTTP'];
         $varNames = array_merge(range('a', 'z'), range('A', 'Z'));
-        $words = array_filter(preg_split('/[\s' . self::SPEC_SYMBOLS . ']/', $text));
-        $i=0;
+        $words = array_filter(preg_split('/[^a-zA-Z0-9"]/', $text));
+        $i = 0;
         foreach ($words as $word) {
             if (!in_array($word, $keywords)) {
-                $text = preg_replace("/\\b$word\\b/", $varNames[$i++], $text);
+                $text = preg_replace("/$word/", $varNames[$i++], $text);
             }
-        }
+        }*/
         return $text;
     }
 
@@ -223,10 +227,8 @@ class AssetManager
         $publicPathArr = explode('/', $publicPath);
         foreach ($publicPathArr as $subPath) {
             $path .= "/$subPath";
-            if (!is_dir($path)) {
-                if (!mkdir($path) && !is_dir($path)) {
-                    throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
-                }
+            if (!is_dir($path) and !mkdir($path)) {
+                throw new RuntimeException(sprintf('Directory "%s" can not be created', $path));
             }
         }
         $fileName = "$path/$name.$ext";
@@ -235,7 +237,7 @@ class AssetManager
     }
 
     /**
-     * @param string  $dirName
+     * @param string        $dirName
      * @param string | null $publicPath
      * @param string | null $sourcePath
      */
@@ -254,7 +256,7 @@ class AssetManager
                 $pathinfo = pathinfo($fileName);
                 $name = $pathinfo['filename'];
                 $ext = $pathinfo['extension'];
-                $text = $this->_readFile($name, $ext, $sourcePath);
+                $text = $this->_getFileContents($name, $ext, $sourcePath);
                 $this->_writeFile($name, $ext, $text, $publicPath);
             }
         }
@@ -266,6 +268,9 @@ class AssetManager
      */
     public function finalize(string &$contents)
     {
+        if ($this->finalized) {
+            return;
+        }
         $spritesTags = '';
         foreach (self::TAGS as $ext => $tag) {
             $publicPath = "{$this->assetsPublicPath}/$ext";
@@ -283,7 +288,7 @@ class AssetManager
             }
             $filePath = "$publicPath/$spriteName.$ext";
             if (
-                   $this->config->get('env')!=='production'
+                   $this->config->get('env') !== 'production'
                 || !is_file($filePath)
             ) {
                 file_put_contents($filePath, $spriteText);
@@ -295,10 +300,12 @@ class AssetManager
             return;
         }
         $contents = str_replace('</head>', "$spritesTags</head>", $contents);
+        $this->finalized = true;
     }
 
     /**
      * @param string $path путь
+     *
      * @return string
      */
     private function script($path)
@@ -308,6 +315,7 @@ class AssetManager
 
     /**
      * @param string $path путь
+     *
      * @return string
      */
     private function link($path)
@@ -317,6 +325,7 @@ class AssetManager
 
     /**
      * @param string $path
+     *
      * @return void
      */
     public function setAssetsPublicPath($path)
@@ -326,6 +335,7 @@ class AssetManager
 
     /**
      * @param string $path
+     *
      * @return void
      */
     public function setAssetsSourcePath($path)
