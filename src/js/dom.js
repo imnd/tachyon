@@ -279,7 +279,7 @@ const
     }
 ;
 
-export let dom = {
+const dom = {
     ready: ready,
     click: click,
     blur: blur,
@@ -312,3 +312,5 @@ export let dom = {
 
     renderTemplate: renderTemplate
 };
+
+export default dom;

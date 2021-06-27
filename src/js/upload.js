@@ -112,7 +112,7 @@ let
     }
 ;
 
-export let upload = {
+let upload = {
     /**
      * Загрузка файла по частям на сервер
      *
@@ -152,3 +152,5 @@ export let upload = {
         }
     }
 };
+
+export default upload;

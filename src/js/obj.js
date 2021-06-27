@@ -4,7 +4,7 @@
  * @constructor
  * @this  {obj}
  */
-export let obj = (function() {
+const obj = (function() {
     return {
         isArray : function(obj) {return obj.constructor === Array},
         inArray : function(arr, obj) {arr.indexOf(obj) !== -1},
@@ -26,5 +26,5 @@ export let obj = (function() {
     };
 })();
 
-// export default {obj};
+export default obj;
 

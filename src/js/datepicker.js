@@ -7,8 +7,8 @@
  * @copyright (c) 2020 IMND
  */
 
-import {dom} from './dom.js';
-import {obj} from './obj.js';
+import dom from './dom.js';
+import obj from './obj.js';
 
 const styles = '\
     .hidden {display: none;}\
@@ -33,7 +33,7 @@ const styles = '\
     .datepicker .control {margin-right: 0px;}\
 ';
 
-export let datepicker = {
+let datepicker = {
     /**
      * @param data
      * @return {void}
@@ -302,3 +302,5 @@ export let datepicker = {
         });
     },
 };
+
+export default datepicker;
