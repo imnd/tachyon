@@ -23,6 +23,13 @@ class AssetManager
         'js' => 'script',
         'css' => 'link',
     ];
+    const CORE_SCRIPTS = [
+        'ajax',
+        'datepicker',
+        'dom',
+        'obj',
+        'upload',
+    ];
 
     /**
      * @var Env $env
@@ -105,6 +112,20 @@ class AssetManager
 
     /**
      * @param string        $name
+     * @param string        $publicPath
+     * @param string | null $sourcePath
+     *
+     * @return string
+     */
+    public function moduleJs(string $name, string $publicPath = 'js', string $sourcePath = null): string
+    {
+        return $this->_publishFile($name, 'js', $publicPath, $sourcePath, [
+            'type' => 'module',
+        ]);
+    }
+
+    /**
+     * @param string        $name
      * @param string        $ext
      * @param string        $publicPath
      * @param string | null $sourcePath
@@ -115,7 +136,8 @@ class AssetManager
         string $name,
         string $ext,
         string $publicPath,
-        string $sourcePath = null
+        string $sourcePath = null,
+        array $options = []
     ): string {
         $publicPath = "{$this->assetsPublicPath}/$publicPath";
         $filePath = "$publicPath/$name.$ext";
@@ -126,7 +148,7 @@ class AssetManager
             }
             $tag = self::TAGS[$ext];
 
-            return self::$files[$filePath] = $this->$tag($filePath);
+            return self::$files[$filePath] = $this->$tag($filePath, $options);
         }
         return '';
     }
@@ -134,13 +156,21 @@ class AssetManager
     /**
      * @param string $name
      *
-     * @return void
+     * @return self
      */
-    public function coreJs(string $name): void
+    public function coreJs(string $names = null)
     {
-        if (!isset(self::$js[$name])) {
-            self::$js[$name] = $this->_getFileContents($name, 'js', self::CORE_JS_SOURCE_PATH);
+        if (is_null($name)) {
+            $names = self::CORE_SCRIPTS;
+        } else {
+            $names = [$names];
         }
+        foreach ($names as $name) {
+            if (!isset(self::$js[$name])) {
+                self::$js[$name] = $this->_getFileContents($name, 'js', self::CORE_JS_SOURCE_PATH);
+            }
+        }
+        return $this;
     }
 
     /**
@@ -308,6 +338,46 @@ class AssetManager
         if ($this->finalized) {
             return;
         }
+
+        $this->publishSeparated();
+
+        $this->finalized = true;
+    }
+
+    /**
+     * публикация скриптов по отдельности
+     *
+     * @param string $contents
+     * @return void
+     */
+    public function publishSeparated()
+    {
+        foreach (self::TAGS as $ext => $tag) {
+            $scriptPath = "{$this->assetsPublicPath}/$ext";
+            if (!is_dir($scriptPath)) {
+                mkdir($scriptPath);
+            }
+            foreach (self::$$ext as $scriptName => $scriptText) {
+                $filePath = "$scriptPath/$scriptName.$ext";
+                if (
+                       !$this->env->isProduction()
+                    || !is_file($filePath)
+                ) {
+                    file_put_contents($filePath, $scriptText);
+                    file_put_contents("$filePath.gz", gzencode($scriptText, 9));
+                }
+            }
+        }
+    }
+
+    /**
+     * склеивание скриптов в спрайт
+     *
+     * @param string $contents
+     * @return void
+     */
+    private function publishSprite(&$contents)
+    {
         $spritesTags = '';
         foreach (self::TAGS as $ext => $tag) {
             $publicPath = "{$this->assetsPublicPath}/$ext";
@@ -324,30 +394,40 @@ class AssetManager
                 mkdir($publicPath);
             }
             $filePath = "$publicPath/$spriteName.$ext";
-//            if (
-//                   !$this->env->isProduction()
-//                || !is_file($filePath)
-//            ) {
+            if (
+                   !$this->env->isProduction()
+                || !is_file($filePath)
+            ) {
                 file_put_contents($filePath, $spriteText);
                 file_put_contents("$filePath.gz", gzencode($spriteText, 9));
-//            }
+            }
             $spritesTags .= "{$this->$tag($filePath)} ";
         }
         if (empty($spritesTags)) {
             return;
         }
         $contents = str_replace('</head>', "$spritesTags</head>", $contents);
-        $this->finalized = true;
     }
 
     /**
      * @param string $path путь
+     * @param array $options
      *
      * @return string
      */
-    private function script($path)
+    private function script(string $path, array $options = [])
     {
-        return "<script type=\"text/javascript\" src=\"/$path\"></script>";
+        if (!isset($options['type'])) {
+            $options['type'] = "text/javascript";
+        }
+        $options['src'] = $path;
+
+        $text = "";
+        foreach ($options as $name => $option) {
+            $text .= "$name='$option'";
+        }
+
+        return "<script $text></script>";
     }
 
     /**
