@@ -233,7 +233,7 @@ class Persistence
         if (!in_array($onPrimaryKey, $this->select)) {
             $this->select[] = $onPrimaryKey;
         }
-        $this->db->setJoin(
+        $this->db->addJoin(
             "$withTableName AS $withAlias",
             "$onPrimaryKey = $onForeignKey"
         );

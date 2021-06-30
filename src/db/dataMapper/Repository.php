@@ -233,7 +233,7 @@ abstract class Repository implements RepositoryInterface
      * @return void
      * @throws ErrorException
      */
-    public function addSortBy($field, $order): void
+    public function addSortBy(string $field, string $order): void
     {
         $this->persistence->orderBy($field, $order);
     }

@@ -65,7 +65,7 @@ class Container /*implements ContainerInterface*/
         }
     }
 
-    public function boot(): Container
+    public function boot($params = []): Container
     {
         return $this;
     }

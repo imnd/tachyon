@@ -3,7 +3,7 @@
 namespace tachyon\components\formBuilder;
 
 use ReflectionException;
-use tachyon\{Config, View, traits\ClassName};
+use tachyon\{Config, Request, View, traits\ClassName};
 use tachyon\components\{AssetManager, Csrf, Html, Message};
 
 /**
@@ -38,6 +38,10 @@ class FormBuilder
      * @var View $view
      */
     protected View $view;
+    /**
+     * @var Request
+     */
+    private Request $request;
     /**
      * включать ли компонент защиты от csrf-атак
      */
@@ -97,20 +101,23 @@ class FormBuilder
      * @param Html         $html
      * @param Csrf         $csrf
      * @param View         $view
+     * @param Request      $request
      */
     public function __construct(
-        Message $msg,
         Config $config,
         AssetManager $assetManager,
         Html $html,
         Csrf $csrf,
-        View $view
+        View $view,
+        Message $msg,
+        Request $request
     ) {
-        $this->msg = $msg;
         $this->assetManager = $assetManager;
         $this->html = $html;
         $this->csrf = $csrf;
         $this->view = $view;
+        $this->msg = $msg;
+        $this->request   = $request;
         $this->_csrfCheck = $config->get('csrf_check') ?? false;
         // текстовые
         $this->_options['text'] = $this->_options['text'][$config->get('lang')];

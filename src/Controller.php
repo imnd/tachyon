@@ -20,78 +20,72 @@ class Controller
 {
     use ClassName;
 
-    /**
-     * Общий шаблон сайта
-     *
-     * @var $layout string
-     */
-    protected string $layout = 'main';
-    /**
-     * id контроллера
-     *
-     * @var $id string
-     */
-    protected $id;
-    /**
-     * id экшна
-     *
-     * @var string $action
-     */
-    protected $action;
-    /**
-     * @var string $defaultAction
-     */
-    protected $defaultAction = 'index';
-
-    # Переменные запроса
-
-    /**
-     * @var array $get
-     */
-    protected $get;
-    /**
-     * @var array $post
-     */
-    protected $post;
-    /**
-     * @var array $files
-     */
-    protected $files;
-    /**
-     * Экшны только для $_POST запросов
-     *
-     * @var mixed
-     */
-    protected $postActions = [];
-    /**
-     * Экшны только для аутентифицированных юзеров
-     *
-     * @var mixed
-     */
-    protected $protectedActions = [];
-
     # Компоненты
 
     /**
      * @var Message $msg
      */
-    protected $msg;
+    protected Message $msg;
     /**
      * @var Cookie $cookie
      */
-    protected $cookie;
+    protected Cookie $cookie;
     /**
      * @var Lang $lang
      */
-    protected $lang;
+    protected Lang $lang;
     /**
      * @var View $view
      */
-    protected $view;
+    protected View $view;
     /**
      * @var Csrf $csrf
      */
-    protected $csrf;
+    protected Csrf $csrf;
+    /**
+     * @var Request
+     */
+    protected Request $request;
+
+    /**
+     * Общий шаблон сайта
+     *
+     * @var string $layout
+     */
+    protected string $layout = 'main';
+    /**
+     * @var string $defaultAction
+     */
+    protected string $defaultAction = 'index';
+    /**
+     * id контроллера
+     *
+     * @var string $id
+     */
+    protected string $id;
+    /**
+     * id экшна
+     *
+     * @var string $action
+     */
+    protected string $action;
+
+    /**
+     * Экшны только для $_POST запросов
+     *
+     * @var mixed
+     */
+    protected $postActions;
+    /**
+     * Экшны только для аутентифицированных юзеров
+     *
+     * @var mixed
+     */
+    protected $protectedActions;
+    /**
+     * @var string
+     */
+    private string $language;
 
     /**
      * @param Message $msg
@@ -99,34 +93,34 @@ class Controller
      * @param Lang    $lang
      * @param View    $view
      * @param Csrf    $csrf
-     *
-     * @return void
+     * @param Request $request
      */
-    public function __construct(Message $msg, Cookie $cookie, Lang $lang, View $view, Csrf $csrf)
-    {
+    public function __construct(
+        Message $msg,
+        Cookie $cookie,
+        Lang $lang,
+        View $view,
+        Csrf $csrf,
+        Request $request
+    ) {
         $this->msg = $msg;
         $this->cookie = $cookie;
         $this->lang = $lang;
         $this->view = $view;
         $this->csrf = $csrf;
+        $this->request = $request;
     }
 
     /**
      * Инициализация
      *
-     * @param array $requestVars
-     *
      * @return Controller
      * @throws HttpException
      */
-    public function start(array $requestVars = [])
+    public function start(): self
     {
-        // переменные запроса
-        foreach (['get', 'post', 'files'] as $name) {
-            $this->$name = $requestVars[$name] ?? null;
-        }
-        // проверка на isRequestPost по списку экшнов
-        if (in_array($this->action, $this->postActions) && !$this->isRequestPost()) {
+        // проверка по списку экшнов
+        if (in_array($this->action, $this->postActions) && !$this->request->isPost()) {
             throw new HttpException(
                 $this->msg->i18n('Action %action allowed only through post request.', ['action' => $this->action]),
                 HttpException::BAD_REQUEST
@@ -141,13 +135,14 @@ class Controller
         $this->view->setViewsPath("{$this->view->getViewsPath()}/{$this->id}");
         // текущий язык сайта
         $this->language = $this->lang->getLanguage();
+
         return $this;
     }
 
     /**
-     * Инициализация
+     * Инициализация в клиентском коде
      */
-    public function init()
+    public function init(): void
     {
     }
 
@@ -156,7 +151,7 @@ class Controller
      *
      * @return boolean
      */
-    public function beforeAction()
+    public function beforeAction(): bool
     {
         return true;
     }
@@ -164,7 +159,7 @@ class Controller
     /**
      * Хук, срабатывающий после запуска экшна
      */
-    public function afterAction()
+    public function afterAction(): void
     {
     }
 
@@ -178,7 +173,7 @@ class Controller
      *
      * @return string
      */
-    public function display($view = null, array $vars = [], $return = false)
+    public function display($view = null, array $vars = [], $return = false): string
     {
         if (empty($view)) {
             $view = lcfirst($this->action);
@@ -211,94 +206,13 @@ class Controller
      *
      * @return void
      */
-    public function redirect($path)
+    public function redirect(string $path): void
     {
         header("Location: $path");
         die;
     }
 
-    # Getters and setters
-
-    /**
-     * Страница, с которой редиректились
-     *
-     * @return string
-     */
-    public function getReferer()
-    {
-        return $_COOKIE['referer'] ?? '/';
-    }
-
-    /**
-     * Запоминаем страницу, с которой редиректимся
-     *
-     * @return void
-     */
-    public function setReferer()
-    {
-        setcookie('referer', $_SERVER['REQUEST_URI'], 0, '/');
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isRequestPost(): bool
-    {
-        return $_SERVER['REQUEST_METHOD'] === 'POST';
-    }
-
-    /**
-     * Шорткат
-     *
-     * @param $queryType string
-     *
-     * @return array
-     */
-    public function getQuery(string $queryType = null): array
-    {
-        if (is_null($queryType)) {
-            $queryType = 'get';
-        }
-        return $this->$queryType;
-    }
-
-    /**
-     * Шорткат для $_GET
-     *
-     * @param $index string
-     *
-     * @return mixed
-     */
-    public function getGet(string $index = null)
-    {
-        if (!is_null($index)) {
-            return $this->get[$index] ?? null;
-        }
-        return $this->get;
-    }
-
-    /**
-     * Шорткат для $_POST
-     *
-     * @param $index string
-     *
-     * @return mixed
-     */
-    public function getPost(string $index = null)
-    {
-        if (!is_null($index)) {
-            return $this->post[$index] ?? null;
-        }
-        return $this->post;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRoute(): string
-    {
-        return htmlspecialchars($_SERVER['REQUEST_URI']);
-    }
+    # region Getters
 
     /**
      * @return string
@@ -317,52 +231,11 @@ class Controller
     }
 
     /**
-     * @param int $id
-     *
      * @return string
      */
-    public function setId($id)
-    {
-        $this->id = $id;
-        return $this;
-    }
-
-    /**
-     * @param string $actionName
-     *
-     * @return string
-     */
-    public function setAction(string $actionName)
-    {
-        $this->action = $actionName;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDefaultAction()
+    public function getDefaultAction(): string
     {
         return $this->defaultAction;
-    }
-
-    /**
-     * @param string $layout
-     *
-     * @return Controller
-     */
-    public function setLayout(string $layout)
-    {
-        $this->layout = $layout;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLayout(): string
-    {
-        return $this->layout;
     }
 
     /**
@@ -371,5 +244,42 @@ class Controller
     public function getLanguage(): ?string
     {
         return $this->language;
+    }
+
+    # endregion
+
+    # region Setters
+
+    /**
+     * @param string $id
+     *
+     * @return self
+     */
+    public function setId(string $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @param string $actionName
+     *
+     * @return self
+     */
+    public function setAction(string $actionName): self
+    {
+        $this->action = $actionName;
+        return $this;
+    }
+
+    /**
+     * @param string $layout
+     *
+     * @return self
+     */
+    public function setLayout(string $layout): self
+    {
+        $this->layout = $layout;
+        return $this;
     }
 }

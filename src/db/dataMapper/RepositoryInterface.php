@@ -18,7 +18,7 @@ interface RepositoryInterface
      *
      * @return Repository
      */
-    public function setSearchConditions(array $conditions = []);
+    public function setSearchConditions(array $conditions = []): Repository;
 
     /**
      * Устанавливает условия сортировки для хранилища.
@@ -27,7 +27,7 @@ interface RepositoryInterface
      *
      * @return Repository
      */
-    public function setSort($attrs);
+    public function setSort($attrs): Repository;
 
     /**
      * Добавляет условия сортировки для хранилища к уже существующим.
@@ -37,7 +37,7 @@ interface RepositoryInterface
      *
      * @return void
      */
-    public function addSortBy($field, $order);
+    public function addSortBy(string $field, string $order);
 
     /**
      * Получает сущность по условию $where

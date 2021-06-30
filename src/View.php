@@ -90,6 +90,10 @@ class View
      * Сохраняем переменные между отрисовкой наследуемых лэйаутов
      */
     protected array $layoutVars = [];
+    /**
+     * @var Request
+     */
+    protected Request $request;
 
     /**
      * @param Env          $env
@@ -105,7 +109,8 @@ class View
         AssetManager $assetManager,
         Message $msg,
         Html $html,
-        Flash $flash
+        Flash $flash,
+        Request $request
     ) {
         $this->env = $env;
         $this->appViewsPath = $this->viewsPath = $config->get('base_path') . Config::APP_DIR . 'app/views';
@@ -113,6 +118,7 @@ class View
         $this->msg = $msg;
         $this->html = $html;
         $this->flash = $flash;
+        $this->request = $request;
     }
 
     /**
@@ -157,6 +163,7 @@ class View
      * @param array  $vars
      *
      * @return string
+     * @throws ViewException
      */
     private function _displayLayout(string $viewContents, array $vars): string
     {

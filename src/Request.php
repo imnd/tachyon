@@ -7,7 +7,7 @@ class Request
     /**
      * @var array
      */
-    private static array $parameters = [];
+    private array $parameters = [];
 
     /**
      * @param string $name
@@ -15,15 +15,15 @@ class Request
      *
      * @return void
      */
-    public static function set(string $name, $val): void
+    public function set(string $name, $val): void
     {
         if (is_null($val)) {
             return;
         }
         if ($name !== 'files') {
-            $val = self::_filter($val);
+            $val = $this->_filter($val);
         }
-        self::$parameters[$name] = $val;
+        $this->parameters[$name] = $val;
     }
 
     /**
@@ -32,12 +32,12 @@ class Request
      *
      * @return void
      */
-    public static function add(string $name, $val): void
+    public function add(string $name, $val): void
     {
         if ($name !== 'files') {
-            $val = self::_filter($val);
+            $val = $this->_filter($val);
         }
-        self::$parameters[$name] = array_merge(self::$parameters[$name], $val);
+        $this->parameters[$name] = array_merge($this->parameters[$name], $val);
     }
 
     /**
@@ -45,9 +45,9 @@ class Request
      *
      * @return mixed
      */
-    public static function get(string $name)
+    public function get(string $name)
     {
-        return self::$parameters[$name] ?? null;
+        return $this->parameters[$name] ?? null;
     }
 
     /**
@@ -55,7 +55,7 @@ class Request
      *
      * @return string
      */
-    public static function getReferer(): string
+    public function getReferer(): string
     {
         return $_COOKIE['referer'] ?? '/';
     }
@@ -65,7 +65,7 @@ class Request
      *
      * @return void
      */
-    public static function setReferer(): void
+    public function setReferer(): void
     {
         setcookie('referer', $_SERVER['REQUEST_URI'], 0, '/');
     }
@@ -73,16 +73,16 @@ class Request
     /**
      * Шорткат
      *
-     * @param $queryType string
+     * @param string|null $queryType string
      *
-     * @return array
+     * @return array|null
      */
-    public static function getQuery(string $queryType = null): array
+    public function getQuery(string $queryType = null): ?array
     {
         if (is_null($queryType)) {
             $queryType = 'get';
         }
-        return self::$parameters[$queryType];
+        return $this->parameters[$queryType] ?? null;
     }
 
     /**
@@ -92,12 +92,12 @@ class Request
      *
      * @return mixed
      */
-    public static function getGet(string $key = null)
+    public function getGet(string $key = null)
     {
         if (!is_null($key)) {
-            return self::$parameters['get'][$key] ?? null;
+            return $this->parameters['get'][$key] ?? null;
         }
-        return self::$parameters['get'] ?? null;
+        return $this->parameters['get'] ?? null;
     }
 
     /**
@@ -107,18 +107,18 @@ class Request
      *
      * @return mixed
      */
-    public static function getPost(string $key = null)
+    public function getPost(string $key = null)
     {
         if (!is_null($key)) {
-            return self::$parameters['post'][$key] ?? null;
+            return $this->parameters['post'][$key] ?? null;
         }
-        return self::$parameters['post'];
+        return $this->parameters['post'] ?? null;
     }
 
     /**
      * @return string
      */
-    public static function getRoute(): string
+    public function getRoute(): string
     {
         return htmlspecialchars($_SERVER['REQUEST_URI']);
     }
@@ -128,7 +128,7 @@ class Request
      *
      * @return string
      */
-    public static function parseUri(): string
+    public function parseUri(): string
     {
         $uri = $_SERVER['REQUEST_URI'];
         $path = parse_url($uri)['path'];
@@ -140,7 +140,7 @@ class Request
                 $path = substr($path, 0, -1);
             }
         }
-        self::set('path', $path);
+        $this->set('path', $path);
 
         return $path;
     }
@@ -148,7 +148,7 @@ class Request
     /**
      * @return boolean
      */
-    public static function isPost(): bool
+    public function isPost(): bool
     {
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
@@ -160,14 +160,14 @@ class Request
      *
      * @return mixed
      */
-    private static function _filter($data)
+    private function _filter($data)
     {
         if (is_string($data)) {
             return htmlentities($data);
         }
         if (is_array($data)) {
             foreach ($data as &$val) {
-                $val = self::_filter($val);
+                $val = $this->_filter($val);
             }
             return array_filter($data);
         }
@@ -176,7 +176,7 @@ class Request
     /**
      * @return void
      */
-    public static function boot(): void
+    public function boot(): void
     {
     }
 }

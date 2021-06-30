@@ -1,49 +1,52 @@
 <?php
 namespace tachyon\traits;
 
-use tachyon\exceptions\HttpException,
-    tachyon\Request;
+use tachyon\exceptions\HttpException;
+use tachyon\Request;
 
 /**
  * Трейт аутентификации
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
- */ 
+ */
 trait Auth
 {
     /**
      * Имя переменной куки
      * @var string $cookieKey
      */
-    private $cookieKey = 'authorized';
+    private string $cookieKey = 'authorized';
     /**
      * Время жизни куки дней при нажатой кнопке "remember me"
      * @var integer $remember
      */
-    private $remember = 7;
+    private int $remember = 7;
     /**
      * Адрес страницы логина
      * @var string $loginUrl
      */
-    private $loginUrl = '/login';
+    private string $loginUrl = '/login';
 
     /**
      * Перенаправляет пользователя на адрес логина
-     * 
+     *
      * @return bool
      */
     public function accessDenied(): bool
     {
-        Request::setReferer();
+        $this->request->setReferer();
         $this->redirect($this->loginUrl);
         return false;
     }
 
     /**
      * Юзер не авторизован
-     * 
+     *
+     * @param $msg
+     *
      * @return void
+     * @throws HttpException
      */
     public function unauthorised($msg): void
     {
@@ -52,7 +55,7 @@ trait Auth
 
     /**
      * Авторизован ли юзер
-     * 
+     *
      * @return boolean
      */
     public function isAuthorised(): bool
@@ -65,7 +68,7 @@ trait Auth
 
     /**
      * Авторизован ли юзер
-     * 
+     *
      * @return bool
      */
     public function checkAccess(): bool
@@ -90,7 +93,7 @@ trait Auth
     /**
      * Защита от воровства куки авторизации
      * берется набор уникальных данных о пользователе (айпи, порт, строка юзер-агента браузера) и хэшируется
-     * 
+     *
      * @return string
      */
     private function _getCookieValue(): string

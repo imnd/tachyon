@@ -1,5 +1,5 @@
-<?php 
-/** @var tachyon\components\html\FormBuilder $form */
+<?php
+/** @var tachyon\components\formBuilder\FormBuilder $form */
 $html = $form->getHtml();
 ?>
 <?php $this->display('errors', compact('model'))?>

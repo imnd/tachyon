@@ -7,7 +7,7 @@
 <?php
 use tachyon\{
     dic\Container,
-    components\html\FormBuilder,
+    components\formBuilder\FormBuilder,
     Request
 };
 
@@ -23,6 +23,6 @@ if (!empty($searchFields)) {
             ],
             'model' => $model,
             'fields' => $searchFields,
-            'fieldValues' => Request::getGet(),
+            'fieldValues' => $this->request->getGet(),
         ]);
 }

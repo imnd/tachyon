@@ -6,11 +6,11 @@ use
     BadMethodCallException,
     Exception,
     Error,
+    ErrorException,
     PDOException,
     ReflectionException
 ;
 use tachyon\exceptions\{
-    ErrorException,
     ContainerException,
     DBALException,
     FileNotFoundException,
@@ -36,10 +36,6 @@ use
 final class Router
 {
     /**
-     * @var Config $config
-     */
-    private Config $config;
-    /**
      * @var OutputCache $cache
      */
     private OutputCache $cache;
@@ -48,76 +44,74 @@ final class Router
      */
     private Message $msg;
     /**
-     * @var View $view
-     */
-    private View $view;
-    /**
      * @var ServiceContainer $container
      */
     private ServiceContainer $container;
+    /**
+     * @var Request $request
+     */
+    private Request $request;
     /**
      * @var array $routes
      */
     private $routes;
 
     /**
-     * @param Config $config
-     * @param OutputCache $cache
-     * @param Message $msg
-     * @param View $view
+     * @param Config           $config
+     * @param OutputCache      $cache
+     * @param Message          $msg
      * @param ServiceContainer $container
+     * @param Request          $request
      */
     public function __construct(
         Config $config,
         OutputCache $cache,
         Message $msg,
-        View $view,
-        ServiceContainer $container
+        ServiceContainer $container,
+        Request $request
     ) {
-        $this->config    = $config;
         $this->cache     = $cache;
         $this->msg       = $msg;
-        $this->view      = $view;
         $this->container = $container;
-        $this->routes    = $this->config->get('routes');
+        $this->request   = $request;
+        $this->routes    = $config->get('routes');
     }
 
     /**
      * Обработка входящего запроса
      * и передача управления соответствующему контроллеру
-     *
-     * @throws ContainerException
-     * @throws ReflectionException
      */
     public function dispatch(): void
     {
         // start caching
         $this->cache->start($_SERVER['REQUEST_URI']);
 
-        Request::set('get', $_GET);
-        Request::set('post', $_POST);
-        Request::set('files', $_FILES);
+        $this->request->set('get', $_GET);
+        $this->request->set('post', $_POST);
+        $this->request->set('files', $_FILES);
 
         // parse the request
-        $path = Request::parseUri();
+        $path = $this->request->parseUri();
         if (!$this->parseRoute($path)) {
             $requestArr = explode('/', $path);
             // retrieving the name of the controller and action
-            Request::set('controller', 'app\controllers\\' . ucfirst($this->getNameFromRequest($requestArr)) . 'Controller');
-            Request::set('action', $this->getNameFromRequest($requestArr));
+            $this->request->set('controller', 'app\controllers\\' . ucfirst($this->getNameFromRequest($requestArr)) . 'Controller');
+            $this->request->set('action', $this->getNameFromRequest($requestArr));
             // parse the array of parameters
             if (!empty($requestArr)) {
-                Request::set('inline', array_shift($requestArr));
+                $this->request->set('inline', array_shift($requestArr));
                 $requestArr = array_chunk($requestArr, 2);
                 foreach ($requestArr as $pair) {
                     if (isset($pair[1])) {
-                        Request::add('get', [$pair[0] => urldecode($pair[1])]);
+                        $this->request->add('get', [$pair[0] => urldecode($pair[1])]);
                     }
                 }
             }
         }
 
-        $this->container->boot();
+        $this->container->boot([
+            'controller' => $this->request->get('controller')
+        ]);
 
         // start the controller
         $this->startController();
@@ -133,15 +127,15 @@ final class Router
      *
      * @return bool
      */
-    private function parseRoute($path): bool
+    private function parseRoute(string $path): bool
     {
         if (!isset($this->routes[$path])) {
            return false;
         }
         $pathArr = explode('@', $this->routes[$path]);
 
-        Request::set('controller', $pathArr[0]);
-        Request::set('action', $pathArr[1]);
+        $this->request->set('controller', $pathArr[0]);
+        $this->request->set('action', $pathArr[1]);
 
         return true;
     }
@@ -169,12 +163,13 @@ final class Router
     private function startController(): void
     {
         try {
-            if (!$controllerClass = Request::get('controller')) {
+            if (!$controllerClass = $this->request->get('controller')) {
                 throw new HttpException('Wrong url');
             }
+            /** @var Controller $controller */
             $controller = $this->container->get($controllerClass);
             $controllerName = lcfirst(str_replace('Controller', '', $controller->getClassName()));
-            if (empty($actionName = Request::get('action'))) {
+            if (empty($actionName = $this->request->get('action'))) {
                 $actionName = $controller->getDefaultAction();
             }
             if (!method_exists($controller, $actionName)) {
@@ -194,7 +189,7 @@ final class Router
 
             ob_start();
             $actionVars = $this->container->getDependencies($controllerClass, $actionName);
-            if (!is_null($inline = Request::get('inline'))) {
+            if (!is_null($inline = $this->request->get('inline'))) {
                 $actionVars[] = $inline;
             }
             $controller->$actionName(...$actionVars);
@@ -224,7 +219,7 @@ final class Router
             | ViewException
         $e) {
             // Обработчик неправильного запроса. Вывод сообщения об ошибке
-            $code = is_a($e, 'tachyon\exceptions\HttpException') ? $e->getCode() : HttpException::INTERNAL_SERVER_ERROR;
+            $code = $e instanceof HttpException ? $e->getCode() : HttpException::INTERNAL_SERVER_ERROR;
 
             http_response_code($code);
             header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
@@ -232,8 +227,8 @@ final class Router
             echo "Error $code: {$e->getMessage()}\n";
 
             $trace = $e->getTrace();
-            echo "<br/><h3>Stack trace:</h3>\n
-            <table>";
+
+            echo "<br/><h3>Stack trace:</h3>\n<table>";
             foreach ($trace as $item) {
                 echo "
                 <tr>

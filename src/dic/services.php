@@ -1,13 +1,8 @@
 <?php
 use tachyon\Config;
 use tachyon\components\{
-    Cookie,
-    Encrypt,
-    Csrf,
-    Flash,
-    Message,
-    Lang,
-    html\Html
+    Cookie, Encrypt, Csrf,
+    Flash, Html, Message, Lang
 };
 use tachyon\cache\{
     Output,
@@ -19,6 +14,18 @@ use tachyon\db\{
 };
 
 return [
+    [
+        'class' => Db::class,
+        'singleton' => true
+    ],
+    [
+        'class' => DbContext::class,
+        'singleton' => true
+    ],
+    [
+        'class' => DbFactory::class,
+        'singleton' => true
+    ],
     [
         'class' => Config::class,
         'singleton' => true
@@ -32,6 +39,10 @@ return [
                 'value' => 30
             ]
         ]
+    ],
+    [
+        'class' => Csrf::class,
+        'singleton' => true
     ],
     [
         'class' => Encrypt::class,
@@ -48,27 +59,7 @@ return [
         ]
     ],
     [
-        'class' => Csrf::class,
-        'singleton' => true
-    ],
-    [
         'class' => Flash::class,
-        'singleton' => true
-    ],
-    [
-        'class' => Output::class,
-        'singleton' => true
-    ],
-    [
-        'class' => Db::class,
-        'singleton' => true
-    ],
-    [
-        'class' => Message::class,
-        'singleton' => true
-    ],
-    [
-        'class' => Lang::class,
         'singleton' => true
     ],
     [
@@ -76,11 +67,19 @@ return [
         'singleton' => true
     ],
     [
-        'class' => DbContext::class,
+        'class' => Output::class,
         'singleton' => true
     ],
     [
-        'class' => DbFactory::class,
+        'class' => Lang::class,
         'singleton' => true
-    ]
+    ],
+    [
+        'class' => Message::class,
+        'singleton' => true
+    ],
+    [
+        'class' => $this->request->class,
+        'singleton' => true
+    ],
 ];
