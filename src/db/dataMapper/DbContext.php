@@ -123,7 +123,7 @@ class DbContext
             $this->persistence->beginTransaction();
         }
         $success = true;
-        // Сохраняет в хранилище измененную сущность
+        // Сохраняет в хранилище измененные сущности
         foreach ($this->dirtyEntities as $entity) {
             $success = $success && $this
                 ->persistence
@@ -133,7 +133,7 @@ class DbContext
                     $entity->getTableName()
                 );
         }
-        // Удаляет сущность из хранилища
+        // Удаляет сущности из хранилища
         foreach ($this->deletedEntities as $entity) {
             $success = $success && $this
                 ->persistence
@@ -142,7 +142,7 @@ class DbContext
                     $entity->getTableName()
                 );
         }
-        // Вставляет в хранилище новую сущность
+        // Вставляет в хранилище новые сущности
         foreach ($this->newEntities as &$entity) {
             if (!$pk = $this
                 ->persistence
@@ -158,6 +158,47 @@ class DbContext
         unset($entity);
         $this->newEntities = $this->dirtyEntities = $this->deletedEntities = [];
         $this->persistence->endTransaction();
+
+        return $success;
+    }
+
+    /**
+     * Сливаем в БД одну сущность
+     *
+     * @param Entity $entity
+     *
+     * @return bool
+     * @throws DBALException
+     */
+    public function saveEntity(Entity $entity): bool
+    {
+        $success = true;
+
+        if (in_array($entity, $this->dirtyEntities)) {
+            // Сохраняет в хранилище измененную сущность
+            $success = $success && $this
+                    ->persistence
+                    ->updateByPk(
+                        $entity->getPk(),
+                        $entity->getAttributes(),
+                        $entity->getTableName()
+                    );
+
+            unset($this->dirtyEntities[array_search($entity, $this->dirtyEntities)]);
+        } elseif (in_array($entity, $this->newEntities)) {
+            // Вставляет в хранилище новую сущность
+            if (!$pk = $this
+                ->persistence
+                ->insert(
+                    $entity->getAttributes(),
+                    $entity->getTableName()
+                )
+            ) {
+                $success = false;
+            }
+            $entity->setPk($pk);
+            unset($this->newEntities[array_search($entity, $this->newEntities)]);
+        }
 
         return $success;
     }
