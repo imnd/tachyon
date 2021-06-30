@@ -1,11 +1,11 @@
 <?php
 
-namespace tachyon\components\html;
+namespace tachyon\components;
 
 use tachyon\Config;
 
 /**
- * Построитель html-кода
+ * Построитель formBuilder-кода
  *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
@@ -338,7 +338,7 @@ class Html
     }
 
     /**
-     * возвращает html-тэг
+     * возвращает formBuilder-тэг
      *
      * @param $name string
      * @param $options array
@@ -370,7 +370,7 @@ class Html
         }
         if (!empty($options['template'])) {
             // инициализируем путь для отображения
-            $this->owner->setViewsPath($this->config->get('base_path') . '/tachyon/components/html/tpl');
+            $this->owner->setViewsPath($this->config->get('base_path') . '/tachyon/components/formBuilder/tpl');
             $model = $options['model'];
             return $this->owner->display($options['template'], compact('output', 'attrs', 'model'), true);
         }
