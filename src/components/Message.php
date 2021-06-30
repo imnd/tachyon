@@ -15,8 +15,6 @@ class Message
     private array $_messages = [];
 
     /**
-     * Инициализация
-     *
      * @param Config $config
      * @param Lang   $lang
      */

@@ -90,9 +90,9 @@ interface RepositoryInterface
     /**
      * Создает новую сущность.
      *
-     * @param bool $mark
+     * @param bool $markNew
      *
      * @return null|Entity
      */
-    public function create($mark = true): ?Entity;
+    public function create($markNew = true): ?Entity;
 }

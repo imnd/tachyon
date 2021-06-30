@@ -6,7 +6,7 @@ use tachyon\dic\Container;
 use tachyon\components\{
     AssetManager,
     Message,
-    html\Html,
+    Html,
     Flash
 };
 use tachyon\traits\{
@@ -108,7 +108,7 @@ class View
         Flash $flash
     ) {
         $this->env = $env;
-        $this->appViewsPath = $this->viewsPath = $config->get('base_path') . '/../../app/views';
+        $this->appViewsPath = $this->viewsPath = $config->get('base_path') . Config::APP_DIR . 'app/views';
         $this->assetManager = $assetManager;
         $this->msg = $msg;
         $this->html = $html;

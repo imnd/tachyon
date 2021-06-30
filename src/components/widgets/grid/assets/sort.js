@@ -1,4 +1,4 @@
-var 
+var
     sortOrder = "DESC",
     sortCols,
     sortField,

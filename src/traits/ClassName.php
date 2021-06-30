@@ -16,14 +16,32 @@ trait ClassName
      *
      * @param string $className
      *
-     * @return false|string
-     * @throws ReflectionException
+     * @return false | string
      */
-    public function getClassName($className = '')
+    /**
+     * get classname without namespace
+     *
+     * @param string $className
+     *
+     * @return false | string
+     */
+    public function getClassName(string $className = '')
     {
         if ('' !== $className) {
             return substr($className, strrpos($className, '\\') + 1);
         }
         return (new ReflectionClass($this))->getShortName();
+    }
+
+    /**
+     * Convert dashes to camel case
+     *
+     * @param string $className
+     *
+     * @return string
+     */
+    public function kebabToCamel(string $className): string
+    {
+        return str_replace(' ', '', ucwords(str_replace('-', ' ', $className)));
     }
 }

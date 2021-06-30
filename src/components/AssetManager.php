@@ -14,11 +14,9 @@ use RuntimeException;
 class AssetManager
 {
     /** @const Папка www */
-    const PUBLIC_PATH = __DIR__ . '/../../../../public';
+    const PUBLIC_PATH = __DIR__ . '/../../../../../public';
     /** @const Путь к исходникам скриптов */
     const CORE_JS_SOURCE_PATH = __DIR__ . '/../js';
-    /** @const спец. символы javascript */
-    const SPEC_SYMBOLS = '\+\?{}\(\)\[\]*\/,;:|=-["]';
     const TAGS = [
         'js' => 'script',
         'css' => 'link',
@@ -154,13 +152,13 @@ class AssetManager
     }
 
     /**
-     * @param string $name
+     * @param string|null $names
      *
-     * @return self
+     * @return
      */
-    public function coreJs(string $names = null)
+    public function coreJs(string $names = null): self
     {
-        if (is_null($name)) {
+        if (is_null($names)) {
             $names = self::CORE_SCRIPTS;
         } else {
             $names = [$names];
@@ -294,7 +292,7 @@ class AssetManager
         $publicPathArr = explode('/', $publicPath);
         foreach ($publicPathArr as $subPath) {
             $path .= "/$subPath";
-            if (!is_dir($path) and !mkdir($path)) {
+            if (!mkdir($path) && !is_dir($path)) {
                 throw new RuntimeException(sprintf('Directory "%s" can not be created', $path));
             }
         }

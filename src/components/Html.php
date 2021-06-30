@@ -5,7 +5,7 @@ namespace tachyon\components;
 use tachyon\Config;
 
 /**
- * Построитель formBuilder-кода
+ * Построитель html-кода
  *
  * @author Андрей Сердюк
  * @copyright (c) 2020 IMND
@@ -338,7 +338,7 @@ class Html
     }
 
     /**
-     * возвращает formBuilder-тэг
+     * возвращает html-тэг
      *
      * @param $name string
      * @param $options array

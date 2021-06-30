@@ -63,10 +63,10 @@ abstract class Repository implements RepositoryInterface
     /**
      * @inheritdoc
      */
-    public function create($mark = true): Entity
+    public function create($markNew = true): ?Entity
     {
         $entity = clone($this->entity);
-        if ($mark) {
+        if ($markNew) {
             $entity->markNew();
         }
         return $entity;
@@ -138,10 +138,11 @@ abstract class Repository implements RepositoryInterface
      *
      * @return Iterator
      */
-    protected function convertArrayData($arrayData): Iterator
+    protected function convertArrayData(array $arrayData): Iterator
     {
         foreach ($arrayData as $data) {
             $entity = $this->entity->fromState($data);
+            $entity->setIsNew(false);
             yield $this->collection[$entity->getPk()] = $entity;
         }
     }
@@ -149,7 +150,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * Получить сущность по первичному ключу и поместить в $this->collection.
      *
-     * @param int $pk
+     * @param $pk
      *
      * @return Entity
      * @throws DBALException

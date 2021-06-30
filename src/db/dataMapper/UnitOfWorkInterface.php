@@ -11,20 +11,20 @@ interface UnitOfWorkInterface
     /**
      * @return DbContext
      */
-    public function getDbContext();
+    public function getDbContext(): DbContext;
 
     /**
-     * Помечает только что созданую сущность как новую.
+     * Помечает только что созданную сущность как новую.
      */
-    public function markNew();
+    public function markNew(): self;
 
     /**
      * Помечает сущность как измененную.
      */
-    public function markDirty();
+    public function markDirty(): self;
 
     /**
      * Помечает сущность на удаление.
      */
-    public function markDeleted();
+    public function markDeleted(): self;
 }

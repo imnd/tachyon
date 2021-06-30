@@ -12,19 +12,25 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     use ClassName;
 
     /**
+     * @var DbContext
+     */
+    protected DbContext $dbContext;
+    /**
+     * @var Validator $validator
+     */
+    protected Validator $validator;
+    /**
+     * Извлеченная из БД или вновь созданная сущность
+     *
+     * @var boolean
+     */
+    protected bool $isNew = true;
+    /**
      * Имя таблицы БД
      *
      * @var string
      */
-    protected $tableName;
-    /**
-     * @var DbContext
-     */
-    protected $dbContext;
-    /**
-     * @var Validator $validator
-     */
-    protected $validator;
+    protected string $tableName = '';
 
     /**
      * Подписи для поля сущностей
@@ -33,7 +39,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      */
     protected array $attributeCaptions = [];
     /**
-     * Первичный ключ
+     * Имя поля первичного ключа
      *
      * @var mixed
      */
@@ -43,16 +49,17 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      *
      * @var array $errors
      */
-    protected $errors = [];
+    protected array $errors = [];
 
     /**
-     * @return void
+     * @param DbContext $dbContext
+     * @param Validator $validator
      */
     public function __construct(DbContext $dbContext, Validator $validator)
     {
         $this->dbContext = $dbContext;
         $this->validator = $validator;
-        if (is_null($this->tableName)) {
+        if (empty($this->tableName)) {
             $tableNameArr = preg_split('/(?=[A-Z])/', $this->getClassName());
             array_shift($tableNameArr);
             $this->tableName = strtolower(implode('_', $tableNameArr)) . 's';
@@ -62,7 +69,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * @return string
      */
-    public function getTableName()
+    public function getTableName(): string
     {
         return $this->tableName;
     }
@@ -70,7 +77,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * @return Repository
      */
-    public function getRepository()
+    public function getRepository(): Repository
     {
         return $this->getOwner();
     }
@@ -94,7 +101,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      *
      * @return mixed
      */
-    public function getAttribute($attribute)
+    public function getAttribute(string $attribute)
     {
         $method = 'get' . ucfirst($this->getAttrName($attribute));
         if (method_exists($this, $method)) {
@@ -117,7 +124,6 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         return lcfirst(implode('', $arr));
     }
 
-
     /**
      * Присваивание значения $value аттрибуту $attribute
      * При этом сущность не помечается как измененная.
@@ -125,7 +131,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      * @param mixed $attribute
      * @param mixed $value
      */
-    public function setAttribute($attribute, $value = null)
+    public function setAttribute($attribute, $value = null): void
     {
         if (is_array($attribute)) {
             $value = current($attribute);
@@ -134,11 +140,21 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         $this->$attribute = $value;
     }
 
+    /**
+     * @param bool $isNew
+     */
+    public function setIsNew(bool $isNew): void
+    {
+        $this->isNew = $isNew;
+    }
+
     protected function _setAttribute(string $attribute, string $value = null): Entity
     {
         if (!is_null($value)) {
             $this->$attribute = $value;
-            $this->markDirty();
+            if (!$this->isNew) {
+                $this->markDirty();
+            }
         }
         return $this;
     }
@@ -173,12 +189,12 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         $this->{$this->pk} = $pk;
     }
 
-    # Unit of work
+    # region Unit of work
 
     /**
      * @return DbContext
      */
-    public function getDbContext()
+    public function getDbContext(): DbContext
     {
         return $this->dbContext;
     }
@@ -198,7 +214,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      *
      * @return bool
      */
-    public function isDirty(Entity $entity)
+    public function isDirty(self $entity): bool
     {
         return $this->dbContext->isDirty($this);
     }
@@ -208,7 +224,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
      *
      * @return bool
      */
-    public function isDeleted(Entity $entity)
+    public function isDeleted(self $entity): bool
     {
         return $this->dbContext->isDeleted($this);
     }
@@ -216,7 +232,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * Помечает только что созданую сущность как новую.
      */
-    public function markNew()
+    public function markNew(): self
     {
         $this->dbContext->registerNew($this);
         return $this;
@@ -225,7 +241,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * Помечает сущность как измененную.
      */
-    public function markDirty()
+    public function markDirty(): self
     {
         $this->dbContext->registerDirty($this);
         return $this;
@@ -234,13 +250,15 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * Помечает сущность на удаление.
      */
-    public function markDeleted()
+    public function markDeleted(): self
     {
         $this->dbContext->registerDeleted($this);
         return $this;
     }
 
-    # Validation
+    # endregion
+
+    # region Validation
 
     /**
      * Возвращает список правил валидации
@@ -307,4 +325,6 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     {
         return $this->validator->getErrorsSummary($this);
     }
+
+    # endregion
 }

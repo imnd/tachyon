@@ -11,6 +11,8 @@ use ErrorException;
  */
 class Config
 {
+    public const APP_DIR = '/../../../';
+
     /**
      * Все опции
      * @var array
@@ -20,7 +22,7 @@ class Config
      * Путь к папке файлу настроек
      * @var string
      */
-    private string $_filePath = '../../app/config/main.php';
+    private string $_filePath = self::APP_DIR . 'app/config/main.php';
 
     /**
      * @param string $mode
@@ -31,14 +33,14 @@ class Config
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         // все опции
-        $this->_options = require("$basePath/{$this->_filePath}");
+        $this->_options = require("$basePath{$this->_filePath}");
         // base path
         $this->_options['base_path'] = $basePath;
         // environment
         $this->_options['mode'] = defined('APP_MODE') ? APP_MODE : $mode ?? 'work';
         // read .env file
         $envFileName = ($this->_options['mode']==='test') ? '.env-test' : '.env';
-        if (!$envFile = file("$basePath/../../$envFileName")) {
+        if (!$envFile = file($basePath . self::APP_DIR . $envFileName)) {
             return;
         }
         foreach ($envFile as $string) {

@@ -6,6 +6,8 @@ use ErrorException;
 use tachyon\db\dbal\{
     Db, DbFactory
 };
+use ReflectionException;
+use tachyon\exceptions\ContainerException;
 use tachyon\traits\HasOwner;
 use tachyon\exceptions\DBALException;
 
@@ -15,7 +17,8 @@ class Persistence
 
     /**
      * Имя текущей (главной) таблицы запроса
-     * @var string
+     *
+     * @var string|null
      */
     protected ?string $tableName = null;
     /**
@@ -40,6 +43,8 @@ class Persistence
      * @param DbFactory $dbFactory
      *
      * @throws DBALException
+     * @throws ReflectionException
+     * @throws ContainerException
      */
     public function __construct(DbFactory $dbFactory)
     {
@@ -108,8 +113,8 @@ class Persistence
     /**
      * Находит запись по первичному ключу
      *
-     * @param mixed  $pk
-     * @param string $tableName
+     * @param mixed       $pk
+     * @param string|null $tableName
      *
      * @return mixed
      * @throws DBALException
@@ -125,9 +130,9 @@ class Persistence
     /**
      * Обновляет запись по первичному ключу
      *
-     * @param mixed  $pk
-     * @param array  $fieldValues
-     * @param string $tableName
+     * @param mixed       $pk
+     * @param array       $fieldValues
+     * @param string|null $tableName
      *
      * @return boolean
      * @throws DBALException
@@ -143,13 +148,13 @@ class Persistence
     /**
      * Сохраняет запись в хранилище
      *
-     * @param array  $fieldValues
-     * @param string $tableName
+     * @param array       $fieldValues
+     * @param string|null $tableName
      *
-     * @return boolean
+     * @return mixed
      * @throws DBALException
      */
-    public function insert(array $fieldValues, string $tableName = null): bool
+    public function insert(array $fieldValues, string $tableName = null)
     {
         if (!is_null($tableName)) {
             $this->tableName = $tableName;
@@ -160,8 +165,8 @@ class Persistence
     /**
      * Удаляет запись из хранилища
      *
-     * @param mixed  $pk
-     * @param string $tableName
+     * @param mixed       $pk
+     * @param string|null $tableName
      *
      * @return boolean
      * @throws DBALException
@@ -264,8 +269,8 @@ class Persistence
     /**
      * Устанавливает поля сортировки.
      *
-     * @param mixed  $field
-     * @param string $order
+     * @param mixed       $field
+     * @param string|null $order
      *
      * @return Persistence
      * @throws ErrorException

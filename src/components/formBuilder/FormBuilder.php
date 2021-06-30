@@ -1,19 +1,14 @@
 <?php
 
-namespace tachyon\components\html;
+namespace tachyon\components\formBuilder;
 
 use ReflectionException;
-use tachyon\{
-    Config,
-    View,
-    traits\ClassName,
-};
-use tachyon\components\{
-    AssetManager, Csrf, widgets\Datepicker
-};
+use tachyon\{Config, View, traits\ClassName};
+use tachyon\components\{AssetManager, Csrf, Html, Message};
+
 /**
  * Построитель форм
- * 
+ *
  * @author Андрей Сердюк
  * @copyright (c) 2010 IMND
  */
@@ -22,13 +17,17 @@ class FormBuilder
     use ClassName;
 
     /**
+     * @var Message
+     */
+    private Message $msg;
+    /**
      * @var AssetManager $assetManager
      */
     protected AssetManager $assetManager;
     /**
      * Компонент построителя html-кода
      *
-     * @var Html $html
+     * @var Html $formBuilder
      */
     protected Html $html;
     /**
@@ -52,7 +51,7 @@ class FormBuilder
         // сабмитить или посылать ajax-запрос
         'ajax' => false,
         // путь к шаблону
-        'viewsPath' => '../vendor/tachyon/components/html/tpl/',
+        'viewsPath' => '../vendor/tachyon/components/formBuilder/tpl/',
         // имя файла шаблона
         'view' => 'form',
         // id по умолчанию
@@ -61,7 +60,7 @@ class FormBuilder
         'final' => true,
         // аттрибуты тэга form
         'attrs' => [
-            'method' => 'GET',
+            'method'  => 'GET',
             'enctype' => 'multipart/form-data',
         ],
         // тэг по умолчанию
@@ -92,14 +91,22 @@ class FormBuilder
     private array $_dateFieldNames = [];
 
     /**
-     * @param Config $config
+     * @param Message      $msg
+     * @param Config       $config
      * @param AssetManager $assetManager
-     * @param Html $html
-     * @param Csrf $csrf
-     * @param View $view
+     * @param Html         $html
+     * @param Csrf         $csrf
+     * @param View         $view
      */
-    public function __construct(Config $config, AssetManager $assetManager, Html $html, Csrf $csrf, View $view)
-    {
+    public function __construct(
+        Message $msg,
+        Config $config,
+        AssetManager $assetManager,
+        Html $html,
+        Csrf $csrf,
+        View $view
+    ) {
+        $this->msg = $msg;
         $this->assetManager = $assetManager;
         $this->html = $html;
         $this->csrf = $csrf;
@@ -112,26 +119,23 @@ class FormBuilder
     /**
      * build
      * Отрисовка формы
-     * 
-     * @param $params array 
+     *
+     * @param $params array
      */
     public function build($params = []): void
     {
         // Custom опции
         $options = $params['options'] ?? [];
         $this->_options = array_merge($this->_options, $options);
-
         $this->_options['attrs']['class'] = $this->_options['class'] ?? null;
         $this->_options['attrs']['action'] = $this->_options['action'] ?? '';
         $this->_options['attrs']['method'] = $this->_options['method'] ?? 'GET';
         $this->_options['text']['submitCaption'] = $this->_options['submitCaption'] ?? null;
         $this->_options['final'] = $this->_options['final'] ?? true;
-
         // генерируем для каждой формы уникальный id и уникальный name если он не задан в $options
         $this->_options['attrs']['id'] = $this->_options['attrs']['name'] = $this->_options['defId'] . '_frm_' . $this->_formCnt++;
         // инициализируем путь для отображения
         $this->view->setViewsPath($this->_options['viewsPath']);
-
         $formId = $this->_options['attrs']['id']; // для удобства записи
         $requiredFields = false;
         $controls = [];
@@ -264,24 +268,15 @@ class FormBuilder
                 'attrs' => $this->_options['attrs'],
             ]
         );
-        // включаем дэйтпикеры
-        if (!empty($this->_dateFieldNames)) {
-            $this->view->widget(
-                [
-                    'class' => Datepicker::class,
-                    'controller' => $this,
-                    'fieldNames' => $this->_dateFieldNames,
-                ]
-            );
-        }
         // включаем скрипт валидации
         if (
-               !empty($params['model'])
+            !empty($params['model'])
             && !empty($params['fields'])
             && $this->_options['ajax']
         ) {
             $formHandler = isset($this->_options['formHandler']) ? $this->_options['formHandler'] : "dom.findById('$formId').submit();";
-            echo $this->jsCode("
+            echo $this->jsCode(
+                "
             dom.findById('submit_$formId').onclick = function() {
                 validation.msgContainerId = 'errors_list';
                 if (validation.run(" . $model->getValidationFieldsJs($params['fields']) . ")) {
@@ -302,8 +297,8 @@ class FormBuilder
     {
         $assetsSourcePath = __DIR__ . '/assets';
         $assetsPublicPath = lcfirst($this->getClassName());
+        $this->assetManager->coreJs('obj');
         echo
-            $this->assetManager->coreJs('obj'),
             $this->assetManager->css('style', $assetsPublicPath, $assetsSourcePath),
             // скрипт валидации
             $this->assetManager->js('validation', $assetsPublicPath, $assetsSourcePath);

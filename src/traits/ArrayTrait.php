@@ -49,15 +49,14 @@ trait ArrayTrait
     }
 
     /**
-     * Превращает массив ассоциативных массивов в обычный, извлекая из ассоциативных
-     * массивов значения по ключу $key
+     * Извлекает из ассоциативных массивов значения по ключу $key
      *
      * @param $array
      * @param $key
      *
      * @return array
      */
-    public function flatten($array, $key): array
+    public function twitch($array, $key): array
     {
         $result = array();
         if (is_array($key)) {
@@ -103,7 +102,7 @@ trait ArrayTrait
      */
     public function max(array $array, $key)
     {
-        $array = $this->flatten($array, $key);
+        $array = $this->twitch($array, $key);
         return max($array);
     }
 
@@ -117,7 +116,7 @@ trait ArrayTrait
      */
     public function min($array, $key)
     {
-        $array = $this->flatten($array, $key);
+        $array = $this->twitch($array, $key);
         return min($array);
     }
 

@@ -35,7 +35,7 @@ interface EntityInterface
      *
      * @return mixed
      */
-    public function getAttribute($attribute);
+    public function getAttribute(string $attribute);
 
     /**
      * Присваивание значения $value аттрибуту $attribute
