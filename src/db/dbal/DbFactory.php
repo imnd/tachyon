@@ -1,10 +1,12 @@
 <?php
 namespace tachyon\db\dbal;
 
+use ReflectionException;
 use tachyon\dic\Container,
     tachyon\exceptions\DBALException,
     tachyon\Config,
-    tachyon\components\Message;
+    tachyon\components\Message,
+    tachyon\exceptions\ContainerException;
 
 /**
  * Реализует паттерн "фабричный метод"
@@ -16,21 +18,22 @@ use tachyon\dic\Container,
 class DbFactory
 {
     /**
-     * @var Db
+     * @var Db|null
      */
-    private $db;
+    private ?Db $db = null;
 
     /**
      * @var Message $msg
      */
-    protected $msg;
+    protected Message $msg;
     /**
      * @var Config $config
      */
-    protected $config;
+    protected Config $config;
 
     /**
-     * @return void
+     * @param Config       $config
+     * @param Message|null $msg
      */
     public function __construct(Config $config, Message $msg = null)
     {
@@ -40,7 +43,7 @@ class DbFactory
 
     /**
      * @return Db
-     * @throws DBALException
+     * @throws DBALException | ReflectionException | ContainerException
      */
     public function getDb(): Db
     {

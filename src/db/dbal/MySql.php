@@ -10,6 +10,8 @@ namespace tachyon\db\dbal;
  */
 class MySql extends Db
 {
+    protected string $explainPrefix = 'EXPLAIN';
+
     /**
      * @inheritdoc
      */
@@ -39,41 +41,5 @@ class MySql extends Db
     public function orderByCast(string $colName): string
     {
         return "CAST($colName as unsigned)";
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function explain(
-        string $query,
-        array  $conditions1,
-        array  $conditions2 = null
-    ): void
-    {
-        $query = trim(preg_replace('!\s+!', ' ', str_replace(["\r", "\n"], ' ', $query)));
-        $output = "query: $query\r\nid\tselect_type\ttable\ttype\tpossible_keys\tkey\tkey_len\tref\trows\tExtra\r\n";
-        $fields = $conditions1['vals'];
-        if (!is_null($conditions2)) {
-            $fields = array_merge($fields, $conditions2['vals']);
-        }
-        // выводим в файл
-        $stmt = $this->connection->prepare("EXPLAIN $query");
-        try {
-            $this->execute($stmt, $fields);
-            $rows = $stmt->fetchAll();
-            foreach ($rows as $row) {
-                foreach ($row as $key => $value) {
-                    if (is_numeric($key)) {
-                        $output .= "$value\t";
-                    }
-                }
-                $output .= "\r\n";
-            }
-            $file = fopen($this->explainPath, 'w');
-            fwrite($file, $output);
-            fclose($file);
-        } catch (\Exception $e) {
-            return;
-        }
     }
 }

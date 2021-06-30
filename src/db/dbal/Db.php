@@ -2,14 +2,15 @@
 
 namespace tachyon\db\dbal;
 
+use Exception;
 use PDO,
     PDOException,
     PDOStatement,
     tachyon\exceptions\DBALException,
     tachyon\components\Message,
-    tachyon\Config,
     tachyon\Env
 ;
+use tachyon\traits\ArrayTrait;
 use tachyon\db\dbal\conditions\{
     WhereBuilder, UpdateBuilder, InsertBuilder
 };
@@ -22,6 +23,8 @@ use tachyon\db\dbal\conditions\{
  */
 abstract class Db
 {
+    use ArrayTrait;
+
     /**
      * @var WhereBuilder $whereBuilder
      */
@@ -100,11 +103,16 @@ abstract class Db
     protected string $limit = '';
 
     /**
+     * @var string
+     */
+    protected string $explainPrefix;
+
+    /**
      * Путь к файлу где лежит explain.xls
      *
      * @var string
      */
-    protected $explainPath;
+    protected string $explainPath;
 
     /**
      * @param Env     $env
@@ -129,7 +137,7 @@ abstract class Db
         $this->insertBuilder = $insertBuilder;
         $this->options      = $options;
         if ($this->explain  = $this->options['explain'] ?? $this->env->isDevelop()) {
-            $this->explainPath = $this->options['explain_path'] ?? '../runtime/explain.xls';
+            $this->explainPath = $this->options['explain_path'] ?? __DIR__ . '/../../../../../../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
                 unlink($this->explainPath);
@@ -154,6 +162,9 @@ abstract class Db
                     $this->options['password']
                 );
                 $this->connection->exec("SET NAMES {$this->options['charset']}");
+                if ($this->env->isDevelop()) {
+                    $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                }
             }
         } catch (PDOException $e) {
             throw new DBALException($this->msg->i18n('Unable to connect to database.') . "\n{$e->getMessage()}");
@@ -166,22 +177,6 @@ abstract class Db
      * @return string
      */
     abstract protected function getDsn(): string;
-
-    /**
-     * Выдает отчет EXPLAIN
-     *
-     * @param string     $query
-     * @param array      $conditions1
-     * @param array|null $conditions2
-     *
-     * @throws DBALException
-     * @return void
-     */
-    abstract protected function explain(
-        string $query,
-        array  $conditions1,
-        array  $conditions2 = null
-    ): void;
 
     /**
      * Проверка существования таблицы $tableName
@@ -269,16 +264,16 @@ abstract class Db
     {
         $this->connect();
         $fields = array_merge($fields, $this->fields);
-        $conditions = $this->insertBuilder->prepareConditions($fields);
+        $clause = $this->insertBuilder->prepareConditions($fields);
         if (!$stmt = $this->connection->prepare("
             INSERT INTO `$tblName`
-            ({$conditions['clause']}) 
-            VALUES ({$this->getPlaceholder($fields)})
+            ({$clause['clause']}) 
+            VALUES ({$this->getPlaceholder($clause['vals'])})
         ")) {
             throw new DBALException('Error during prepare insert statement.');
         }
         $this->clearFields();
-        if ($this->execute($stmt, $conditions['vals'])) {
+        if ($this->execute($stmt, $clause['vals'])) {
             return $this->connection->lastInsertId();
         }
         return false;
@@ -302,18 +297,18 @@ abstract class Db
         $this->connect();
         $where = array_merge($where, $this->where);
         $fields = array_merge($fields, $this->fields);
-        $updateConditions = $this->updateBuilder->prepareConditions($fields);
-        $whereConditions = $this->whereBuilder->prepareConditions($fields);
+        $clause = $this->updateBuilder->prepareConditions($fields);
+        $whereConditions = $this->whereBuilder->prepareConditions($where);
         if (!$stmt = $this->connection->prepare("
             UPDATE $tblName 
-            {$updateConditions['clause']} 
+            {$clause['clause']} 
             {$whereConditions['clause']}
         ")) {
             throw new DBALException('Error during prepare update statement.');
         }
         $this->clearWhere();
         $this->clearFields();
-        return $this->execute($stmt, array_merge($updateConditions['vals'], $whereConditions['vals']));
+        return $this->execute($stmt, array_merge($clause['vals'], $whereConditions['vals']));
     }
 
     /**
@@ -796,5 +791,50 @@ abstract class Db
             throw new DBALException($this->msg->i18n('Database error.'));
         }
         return true;
+    }
+
+    /**
+     * Выдает отчет EXPLAIN
+     *
+     * @param string     $query
+     * @param array      $conditions1
+     * @param array|null $conditions2
+     *
+     * @throws DBALException
+     * @return void
+     */
+    protected function explain(
+        string $query,
+        array  $conditions1,
+        array  $conditions2 = null
+    ): void
+    {
+        $query = "{$this->explainPrefix} " . trim(preg_replace('!\s+!', ' ', str_replace(["\r", "\n"], ' ', $query)));
+        $output = "query: $query\r\nid\tselect_type\ttable\ttype\tpossible_keys\tkey\tkey_len\tref\trows\tExtra\r\n";
+
+        $fields = $conditions1['vals'];
+        if (!is_null($conditions2)) {
+            $fields = array_merge($fields, $conditions2['vals']);
+        }
+
+        $stmt = $this->connection->prepare($query);
+        try {
+            $this->execute($stmt, $fields);
+            $rows = $stmt->fetchAll();
+            foreach ($rows as $row) {
+                foreach ($row as $key => $value) {
+                    if (is_numeric($key)) {
+                        $output .= "$value\t";
+                    }
+                }
+                $output .= "\r\n";
+            }
+            // выводим в файл
+            $file = fopen($this->explainPath, 'w');
+            fwrite($file, $output);
+            fclose($file);
+        } catch (Exception $e) {
+            throw new DBALException($e->getMessage());
+        }
     }
 }
