@@ -56,11 +56,11 @@ let datepicker = {
         dom.ready(function() {
             let datepickerInputs = dom.findAllByClass(options["class"]);
             obj.forEach(datepickerInputs, function(datepickerInput) {
-
+                let name = dom.attr(datepickerInput, 'name');
                 const template = '\
 <div class="form__field datepicker-wrapper" id="datepicker-wrapper-{{ id }}">\
 <div class="input-field input-field--append">\
-    <input class="datepicker-input" id="datepicker-input-{{ id }}" value="{{ value }}" placeholder="{{ placeholder }}"/>\
+    <input class="datepicker-input" id="datepicker-input-{{ id }}" value="{{ value }}" placeholder="{{ placeholder }}" name="' + name + '"/>\
     <div class="hidden datepicker" id="datepicker-{{ id }}">\
         <div class="datepicker__nav">\
             <div class="datepicker__nav-action on-prev-month" id="on-prev-month-{{ id }}"><</div>\
@@ -107,7 +107,7 @@ let datepicker = {
                 const getDaysInMonth = (_month, _year) => 32 - new Date(_year, _month, 32).getDate();
 
                 /**
-                 * Заполняет массив рядом числел от start до end
+                 * Заполняет массив рядом чисел от start до end
                  * @param start
                  * @param end
                  */
@@ -126,6 +126,7 @@ let datepicker = {
                     dom.replace(datepickerWrapper, dom.renderTemplate(template, {
                         "id" : time,
                         "value" : value,
+                        "name" : name,
                         "curMonthName" : curMonthName,
                         "curYear" : curYear,
                         "placeholder" : placeholder,
