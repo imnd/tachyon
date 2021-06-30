@@ -12,6 +12,8 @@ Features:
 - 2 types of simplest (file system) caching for the DB and http requests;
 - protection against XSS, CSRF assaults and SQL injections;
 - very simple i18n;
+- migrations;
+- PHPUnit tests;
 - view layout: 
     - plain PHP template with inheritance (4 template instructions: @include, @contents, @extends and {{ }});
     - XSLT template.
@@ -47,6 +49,8 @@ All PHP and JS code, except datepicker is written by me.
 - компонент для публикации файлов ресурсов, js и css;
 - защита от XSS, CSRF атак и SQL инъекций;
 - многоязычность;
+- миграции;
+- тестирование на PHPUnit;
 - несложный layout 2-х видов:
     - PHP шаблонизация c возможностью наследования шаблонов (поддерживаются инструкции: @include, @contents, @extends и {{ }});
     - XSLT шаблонизация;
