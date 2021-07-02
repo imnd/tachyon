@@ -1,8 +1,9 @@
 <?php
 namespace tachyon\traits;
 
+use ReflectionException;
+use tachyon\exceptions\ContainerException;
 use tachyon\exceptions\HttpException;
-use tachyon\Request;
 
 /**
  * Трейт аутентификации
@@ -81,11 +82,15 @@ trait Auth
 
     /**
      * залогинить юзера
+     *
+     * @param bool $remember
+     *
      * @return void
+     * @throws ReflectionException | ContainerException
      */
-    protected function _login($remember=false): void
+    protected function _login($remember = false): void
     {
-        $duration = $remember ? ($this->config->get('remember') ?: $this->remember) : 1;
+        $duration = $remember ? (config('remember') ?: $this->remember) : 1;
         $this->cookie->setDuration($duration);
         $this->cookie->set($this->cookieKey, $this->_getCookieValue());
     }
