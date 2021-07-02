@@ -3,8 +3,8 @@ namespace tachyon\cache;
 
 use ReflectionClass,
     ReflectionException,
-    tachyon\Config;
-use tachyon\Env;
+    tachyon\Config,
+    tachyon\Env;
 
 /**
  * кеширование
@@ -38,11 +38,11 @@ abstract class Cache
     {
         $this->env = $env;
         $type = strtolower((new ReflectionClass($this))->getShortName());
-        $cache = $config->get('cache');
-        if ($this->env->isProduction() || !isset($cache[$type])) {
+        $cacheConf = $config->get('cache');
+        if ($this->env->isProduction() || !isset($cacheConf[$type])) {
             return;
         }
-        $options = $cache[$type];
+        $options = $cacheConf[$type];
         foreach ($options as $key => $value) {
             if (property_exists($type, $key)) {
                 $this->$key = $value;

@@ -28,7 +28,7 @@ class Flash
      * @param string $message
      * @param string $type
      */
-    public function setFlash(string $message, $type = self::FLASH_TYPE_ANY): void
+    public function setFlash(string $message, string $type = self::FLASH_TYPE_ANY): void
     {
         $_SESSION["message_$type"] = $message;
     }
@@ -39,7 +39,7 @@ class Flash
      * @param string $message
      * @param string $type
      */
-    public function addFlash(string $message, $type = self::FLASH_TYPE_ANY): void
+    public function addFlash(string $message, string $type = self::FLASH_TYPE_ANY): void
     {
         if (!isset($_SESSION)) {
             $_SESSION["message_$type"] = '';

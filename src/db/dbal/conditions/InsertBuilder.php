@@ -8,16 +8,16 @@ namespace tachyon\db\dbal\conditions;
  * @author Андрей Сердюк
  * @copyright (c) 2021 IMND
  */
-class InsertBuilder extends ConditionsBuilder
+class InsertBuilder extends ExpressionsBuilder
 {
     /**
      * @inheritDoc
      */
-    public function prepareConditions(
+    public function prepareExpression(
         array $conditions,
         string $operator = '='
     ): array
     {
-        return $this->createConditions($conditions, '', '', ',');
+        return $this->createExpression($conditions, '', '', ',');
     }
 }

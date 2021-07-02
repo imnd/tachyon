@@ -1,4 +1,5 @@
 <?php
+
 namespace tachyon\dic;
 
 use
@@ -17,18 +18,21 @@ class Container /*implements ContainerInterface*/
 {
     /**
      * Массив инстанциированных компонентов
+     *
      * @var array
      */
     protected array $services = [];
 
     /**
      * Конфигурация компонентов и их параметров
+     *
      * @var array
      */
     protected array $config = [];
 
     /**
      * Сопоставление интерфейсов и их реализаций
+     *
      * @var array
      */
     protected array $implementations = [];
@@ -39,10 +43,10 @@ class Container /*implements ContainerInterface*/
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         $services = include "$basePath/dic/services.php";
         if (
-               file_exists($appConfPath = "$basePath/../../app/config/services.php")
-            && $appElements = include $appConfPath
+               file_exists($appConfPath = "$basePath/../../../../app/config/services.php")
+            && $appServices = include $appConfPath
         ) {
-            $elements = array_merge($elements, $appElements);
+            $services = array_merge($services, $appServices);
         }
         foreach ($services as $service) {
             $class = $service['class'];
@@ -50,7 +54,7 @@ class Container /*implements ContainerInterface*/
                 continue;
             }
             $serviceConf = [
-                'variables' => array(),
+                'variables' => [],
                 'singleton' => !empty($service['singleton']),
             ];
             if (isset($service['properties'])) {
@@ -79,18 +83,32 @@ class Container /*implements ContainerInterface*/
      * @return mixed
      * @throws ContainerException | ReflectionException
      */
-    public function get(string $className, array $params = array())
+    public function get(string $className, array $params = [])
     {
         if (
                 $config = $this->getVariables($className)
             and !empty($config['singleton'])
         ) {
-            if (!isset($this->services[$className])) {
-                $this->services[$className] = $this->resolve($className, $params);
-            }
-            return $this->services[$className];
+            return $this->singleton($className, $params);
         }
         return $this->resolve($className, $params);
+    }
+
+    /**
+     * Создает экземпляр синглтона
+     *
+     * @param string $className
+     * @param array  $params динамически назначаемые параметры
+     *
+     * @return mixed
+     * @throws ContainerException | ReflectionException
+     */
+    public function singleton(string $className, array $params = [])
+    {
+        if (!isset($this->services[$className])) {
+            $this->services[$className] = $this->resolve($className, $params);
+        }
+        return $this->services[$className];
     }
 
     public function has($id): bool
@@ -119,7 +137,7 @@ class Container /*implements ContainerInterface*/
      * @return object
      * @throws ContainerException | ReflectionException
      */
-    private function resolve(string $name, array $params = array())
+    private function resolve(string $name, array $params = [])
     {
         $implementName = $name;
         try {
@@ -136,11 +154,9 @@ class Container /*implements ContainerInterface*/
         } elseif (!$reflection->isInstantiable()) {
             throw new ContainerException("Class $name is not instantiable.");
         }
-
         $variables = $this->getVariables($implementName);
         $dependencies = $this->getDependencies($implementName);
         $parents = class_parents($implementName);
-
         $constructor = $reflection->getConstructor();
         foreach ($parents as $parentClassName) {
             // случай, когда у потомка нет своего конструктора
@@ -152,21 +168,19 @@ class Container /*implements ContainerInterface*/
             $parentVariables = $this->getVariables($parentClassName);
             $variables = array_merge($variables, $parentVariables);
         }
-
         if ($constructor === null) {
-            $params = array();
+            $params = [];
         } elseif (!empty($dependencies)) {
             $params = array_merge($dependencies, $params);
         }
         $service = $reflection->newInstanceArgs($params);
         $this->setVariables($service, $variables);
-
         return $service;
     }
 
     /**
-     * @param string $className
-     * @param string $methodName
+     * @param string      $className
+     * @param string|null $methodName
      *
      * @return array
      * @throws ContainerException
@@ -178,8 +192,8 @@ class Container /*implements ContainerInterface*/
         $reflection = new ReflectionClass($className);
         if (is_null($methodName)) {
             if (
-                   !$constructor = $reflection->getConstructor()
-                or $constructor->getDeclaringClass()===$reflection->getParentClass()
+                !$constructor = $reflection->getConstructor()
+                or $constructor->getDeclaringClass() === $reflection->getParentClass()
             ) {
                 return $dependencies;
             }
@@ -196,7 +210,7 @@ class Container /*implements ContainerInterface*/
             if (
                    // get the type hinted class
                    !is_null($dependency = $param->getClass())
-                   // get dependency resolved
+                // get dependency resolved
                 && $instance = $this->get($dependency->name)
             ) {
                 $dependencies[] = $instance;
@@ -209,6 +223,7 @@ class Container /*implements ContainerInterface*/
      * Извлечение конфигурации по полному имени класса
      *
      * @param string $className
+     *
      * @return array
      */
     private function getVariables($className): array
@@ -221,6 +236,7 @@ class Container /*implements ContainerInterface*/
      *
      * @param mixed $service
      * @param array $config
+     *
      * @return void
      */
     private function setVariables($service, array $config): void

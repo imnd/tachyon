@@ -8,7 +8,7 @@ namespace tachyon\db\dbal\conditions;
  * @author Андрей Сердюк
  * @copyright (c) 2021 IMND
  */
-abstract class ConditionsBuilder
+abstract class ExpressionsBuilder
 {
     /**
      * Форматирует условия для выборки, вставки или удаления

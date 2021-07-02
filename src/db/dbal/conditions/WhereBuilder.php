@@ -8,14 +8,14 @@ namespace tachyon\db\dbal\conditions;
  * @author Андрей Сердюк
  * @copyright (c) 2021 IMND
  */
-class WhereBuilder extends ConditionsBuilder
+class WhereBuilder extends ExpressionsBuilder
 {
     /**
      * @inheritDoc
      */
-    public function prepareConditions(array $conditions, string $operator = '='): array
+    public function prepareExpression(array $conditions, string $operator = '='): array
     {
-        return $this->createConditions($conditions, 'WHERE', "$operator ?", 'AND');
+        return $this->createExpression($conditions, 'WHERE', "$operator ?", 'AND');
     }
 
     /**

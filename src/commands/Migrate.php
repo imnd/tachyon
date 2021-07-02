@@ -12,6 +12,7 @@ use tachyon\exceptions\{
     ContainerException, DBALException
 };
 use tachyon\db\Migration;
+use tachyon\traits\ArrayTrait;
 
 /**
  * Производит миграции
@@ -22,10 +23,15 @@ use tachyon\db\Migration;
  */
 class Migrate extends Command
 {
+    use ArrayTrait;
+
     /**
      * @var Db
      */
     protected Db $db;
+    /**
+     * @var bool
+     */
     protected bool $migrate = false;
 
     /**
@@ -46,7 +52,7 @@ class Migrate extends Command
     public function run(): void
     {
         $migrations = $this->db->select('migrations');
-        $migrations = $this->db->twitch($migrations, 'name');
+        $migrations = $this->twitch($migrations, 'name');
         if ($handle = opendir(__DIR__ . Config::APP_DIR . '../../migrations')) {
             while (false !== ($fileName = readdir($handle))) {
                 if ($fileName !== '.' && $fileName !== '..') {

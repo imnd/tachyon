@@ -78,8 +78,4 @@ return [
         'class' => Message::class,
         'singleton' => true
     ],
-    [
-        'class' => $this->request->class,
-        'singleton' => true
-    ],
 ];

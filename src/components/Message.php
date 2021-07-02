@@ -1,4 +1,5 @@
 <?php
+
 namespace tachyon\components;
 
 use tachyon\Config;
@@ -28,6 +29,7 @@ class Message
 
     /**
      * @param string $path
+     *
      * @return void
      */
     private function loadMessages(string $path): void
@@ -42,9 +44,10 @@ class Message
      *
      * @param string $msg
      * @param array  $vars
+     *
      * @return string
      */
-    public function i18n(string $msg, $vars = array()): string
+    public function i18n(string $msg, array $vars = []): string
     {
         if (!isset($this->_messages[$msg])) {
             return $msg;

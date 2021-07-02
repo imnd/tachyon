@@ -10,7 +10,6 @@ use PDO,
     tachyon\components\Message,
     tachyon\Env
 ;
-use tachyon\traits\ArrayTrait;
 use tachyon\db\dbal\conditions\{
     WhereBuilder, UpdateBuilder, InsertBuilder
 };
@@ -23,8 +22,6 @@ use tachyon\db\dbal\conditions\{
  */
 abstract class Db
 {
-    use ArrayTrait;
-
     /**
      * @var WhereBuilder $whereBuilder
      */
@@ -172,7 +169,7 @@ abstract class Db
     }
 
     /**
-     * Возвращаетстроку соединения
+     * Возвращает строку соединения
      *
      * @return string
      */
@@ -206,19 +203,19 @@ abstract class Db
         $this->connect();
         $where = array_merge($where, $this->where);
         $fields = array_merge($fields, $this->fields);
-        $conditions = $this->whereBuilder->prepareConditions($where);
+        $expression = $this->whereBuilder->prepareExpression($where);
         $query = "
             SELECT {$this->whereBuilder->prepareFields($fields)}
             FROM $tblName
             {$this->join}
-            {$conditions['clause']}
+            {$expression['clause']}
             {$this->groupByString()}
             {$this->orderByString()}
             {$this->limit}
         ";
 
         if ($this->explain) {
-            $this->explain($query, $conditions);
+            $this->explain($query, $expression);
         }
 	    if (!$stmt = $this->connection->prepare($query)) {
 		    throw new DBALException($this->msg->i18n('Error during prepare query.'));
@@ -232,7 +229,7 @@ abstract class Db
             ->clearGroupBy()
             ->clearLimit();
 
-        return $stmt->execute($conditions['vals']) ? $this->prepareRows($stmt->fetchAll()) : [];
+        return $stmt->execute($expression['vals']) ? $this->prepareRows($stmt->fetchAll()) : [];
     }
 
     /**
@@ -257,26 +254,26 @@ abstract class Db
      * @param string $tblName имя таблицы
      * @param array  $fields массив: [имена => значения] полей
      *
-     * @return mixed
+     * @return string | null
      * @throws DBALException
      */
-    public function insert(string $tblName, array $fields = [])
+    public function insert(string $tblName, array $fields = []): ?string
     {
         $this->connect();
         $fields = array_merge($fields, $this->fields);
-        $clause = $this->insertBuilder->prepareConditions($fields);
+        $expression = $this->insertBuilder->prepareExpression($fields);
         if (!$stmt = $this->connection->prepare("
             INSERT INTO `$tblName`
-            ({$clause['clause']}) 
-            VALUES ({$this->getPlaceholder($clause['vals'])})
+            ({$expression['clause']}) 
+            VALUES ({$this->getPlaceholder($expression['vals'])})
         ")) {
             throw new DBALException('Error during prepare insert statement.');
         }
         $this->clearFields();
-        if ($this->execute($stmt, $clause['vals'])) {
+        if ($this->execute($stmt, $expression['vals'])) {
             return $this->connection->lastInsertId();
         }
-        return false;
+        return null;
     }
 
     /**
@@ -297,18 +294,18 @@ abstract class Db
         $this->connect();
         $where = array_merge($where, $this->where);
         $fields = array_merge($fields, $this->fields);
-        $clause = $this->updateBuilder->prepareConditions($fields);
-        $whereConditions = $this->whereBuilder->prepareConditions($where);
+        $updateExpression = $this->updateBuilder->prepareExpression($fields);
+        $whereExpression = $this->whereBuilder->prepareExpression($where);
         if (!$stmt = $this->connection->prepare("
             UPDATE $tblName 
-            {$clause['clause']} 
-            {$whereConditions['clause']}
+            {$updateExpression['clause']} 
+            {$whereExpression['clause']}
         ")) {
             throw new DBALException('Error during prepare update statement.');
         }
         $this->clearWhere();
         $this->clearFields();
-        return $this->execute($stmt, array_merge($clause['vals'], $whereConditions['vals']));
+        return $this->execute($stmt, array_merge($updateExpression['vals'], $whereExpression['vals']));
     }
 
     /**
@@ -324,16 +321,16 @@ abstract class Db
     {
         $this->connect();
         $where = array_merge($where, $this->where);
-        $whereConditions = $this->whereBuilder->prepareConditions($where);
+        $expression = $this->whereBuilder->prepareExpression($where);
         if (!$stmt = $this->connection->prepare("
             DELETE FROM `$tblName`
-            {$whereConditions['clause']}
+            {$expression['clause']}
         ")) {
             throw new DBALException('Error during prepare delete statement.');
         }
         $this->clearWhere();
 
-        return $this->execute($stmt, $whereConditions['vals']);
+        return $this->execute($stmt, $expression['vals']);
     }
 
     /**
