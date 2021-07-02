@@ -75,7 +75,7 @@ class Controller
      *
      * @var mixed
      */
-    protected $postActions;
+    protected $postActions = [];
     /**
      * Экшны только для аутентифицированных юзеров
      *
@@ -93,34 +93,39 @@ class Controller
      * @param Lang    $lang
      * @param View    $view
      * @param Csrf    $csrf
-     * @param Request $request
      */
     public function __construct(
         Message $msg,
         Cookie $cookie,
         Lang $lang,
         View $view,
-        Csrf $csrf,
-        Request $request
+        Csrf $csrf
     ) {
         $this->msg = $msg;
         $this->cookie = $cookie;
         $this->lang = $lang;
         $this->view = $view;
         $this->csrf = $csrf;
-        $this->request = $request;
     }
 
     /**
      * Инициализация
      *
+     * @param Request $request
+     *
      * @return Controller
      * @throws HttpException
      */
-    public function start(): self
+    public function start(Request $request): self
     {
+        $this->request = $request;
         // проверка по списку экшнов
-        if (in_array($this->action, $this->postActions) && !$this->request->isPost()) {
+        if (
+           (
+                  $this->postActions === '*'
+               || in_array($this->action, $this->postActions)
+           )
+        && !$this->request->isPost()) {
             throw new HttpException(
                 $this->msg->i18n('Action %action allowed only through post request.', ['action' => $this->action]),
                 HttpException::BAD_REQUEST
@@ -130,6 +135,7 @@ class Controller
         if (!$this->csrf->isTokenValid()) {
             throw new HttpException($this->msg->i18n('Wrong CSRF token.', HttpException::BAD_REQUEST));
         }
+        $this->view->setRequest($request);
         $this->view->setController($this);
         // путь к отображениям
         $this->view->setViewsPath("{$this->view->getViewsPath()}/{$this->id}");

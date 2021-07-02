@@ -109,8 +109,7 @@ class View
         AssetManager $assetManager,
         Message $msg,
         Html $html,
-        Flash $flash,
-        Request $request
+        Flash $flash
     ) {
         $this->env = $env;
         $this->appViewsPath = $this->viewsPath = $config->get('base_path') . Config::APP_DIR . 'app/views';
@@ -118,7 +117,6 @@ class View
         $this->msg = $msg;
         $this->html = $html;
         $this->flash = $flash;
-        $this->request = $request;
     }
 
     /**
@@ -327,9 +325,9 @@ class View
     /**
      * @param string $path
      *
-     * @return View
+     * @return self
      */
-    public function setViewsPath(string $path): View
+    public function setViewsPath(string $path): self
     {
         $this->viewsPath = $path;
         return $this;
@@ -354,9 +352,9 @@ class View
     /**
      * @param string $layout
      *
-     * @return View
+     * @return self
      */
-    public function setLayout(string $layout): View
+    public function setLayout(string $layout): self
     {
         $this->layout = $layout;
         return $this;
@@ -373,9 +371,9 @@ class View
     /**
      * @param string $pageTitle
      *
-     * @return View
+     * @return self
      */
-    public function setPageTitle(string $pageTitle): View
+    public function setPageTitle(string $pageTitle): self
     {
         $this->pageTitle = $pageTitle;
         return $this;
@@ -384,11 +382,22 @@ class View
     /**
      * @param Controller $controller
      *
-     * @return View
+     * @return self
      */
-    public function setController(Controller $controller): View
+    public function setController(Controller $controller): self
     {
         $this->controller = $controller;
+        return $this;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return self
+     */
+    public function setRequest(Request $request): self
+    {
+        $this->request = $request;
         return $this;
     }
 

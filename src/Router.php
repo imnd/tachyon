@@ -56,6 +56,10 @@ final class Router
      */
     private $routes;
 
+    private $controller;
+    private $action;
+    private $inline;
+
     /**
      * @param Config           $config
      * @param OutputCache      $cache
@@ -86,20 +90,16 @@ final class Router
         // start caching
         $this->cache->start($_SERVER['REQUEST_URI']);
 
-        $this->request->set('get', $_GET);
-        $this->request->set('post', $_POST);
-        $this->request->set('files', $_FILES);
-
         // parse the request
         $path = $this->request->parseUri();
         if (!$this->parseRoute($path)) {
             $requestArr = explode('/', $path);
             // retrieving the name of the controller and action
-            $this->request->set('controller', 'app\controllers\\' . ucfirst($this->getNameFromRequest($requestArr)) . 'Controller');
-            $this->request->set('action', $this->getNameFromRequest($requestArr));
+            $this->controller = 'app\controllers\\' . ucfirst($this->getNameFromRequest($requestArr)) . 'Controller';
+            $this->action = $this->getNameFromRequest($requestArr);
             // parse the array of parameters
             if (!empty($requestArr)) {
-                $this->request->set('inline', array_shift($requestArr));
+                $this->inline = array_shift($requestArr);
                 $requestArr = array_chunk($requestArr, 2);
                 foreach ($requestArr as $pair) {
                     if (isset($pair[1])) {
@@ -110,7 +110,7 @@ final class Router
         }
 
         $this->container->boot([
-            'controller' => $this->request->get('controller')
+            'controller' => $this->controller
         ]);
 
         // start the controller
@@ -134,8 +134,8 @@ final class Router
         }
         $pathArr = explode('@', $this->routes[$path]);
 
-        $this->request->set('controller', $pathArr[0]);
-        $this->request->set('action', $pathArr[1]);
+        $this->controller = $pathArr[0];
+        $this->action = $pathArr[1];
 
         return true;
     }
@@ -163,13 +163,13 @@ final class Router
     private function startController(): void
     {
         try {
-            if (!$controllerClass = $this->request->get('controller')) {
+            if (!$controllerClass = $this->controller) {
                 throw new HttpException('Wrong url');
             }
             /** @var Controller $controller */
             $controller = $this->container->get($controllerClass);
             $controllerName = lcfirst(str_replace('Controller', '', $controller->getClassName()));
-            if (empty($actionName = $this->request->get('action'))) {
+            if (empty($actionName = $this->action)) {
                 $actionName = $controller->getDefaultAction();
             }
             if (!method_exists($controller, $actionName)) {
@@ -179,7 +179,7 @@ final class Router
                 ->setAction($actionName)
                 ->setId($controllerName)
                 // запускаем
-                ->start()
+                ->start($this->request)
                 // инициализация
                 ->init();
 
@@ -189,7 +189,7 @@ final class Router
 
             ob_start();
             $actionVars = $this->container->getDependencies($controllerClass, $actionName);
-            if (!is_null($inline = $this->request->get('inline'))) {
+            if (!is_null($inline = $this->inline)) {
                 $actionVars[] = $inline;
             }
             $controller->$actionName(...$actionVars);

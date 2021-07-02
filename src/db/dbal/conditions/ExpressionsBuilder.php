@@ -18,7 +18,7 @@ abstract class ConditionsBuilder
      *
      * @return array
      */
-    abstract public function prepareConditions(array $conditions, string $operator = '='): array;
+    abstract public function prepareExpression(array $conditions, string $operator = '='): array;
 
     /**
      * Форматирует условия для выборки, вставки или удаления
@@ -30,7 +30,7 @@ abstract class ConditionsBuilder
      *
      * @return array
      */
-    protected function createConditions(
+    protected function createExpression(
         array  $conditions,
         string $keyword,
         string $operator,

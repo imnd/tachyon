@@ -9,6 +9,13 @@ class Request
      */
     private array $parameters = [];
 
+    public function __construct(string $mode = null)
+    {
+        $this->set('get', $_GET);
+        $this->set('post', $_POST);
+        $this->set('files', $_FILES);
+    }
+
     /**
      * @param string $name
      * @param mixed  $val
@@ -21,7 +28,7 @@ class Request
             return;
         }
         if ($name !== 'files') {
-            $val = $this->_filter($val);
+            $val = $this->filter($val);
         }
         $this->parameters[$name] = $val;
     }
@@ -35,7 +42,7 @@ class Request
     public function add(string $name, $val): void
     {
         if ($name !== 'files') {
-            $val = $this->_filter($val);
+            $val = $this->filter($val);
         }
         $this->parameters[$name] = array_merge($this->parameters[$name], $val);
     }
@@ -160,14 +167,14 @@ class Request
      *
      * @return mixed
      */
-    private function _filter($data)
+    private function filter($data)
     {
         if (is_string($data)) {
             return htmlentities($data);
         }
         if (is_array($data)) {
             foreach ($data as &$val) {
-                $val = $this->_filter($val);
+                $val = $this->filter($val);
             }
             return array_filter($data);
         }
