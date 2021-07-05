@@ -32,15 +32,20 @@ function db(): Db
 }
 
 /**
- * @param string $message
- * @param string $type
+ * @param mixed ...$params
  *
  * @return mixed
- * @throws ContainerException | ReflectionException
+ * @throws ContainerException
+ * @throws ReflectionException
  */
-function flash(string $message, string $type)
+function flash(...$params)
 {
-    return app()->get(Flash::class)->addFlash($message, $type);
+    $flash = app()->get(Flash::class);
+
+    if (in_array($params[0], Flash::FLASH_TYPES)) {
+        return $flash->getFlash($params[0]);
+    }
+    return $flash->addFlash($params[0], $params[1]);
 }
 
 /**

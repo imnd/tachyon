@@ -2,6 +2,7 @@
 
 namespace tachyon\db\dataMapper;
 
+use tachyon\exceptions\ValidationException;
 use tachyon\components\validation\{
     ValidationInterface, Validator
 };
@@ -11,14 +12,6 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 {
     use ClassName;
 
-    /**
-     * @var DbContext
-     */
-    protected DbContext $dbContext;
-    /**
-     * @var Validator $validator
-     */
-    protected Validator $validator;
     /**
      * Извлеченная из БД или вновь созданная сущность
      *
@@ -72,14 +65,6 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     public function getTableName(): string
     {
         return $this->tableName;
-    }
-
-    /**
-     * @return Repository
-     */
-    public function getRepository(): Repository
-    {
-        return $this->getOwner();
     }
 
     /**
@@ -148,6 +133,12 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         $this->isNew = $isNew;
     }
 
+    /**
+     * @param string      $attribute
+     * @param string|null $value
+     *
+     * @return $this
+     */
     protected function _setAttribute(string $attribute, string $value = null): Entity
     {
         if (!is_null($value)) {
@@ -182,6 +173,8 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * Установка значения первичного ключа
      *
+     * @param mixed $pk
+     *
      * @return mixed
      */
     public function setPk($pk)
@@ -192,6 +185,11 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     # region Unit of work
 
     /**
+     * @var DbContext
+     */
+    protected DbContext $dbContext;
+
+    /**
      * @return DbContext
      */
     public function getDbContext(): DbContext
@@ -200,11 +198,9 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * @param Entity $entity
-     *
      * @return bool
      */
-    public function isNew()
+    public function isNew(): bool
     {
         return $this->dbContext->isNew($this);
     }
@@ -230,7 +226,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Помечает только что созданую сущность как новую.
+     * Помечает только что созданную сущность как новую.
      */
     public function markNew(): self
     {
@@ -261,6 +257,11 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     # region Validation
 
     /**
+     * @var Validator $validator
+     */
+    protected Validator $validator;
+
+    /**
      * Возвращает список правил валидации
      *
      * @return array
@@ -273,9 +274,10 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * Валидация полей сущности
      *
-     * @param array $attributesмассив полей
+     * @param array|null $attributes массив полей
      *
      * @return boolean
+     * @throws ValidationException
      */
     public function validate(array $attributes = null): bool
     {

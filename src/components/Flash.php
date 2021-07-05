@@ -23,10 +23,11 @@ class Flash
     ];
 
     /**
-     * Создание
+     * Создание сообщения
      *
      * @param string $message
      * @param string $type
+     * @return void
      */
     public function setFlash(string $message, string $type = self::FLASH_TYPE_ANY): void
     {
@@ -34,10 +35,11 @@ class Flash
     }
 
     /**
-     * Создание
+     * Добавление сообщения
      *
      * @param string $message
      * @param string $type
+     * @return void
      */
     public function addFlash(string $message, string $type = self::FLASH_TYPE_ANY): void
     {

@@ -35,7 +35,8 @@ class Validator
      */
     public function required($model, string $fieldName): void
     {
-        if ($model->getAttribute($fieldName) === '') {
+        $attrVal = $model->getAttribute($fieldName);
+        if ($attrVal === '' || $attrVal === null) {
             $this->addError($fieldName, $this->msg->i18n('fieldRequired'));
         }
     }
@@ -230,8 +231,8 @@ class Validator
     /**
      * Валидация полей модели/сущности
      *
-     * @param mixed $object
-     * @param array $attrs массив полей
+     * @param mixed      $object
+     * @param array|null $attrs массив полей
      *
      * @return array
      * @throws ValidationException
@@ -297,11 +298,11 @@ class Validator
 
     /**
      * @param array $rule
-     * @param       $object
+     * @param mixed $object
      *
      * @return boolean
      */
-    private function _on(&$rule, $object): bool
+    private function _on(array &$rule, $object): bool
     {
         if (isset($rule['on'])) {
             // если правило не применимо к сценарию

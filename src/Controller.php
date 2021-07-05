@@ -288,4 +288,6 @@ class Controller
         $this->layout = $layout;
         return $this;
     }
+
+    # endregion
 }

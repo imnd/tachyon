@@ -8,11 +8,6 @@ namespace tachyon\db\dataMapper;
  */
 interface EntityInterface
 {
-    /**
-     * @return Repository
-     */
-    public function getRepository();
-
     public function fromState(array $state): Entity;
 
     public function setAttributes(array $state);

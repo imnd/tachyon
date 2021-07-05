@@ -9,7 +9,7 @@ class Request
      */
     private array $parameters = [];
 
-    public function __construct(string $mode = null)
+    public function __construct()
     {
         $this->set('get', $_GET);
         $this->set('post', $_POST);
@@ -35,7 +35,7 @@ class Request
 
     /**
      * @param string $name
-     * @param        $val
+     * @param mixed  $val
      *
      * @return void
      */
@@ -178,12 +178,5 @@ class Request
             }
             return array_filter($data);
         }
-    }
-
-    /**
-     * @return void
-     */
-    public function boot(): void
-    {
     }
 }

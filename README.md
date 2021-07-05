@@ -6,8 +6,8 @@ Features:
 - Dependency Injection Container. At initial realisation it used setter methods and xml configuration files, now I changed it for using __constructor() methods and json configuration files. Also, it uses controllers actions variables. You can embed dependencies both through class names and through interface names. In this case, the correspondence of interfaces must be specified in file app/config/implementations.php.
 - Front Controller with a simple (file system) routing;
 - PDO based DBAL. It works on both MySql and PgSql. Instantiation of the corresponding class occurs using the Factory Method pattern;
-- ORM 
-    - Active Record with foreign keys support and special kind of models for sub-queries, which interacts with the database using the Bridge pattern via a DBAL. Related records can be loaded by "greedy" (by one request) or "lazy" way;
+- ORMs: 
+    - Active Record with foreign keys support and classes that implement relationships between tables. Active Record interacts with the database using the Bridge pattern via a DBAL. Related records can be loaded by "greedy" (by one request) or "lazy" way;
     - Data Mapper with Unit of work. 
 - 2 types of simplest (file system) caching for the DB and http requests;
 - protection against XSS, CSRF assaults and SQL injections;
@@ -29,6 +29,7 @@ Components:
 - XSLT template system;
 - flash messages;
 - component for publishing js and css resource files.
+- global helper shortcut functions for simplifying access to singletons.
 
 Tere is also JS library. It consists of separated components that can be selectively pluged to the page.  They are all clearified of whitespaces and glued together in one bundle you can serve up to the browser in a single <script> tag. A compressed gzip version also created to reduce traffic.
 
@@ -43,7 +44,7 @@ All PHP and JS code, except datepicker is written by me.
 - Dependency Injection Container, который первоначально был реализован с использованием сеттеров и файлов конфигурации xml, в котором были прописаны зависимости. Сейчас я переписал его на использование методов __constructor() и файлов конфигурации json в которых прописаны только значения переменных подключаемых объектов. Также он использует переменные экшнов контроллеров. Внедрять зависимости можно как через имена классов так и через имена интерфейсов. В последнем случае соответствие интерфейсов классап надо прописать в файле конфигурации app/config/implementations.php;
 - DBAL на основе PDO. DBAL работает как на MySql так и на PgSql. Инстанциирование соответствующего класса DBAL происходит с помощью паттерна Factory Method.;
 - 2 типа ORM, которые взаимодействует с БД через DBAL используя паттерн Bridge: 
-  - Active Record с поддержкой внешних ключей + особый вид моделей для подзапросов. Связанные записи могут загружаться как одним запросом в основной записью так и по требованию.
+  - Active Record с поддержкой внешних ключей + классы, реализующие связи между таблицами. Связанные записи могут загружаться как одним запросом в основной записью так и по требованию.
   - Data Mapper, использующий DAO Entity Repository и шаблон Unit of work.
 - 2 вида кэширования в простейшем виде для ДБ и http запросов. Для этого используется файловая система;
 - компонент для публикации файлов ресурсов, js и css;
@@ -60,6 +61,7 @@ All PHP and JS code, except datepicker is written by me.
 - компоненты для загрузки файлов, работы с куки и авторизации;
 - виджет для отображения таблиц из массива моделей;
 - отображение флэш-сообщений.
+- глобальные вспомогательные функции быстрого доступа для упрощения доступа к одиночным объектам.
 
 В составе так же есть JS библиотека. Она состоит из отдельных компонентов, которые можно выборочно подключать на страницу. При этом все они очищаются от whitespace'ов и склеиваются в один спрайт. Так же создается сжатая gzip версия для снижения трафика. 
 
