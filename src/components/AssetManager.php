@@ -333,13 +333,13 @@ class AssetManager
      */
     public function finalize(string &$contents)
     {
-        if ($this->finalized) {
+        if (self::$finalized) {
             return;
         }
 
         $this->publishSeparated();
 
-        $this->finalized = true;
+        self::$finalized = true;
     }
 
     /**

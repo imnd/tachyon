@@ -208,10 +208,11 @@ class Container /*implements ContainerInterface*/
                 continue;
             }
             if (
-                   // get the type hinted class
-                   !is_null($dependency = $param->getClass())
+                    // get the type hinted class
+                    $dependencyType = $param->getType()
+                and !$dependencyType->isBuiltin()
                 // get dependency resolved
-                && $instance = $this->get($dependency->name)
+                and $instance = $this->get($dependencyType->getName())
             ) {
                 $dependencies[] = $instance;
             }

@@ -112,28 +112,28 @@ abstract class Db
     protected string $explainPath;
 
     /**
-     * @param Env     $env
-     * @param Message $msg
-     * @param WhereBuilder $whereBuilder
+     * @param Env           $env
+     * @param Message       $msg
+     * @param WhereBuilder  $whereBuilder
      * @param UpdateBuilder $updateBuilder
      * @param InsertBuilder $insertBuilder
-     * @param array   $options
+     * @param array         $options
      */
     public function __construct(
-        Env $env,
-        Message $msg,
-        WhereBuilder $whereBuilder,
+        Env           $env,
+        Message       $msg,
+        WhereBuilder  $whereBuilder,
         UpdateBuilder $updateBuilder,
         InsertBuilder $insertBuilder,
         array $options
     ) {
-        $this->env          = $env;
-        $this->msg          = $msg;
-        $this->whereBuilder = $whereBuilder;
+        $this->env           = $env;
+        $this->msg           = $msg;
+        $this->whereBuilder  = $whereBuilder;
         $this->updateBuilder = $updateBuilder;
         $this->insertBuilder = $insertBuilder;
-        $this->options      = $options;
-        if ($this->explain  = $this->options['explain'] ?? $this->env->isDevelop()) {
+        $this->options       = $options;
+        if ($this->explain = $this->options['explain'] ?? $this->env->isDevelop()) {
             $this->explainPath = $this->options['explain_path'] ?? __DIR__ . '/../../../../../../runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
@@ -158,7 +158,7 @@ abstract class Db
                     $this->options['user'],
                     $this->options['password']
                 );
-                $this->connection->exec("SET NAMES {$this->options['charset']}");
+                $this->connection->exec("SET NAMES '{$this->options['charset']}'");
                 if ($this->env->isDevelop()) {
                     $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 }

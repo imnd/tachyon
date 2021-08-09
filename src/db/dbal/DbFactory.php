@@ -48,18 +48,18 @@ class DbFactory
     public function getDb(): Db
     {
         if (is_null($this->db)) {
-            if (!$config = $this->config->get('db')) {
+            if (!$options = $this->config->get('db')) {
                 throw new DBALException('Не задан параметр конфигурации "db"');
             }
-            if (!isset($config['engine'])) {
+            if (!isset($options['engine'])) {
                 throw new DBALException('Не задан параметр конфигурации "engine"');
             }
             $className = [
                 'mysql' => 'MySql',
                 'pgsql' => 'PgSql',
-            ][$config['engine']];
+            ][$options['engine']];
 
-            $this->db = (new Container)->get("\\tachyon\\db\\dbal\\$className", compact('config'));
+            $this->db = app()->get( __NAMESPACE__ . "\\$className", compact('options'));
         }
         return $this->db;
     }
