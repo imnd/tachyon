@@ -38,9 +38,10 @@ class Config
         $this->options['mode'] = defined('APP_MODE') ? APP_MODE : $mode ?? 'work';
         // read .env file
         $envFileName = ($this->options['mode']==='test') ? '.env-test' : '.env';
-        if (!$envFile = file($basePath . self::APP_DIR . $envFileName)) {
+        if (!file_exists($envFilePath = $basePath . self::APP_DIR . $envFileName)) {
             return;
         }
+        $envFile = file($envFilePath);
         foreach ($envFile as $string) {
             if ("\n"===$string || "\r\n"===$string) {
                 continue;
