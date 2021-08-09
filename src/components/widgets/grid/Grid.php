@@ -115,7 +115,7 @@ class Grid extends Widget
             $this->csrfJson = '"' . $this->csrf->getTokenId() . '":"' . $this->csrf->getTokenVal() . '",';
         }
         if (is_null($this->model)) {
-            $this->model = (new Container)->get($this->modelName);
+            $this->model = app()->get($this->modelName);
         } else {
             $this->modelName = $this->model->getClassName();
         }

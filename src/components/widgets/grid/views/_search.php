@@ -12,7 +12,7 @@ use tachyon\{
 };
 
 if (!empty($searchFields)) {
-    (new Container)->get(FormBuilder::class)
+    app()->get(FormBuilder::class)
         ->build([
             'options' => [
                 'action' => "/{$widget->getController()->getId()}",

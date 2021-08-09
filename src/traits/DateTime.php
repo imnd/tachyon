@@ -75,7 +75,7 @@ trait DateTime
         }
         $dateArr = explode('-', $date);
         $dateArr = array_reverse($dateArr);
-        $dateArr[1] = $this->_months[(new Container)->get(Lang::class)->getLanguage(
+        $dateArr[1] = $this->_months[app()->get(Lang::class)->getLanguage(
         )][$length][$case][(int)$dateArr[1] - 1];
         return implode($glue, $dateArr) . ' г.';
     }
@@ -104,7 +104,7 @@ trait DateTime
     {
         $dateArr = explode('-', $date ?? $this->date);
         return $this->_months[
-            (new Container)
+            app()
                 ->get(Lang::class)
                 ->getLanguage()
         ][$length][$case][(int)$dateArr[1] - 1];

@@ -32,7 +32,7 @@ trait RepositoryListTrait
     public function getAllSelectList($valueField = 'name'): array
     {
         $this->valueField = $valueField;
-        $model = (new Container)->get(static::class);
+        $model = app()->get(static::class);
         return $model->getSelectList($model->findAllRaw());
     }
 

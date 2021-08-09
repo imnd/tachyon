@@ -32,7 +32,7 @@ class TestCase extends BaseTestCase
      */
     public function __construct($name = null, array $data = [], $dataName = '')
     {
-        $this->container = new Container;
+        $this->container = app();
         $this->config = $this->container->get(Config::class);
         $baseUrl = $this->config->get('base_url');
         if (substr($baseUrl, -1) !== '/') {

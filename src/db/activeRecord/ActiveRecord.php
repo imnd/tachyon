@@ -209,7 +209,7 @@ abstract class ActiveRecord extends Model
         // если это не подключенное ч/з with св-во ("жадная" загрузка)
         // ищем среди присоединенных ч/з внешние ключи объектов
         // TODO: перенести в Relations
-        $container = new Container;
+        $container = app();
         if (isset($this->relations[$var])) {
             // добавляем внешние ключи по объявленным связям
             $relationParams = $this->relations[$var];
@@ -427,7 +427,7 @@ abstract class ActiveRecord extends Model
             // чтобы не перезаписывать данные основной записи в случае JOIN
             if (!array_key_exists($itemPk, $retItems)) {
                 // берём только поля данной модели (без присоединенных ч/з JOIN)
-                $model = (new Container)->get(get_called_class());
+                $model = app()->get(get_called_class());
                 $model->with($this->with);
                 $model->setAttributes(array_intersect_key($item, $modelFieldsKeys));
                 $model->setAttribute($this->pkName, $itemPk);
@@ -1043,7 +1043,7 @@ abstract class ActiveRecord extends Model
         }
         $relType = $relationParams[1];
         $relationClassName = ucfirst(str_replace('_', '', $relType)) . 'Relation';
-        if (!$relation = (new Container)->get(
+        if (!$relation = app()->get(
             $relationClassName,
             [
                 'modelName' => $relationParams[0],
@@ -1090,7 +1090,7 @@ abstract class ActiveRecord extends Model
         $relationName = $this->join->getRelationName($join);
         $relation = $this->relations[$relationName];
         if (in_array($relation[1], ['has_many', 'has_one'])) {
-            $joinModel = (new Container)->get($relation[0]);
+            $joinModel = app()->get($relation[0]);
             return [$joinModel::getTableName() => $join[$relationName]];
         }
         throw new ModelException(
@@ -1345,7 +1345,7 @@ abstract class ActiveRecord extends Model
     {
         if (!$pkName = $this->pkName) {
             throw new ModelException(
-                (new Container)->get('msg')->i18n('The primary key of the related table is not declared.')
+                app()->get('msg')->i18n('The primary key of the related table is not declared.')
             );
         }
         return (array)($pkName);

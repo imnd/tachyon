@@ -29,7 +29,7 @@ trait ActiveRecordListTrait
      */
     public static function getAllSelectList(): array
     {
-        $model = (new Container)->get(static::class);
+        $model = app()->get(static::class);
         return $model->getSelectList($model->findAllRaw());
     }
 

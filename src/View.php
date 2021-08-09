@@ -288,7 +288,7 @@ class View
     {
         $class = $params['class'];
         unset($params['class']);
-        $widget = (new Container)->get($class);
+        $widget = app()->get($class);
         $widget->setVariables($params);
         $widget->setOwner($this);
         $controller = $this->controller ?: $params['controller'];

@@ -50,7 +50,7 @@ abstract class Relation
         $this->alias = $alias;
 
         $this->modelName = $params['modelName'];
-        $model = (new Container)->get($this->modelName);
+        $model = app()->get($this->modelName);
         $this->tableName = $model::getTableName();
         $this->pkName = $model->getPkName();
         $this->linkKey = $params['linkKey'];
