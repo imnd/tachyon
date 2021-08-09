@@ -32,7 +32,29 @@ const styles = '\
     .datepicker__year-arrow.down {top:24px; font-size:0.7em; margin-left: 1px;}\
     .datepicker .control {margin-right: 0px;}\
 ';
-
+const template = '\
+<div class="form__field datepicker-wrapper" id="datepicker-wrapper-{{ id }}">\
+    <div class="input-field input-field--append">\
+        <input class="datepicker-input" id="datepicker-input-{{ id }}" value="{{ value }}" placeholder="{{ placeholder }}" name="' + name + '"/>\
+        <div class="hidden datepicker" id="datepicker-{{ id }}">\
+            <div class="datepicker__nav">\
+                <div class="datepicker__nav-action on-prev-month" id="on-prev-month-{{ id }}"><</div>\
+                <div class="datepicker__nav-content">\
+                    <div class="datepicker__month">{{ curMonthName }}</div>\
+                    <div class="datepicker__year">{{ curYear }}\
+                        <div class="datepicker__year-arrows">\
+                            <div class="datepicker__year-arrow up on-next-year" id="on-next-year-{{ id }}">^</div>\
+                            <div class="datepicker__year-arrow down on-prev-year" id="on-prev-year-{{ id }}">v</div>\
+                        </div>\
+                    </div>\
+                </div>\
+                <div class="datepicker__nav-action control on-next-month" id="on-next-month-{{ id }}">></div>\
+            </div>\
+            <ul class="datepicker__week">{{ daysOfWeek }}</ul>\
+            <ul class="datepicker__days">{{ datepickerDays }}</ul>\
+        </div>\
+    </div>\
+</div>';
 let datepicker = {
     /**
      * @param data
@@ -57,29 +79,6 @@ let datepicker = {
             let datepickerInputs = dom.findAllByClass(options["class"]);
             obj.forEach(datepickerInputs, function(datepickerInput) {
                 let name = dom.attr(datepickerInput, 'name');
-                const template = '\
-<div class="form__field datepicker-wrapper" id="datepicker-wrapper-{{ id }}">\
-<div class="input-field input-field--append">\
-    <input class="datepicker-input" id="datepicker-input-{{ id }}" value="{{ value }}" placeholder="{{ placeholder }}" name="' + name + '"/>\
-    <div class="hidden datepicker" id="datepicker-{{ id }}">\
-        <div class="datepicker__nav">\
-            <div class="datepicker__nav-action on-prev-month" id="on-prev-month-{{ id }}"><</div>\
-            <div class="datepicker__nav-content">\
-                <div class="datepicker__month">{{ curMonthName }}</div>\
-                <div class="datepicker__year">{{ curYear }}\
-                    <div class="datepicker__year-arrows">\
-                        <div class="datepicker__year-arrow up on-next-year" id="on-next-year-{{ id }}">^</div>\
-                        <div class="datepicker__year-arrow down on-prev-year" id="on-prev-year-{{ id }}">v</div>\
-                    </div>\
-                </div>\
-            </div>\
-            <div class="datepicker__nav-action control on-next-month" id="on-next-month-{{ id }}">></div>\
-        </div>\
-        <ul class="datepicker__week">{{ daysOfWeek }}</ul>\
-        <ul class="datepicker__days">{{ datepickerDays }}</ul>\
-    </div>\
-</div>\
-</div>';
 
                 let
                     isHidden = true,

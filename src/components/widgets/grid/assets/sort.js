@@ -5,7 +5,7 @@ var
     parser = new DOMParser()
 ;
 var sort = function(url, field, tblId) {
-    sortOrder = sortField!==field ? "ASC" : sortOrder=="DESC" ? "ASC" : "DESC";
+    sortOrder = sortField!==field ? "ASC" : sortOrder==="DESC" ? "ASC" : "DESC";
     sortField = field;
     ajax.get(
         url,

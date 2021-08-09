@@ -22,8 +22,8 @@
  * @this  {upload}
  */
 
-import {dom} from './dom.js';
-import {ajax} from './ajax.js';
+import dom from './dom.js';
+import ajax from './ajax.js';
 
 let
     /**
