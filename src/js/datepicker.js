@@ -8,53 +8,55 @@
  */
 
 import dom from './dom.js';
-import obj from './obj.js';
 
-const styles = '\
-    .hidden {display: none;}\
-    .form__field {position: relative;display: flex;flex-wrap: wrap;align-items: stretch;width: auto;}\
-    .datepicker{position:absolute;z-index:50;margin-top:5px;padding:20px 16px; width:220px;top:100%;left:0;background-color:#fff;border:1px solid #D0D0D0;border-radius:5px;}\
-    .datepicker__nav{padding:0 3px;margin-bottom:16px}\
-    .datepicker__nav,.datepicker__nav-content{display:flex;align-items:center;justify-content:space-between}\
-    .datepicker__nav-content{flex-grow:1;padding:0 15px}\
-    .datepicker__nav-action{width:30px;cursor:pointer;text-align:center;font-size: 24px;}\
-    .datepicker__month{flex-grow:1;color:#000;font-size:1.3em;text-align:center}\
-    .datepicker__year{display:flex;align-items:center;margin-left:6px;font-size:1.5em}\
-    .datepicker__year-arrows{margin-left:5px}\
-    .datepicker__week{display:flex;padding:0;margin:0 0 13px;list-style:none}\
-    .datepicker__week li{width:14.28571%;color:#000;font-size:1em;line-height:1;text-align:center}\
-    .datepicker__days{display:flex;flex-wrap:wrap;padding:0;margin:0;list-style:none}\
-    .datepicker__days li{margin-bottom:2px;width:14.28571%}\
-    .datepicker__days li span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid transparent;border-radius:50%;color:#000;font-size:1rem;line-height:1;cursor:pointer;transition:all .3s}.datepicker__days li span:hover{border-color:#D0D0D0}.datepicker__days li span.is-active{background-color:#777;border-color:#777;color:#fff}\
-    .datepicker__days li span.prev-month, .datepicker__days li span.next-month {color:#7d7d7d}\
-    .datepicker__year-arrow{position: absolute;display:flex;width:10px;height:10px;cursor:pointer;font-weight: bold;}\
-    .datepicker__year-arrow.up {top:16px; font-size:0.8em;}\
-    .datepicker__year-arrow.down {top:24px; font-size:0.7em; margin-left: 1px;}\
-    .datepicker .control {margin-right: 0px;}\
-';
-const template = '\
-<div class="form__field datepicker-wrapper" id="datepicker-wrapper-{{ id }}">\
-    <div class="input-field input-field--append">\
-        <input class="datepicker-input" id="datepicker-input-{{ id }}" value="{{ value }}" placeholder="{{ placeholder }}" name="' + name + '"/>\
-        <div class="hidden datepicker" id="datepicker-{{ id }}">\
-            <div class="datepicker__nav">\
-                <div class="datepicker__nav-action on-prev-month" id="on-prev-month-{{ id }}"><</div>\
-                <div class="datepicker__nav-content">\
-                    <div class="datepicker__month">{{ curMonthName }}</div>\
-                    <div class="datepicker__year">{{ curYear }}\
-                        <div class="datepicker__year-arrows">\
-                            <div class="datepicker__year-arrow up on-next-year" id="on-next-year-{{ id }}">^</div>\
-                            <div class="datepicker__year-arrow down on-prev-year" id="on-prev-year-{{ id }}">v</div>\
-                        </div>\
-                    </div>\
-                </div>\
-                <div class="datepicker__nav-action control on-next-month" id="on-next-month-{{ id }}">></div>\
-            </div>\
-            <ul class="datepicker__week">{{ daysOfWeek }}</ul>\
-            <ul class="datepicker__days">{{ datepickerDays }}</ul>\
-        </div>\
-    </div>\
-</div>';
+const styles = `
+    .hidden {display: none;}
+    .form__field {position: relative;display: flex;flex-wrap: wrap;align-items: stretch;width: auto;}
+    .datepicker{position:absolute;z-index:50;margin-top:5px;padding:20px 16px; width:220px;top:100%;left:0;background-color:#fff;border:1px solid #D0D0D0;border-radius:5px;}
+    .datepicker__nav{padding:0 3px;margin-bottom:16px}
+    .datepicker__nav,.datepicker__nav-content{display:flex;align-items:center;justify-content:space-between}
+    .datepicker__nav-content{flex-grow:1;padding:0 15px}
+    .datepicker__nav-action{width:30px;cursor:pointer;text-align:center;font-size: 24px;}
+    .datepicker__month{flex-grow:1;color:#000;font-size:1.3em;text-align:center}
+    .datepicker__year{display:flex;align-items:center;margin-left:6px;font-size:1.5em}
+    .datepicker__year-arrows{margin-left:5px}
+    .datepicker__week{display:flex;padding:0;margin:0 0 13px;list-style:none}
+    .datepicker__week li{width:14.28571%;color:#000;font-size:1em;line-height:1;text-align:center}
+    .datepicker__days{display:flex;flex-wrap:wrap;padding:0;margin:0;list-style:none}
+    .datepicker__days li{margin-bottom:2px;width:14.28571%}
+    .datepicker__days li span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid transparent;border-radius:50%;color:#000;font-size:1rem;line-height:1;cursor:pointer;transition:all .3s}.datepicker__days li span:hover{border-color:#D0D0D0}.datepicker__days li span.is-active{background-color:#777;border-color:#777;color:#fff}
+    .datepicker__days li span.prev-month, .datepicker__days li span.next-month {color:#7d7d7d}
+    .datepicker__year-arrow{position: absolute;display:flex;width:10px;height:10px;cursor:pointer;font-weight: bold;}
+    .datepicker__year-arrow.up {top:16px; font-size:0.8em;}
+    .datepicker__year-arrow.down {top:24px; font-size:0.7em; margin-left: 1px;}
+    .datepicker .control {margin-right: 0px;}
+`;
+
+const template = `
+<div class="form__field datepicker-wrapper" id="datepicker-wrapper-{{ id }}">
+    <div class="input-field input-field--append">
+        <input class="datepicker-input" id="datepicker-input-{{ id }}" value="{{ value }}" placeholder="{{ placeholder }}" name="' + name + '"/>
+        <div class="hidden datepicker" id="datepicker-{{ id }}">
+            <div class="datepicker__nav">
+                <div class="datepicker__nav-action on-prev-month" id="on-prev-month-{{ id }}"><</div>
+                <div class="datepicker__nav-content">
+                    <div class="datepicker__month">{{ curMonthName }}</div>
+                    <div class="datepicker__year">{{ curYear }}
+                        <div class="datepicker__year-arrows">
+                            <div class="datepicker__year-arrow up on-next-year" id="on-next-year-{{ id }}">^</div>
+                            <div class="datepicker__year-arrow down on-prev-year" id="on-prev-year-{{ id }}">v</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="datepicker__nav-action control on-next-month" id="on-next-month-{{ id }}">></div>
+            </div>
+            <ul class="datepicker__week">{{ daysOfWeek }}</ul>
+            <ul class="datepicker__days">{{ datepickerDays }}</ul>
+        </div>
+    </div>
+</div>
+`;
+
 let datepicker = {
     /**
      * @param data
@@ -63,22 +65,22 @@ let datepicker = {
     build: data => {
         let options = {
             "class" : "datepicker",
-            "placeholder" : "ДД.ММ.ГГГГ",
-            "daysOfWeek" : ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
-            "monthNames" : ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+            placeholder : "ДД.ММ.ГГГГ",
+            daysOfWeek : ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+            monthNames : ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
         };
 
         data = data || {};
-        for (let ind in data) {
-            if (data.hasOwnProperty(ind)) {
-                options[ind] = data[ind];
+        for (let key in data) {
+            if (data.hasOwnProperty(key)) {
+                options[key] = data[key];
             }
         }
 
-        dom.ready(function() {
-            let datepickerInputs = dom.findAllByClass(options["class"]);
-            obj.forEach(datepickerInputs, function(datepickerInput) {
-                let name = dom.attr(datepickerInput, 'name');
+        dom.ready(() => {
+            const datepickerInputs = dom.findAllByClass(options["class"]);
+            datepickerInputs.map(datepickerInput => {
+                const name = dom.attr(datepickerInput, 'name');
 
                 let
                     isHidden = true,
@@ -142,15 +144,15 @@ let datepicker = {
 
                     // навешиваем обработчики события
                     // показать или спрятать окно при клике на инпут
-                    dom.click(datepickerInput, (e) => {
+                    dom.click(datepickerInput, e => {
                         showDatepicker(datepickerContainer);
                         e.stopPropagation();
                     });
-                    dom.click(datepickerContainer, (e) => {
+                    dom.click(datepickerContainer, e => {
                         hide = false;
                         e.stopPropagation();
                     });
-                    dom.click(window, (e) => {
+                    dom.click(window, e => {
                         if (hide) {
                             hideDatepicker(datepickerContainer);
                         }
@@ -219,7 +221,7 @@ let datepicker = {
                 /**
                  * Высчитываем дни календаря
                  */
-                const buildDatepicker = (datepicker) => {
+                const buildDatepicker = datepicker => {
                     curMonthName = options.monthNames[curMonth];
                     // день недели первого дня месяца
                     let firstDay = (new Date(curYear, curMonth)).getDay();
@@ -258,7 +260,7 @@ let datepicker = {
                     }
                 };
 
-                const showDatepicker = function (datepicker) {
+                const showDatepicker = datepicker => {
                     isHidden = false;
                     dom.removeClass(datepicker, "hidden");
                 };
@@ -276,13 +278,13 @@ let datepicker = {
                 };
 
                 placeholder = options.placeholder;
-                obj.forEach(options.daysOfWeek, function(day) {
+                options.daysOfWeek.map(day => {
                     daysOfWeek += "<li>" + day + "</li>"
                 });
 
                 let date = dom.val(datepickerInput);
                 if (date !== '' && date !== null && date !== undefined) {
-                    [selectedYear, selectedMonth, selectedDate] = date.split('-').map((val) => parseInt(val));
+                    [selectedYear, selectedMonth, selectedDate] = date.split('-').map(val => parseInt(val));
                     selectedMonth--;
                 } else {
                     const curDateTime = new Date();
