@@ -14,44 +14,27 @@ use RuntimeException;
 class AssetManager
 {
     /** @const Папка www */
-    const PUBLIC_PATH = __DIR__ . '/../../../../../public';
+    const PUBLIC_FOLDER_PATH = __DIR__ . '/../../../../../public';
     /** @const Путь к исходникам скриптов */
-    const CORE_JS_SOURCE_PATH = __DIR__ . '/../js';
     const TAGS = [
         'js' => 'script',
         'css' => 'link',
     ];
-    const CORE_SCRIPTS = [
-        'ajax',
-        'datepicker',
-        'dom',
-        'obj',
-        'upload',
-    ];
 
-    /**
-     * @var Env $env
-     */
-    protected $env;
+    protected Env $env;
 
     /**
      * Путь к публичной папке со скриптами
-     *
-     * @var string $assetsPath
      */
-    private $assetsPublicPath = 'assets';
+    private string $assetsPublicPath = 'assets';
 
     /**
      * Путь к папке со скриптами
-     *
-     * @var string $assetsSource
      */
-    private $assetsSourcePath;
+    private string $assetsSourcePath;
 
     /**
      * Массив скриптов для склеивания и публикации
-     *
-     * @var array $js
      */
     private static $js = [];
 
@@ -59,15 +42,11 @@ class AssetManager
 
     /**
      * Массив стилей для склеивания и публикации
-     *
-     * @var array $css
      */
     private static $css = [];
 
     /**
      * Опубликованные скрипты
-     *
-     * @var string $scripts
      */
     private static $files = [];
 
@@ -76,61 +55,32 @@ class AssetManager
      */
     private static $finalized = false;
 
-    /**
-     * @param Env $env
-     */
     public function __construct(Env $env)
     {
         $this->env = $env;
+        if (!is_dir($this->assetsPublicPath)) {
+            mkdir($this->assetsPublicPath);
+        }
     }
 
-    /**
-     * @param string        $name
-     * @param string        $publicPath
-     * @param string | null $sourcePath
-     *
-     * @return string
-     */
     public function css(string $name, string $publicPath = 'css', string $sourcePath = null): string
     {
-        return $this->_publishFile($name, 'css', $publicPath, $sourcePath);
+        return $this->publishFile($name, 'css', $publicPath, $sourcePath);
     }
 
-    /**
-     * @param string        $name
-     * @param string        $publicPath
-     * @param string | null $sourcePath
-     *
-     * @return string
-     */
     public function js(string $name, string $publicPath = 'js', string $sourcePath = null): string
     {
-        return $this->_publishFile($name, 'js', $publicPath, $sourcePath);
+        return $this->publishFile($name, 'js', $publicPath, $sourcePath);
     }
 
-    /**
-     * @param string        $name
-     * @param string        $publicPath
-     * @param string | null $sourcePath
-     *
-     * @return string
-     */
     public function moduleJs(string $name, string $publicPath = 'js', string $sourcePath = null): string
     {
-        return $this->_publishFile($name, 'js', $publicPath, $sourcePath, [
+        return $this->publishFile($name, 'js', $publicPath, $sourcePath, [
             'type' => 'module',
         ]);
     }
 
-    /**
-     * @param string        $name
-     * @param string        $ext
-     * @param string        $publicPath
-     * @param string | null $sourcePath
-     *
-     * @return string
-     */
-    private function _publishFile(
+    private function publishFile(
         string $name,
         string $ext,
         string $publicPath,
@@ -141,8 +91,8 @@ class AssetManager
         $filePath = "$publicPath/$name.$ext";
         if (!isset(self::$files[$filePath])) {
             if (!is_null($sourcePath) && !is_file($filePath)) {
-                $text = $this->_getFileContents($name, $ext, $sourcePath);
-                $this->_writeFile($name, $ext, $text, $publicPath);
+                $text = $this->getFileContents($name, $ext, $sourcePath);
+                $this->writeFile($name, $ext, $text, $publicPath);
             }
             $tag = self::TAGS[$ext];
 
@@ -151,52 +101,20 @@ class AssetManager
         return '';
     }
 
-    /**
-     * @param string|null $names
-     *
-     * @return
-     */
-    public function coreJs(string $names = null): self
-    {
-        if (is_null($names)) {
-            $names = self::CORE_SCRIPTS;
-        } else {
-            $names = [$names];
-        }
-        foreach ($names as $name) {
-            if (!isset(self::$js[$name])) {
-                self::$js[$name] = $this->_getFileContents($name, 'js', self::CORE_JS_SOURCE_PATH);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @param string $name
-     * @param string $ext
-     * @param string $sourcePath
-     *
-     * @return string | string[] | null
-     */
-    private function _getFileContents(string $name, string $ext, string $sourcePath)
+    private function getFileContents(string $name, string $ext, string $sourcePath)
     {
         $text = file_get_contents("$sourcePath/$name.$ext");
 
         if ($this->env->isProduction()) {
-            $this->_clearify($text);
-//            $this->_obfuscate($text);
+            $this->clearify($text);
         }
         return $text;
     }
 
     /**
      * удаляем лишние символы
-     *
-     * @param string $text
-     *
-     * @return string|string[]|null
      */
-    private function _clearify(string &$text)
+    private function clearify(string &$text): void
     {
         $text = str_replace(['https://', 'http://'], '', $text);
         // вырезать слэши на концах строк в строковых переменных
@@ -215,80 +133,18 @@ class AssetManager
         $text = preg_replace('/[,;](})/', '$1', $text);
     }
 
-    /**
-     * переименовать переменные
-     *
-     * @param string $text
-     *
-     * @return string
-     */
-    private function _obfuscate(string &$text)
-    {
-        // объявленные переменные
-        preg_match_all('/(var|let|const)[ ]([^;]+)/', $text, $matches);
-        foreach ($matches[2] as $i => $varNameGroup) {
-            $varExpressions = explode(',', $varNameGroup);
-            if ($i === 0) {
-                $varExpression = $varExpressions[0];
-                // первая переменная, название модуля.
-                $moduleVarName = substr($varExpression, 0, strpos($varExpression, '='));
-                continue;
-            }
-            foreach ($varExpressions as $varName) {
-                if ($equalSignPos = strpos($varName, '=')) {
-                    $varName = substr($varName, 0, $equalSignPos);
-                }
-                preg_match('/[^a-zA-Z0-9]/', $varName, $nonAlpha);
-                if (!empty($nonAlpha)) {
-                    continue;
-                }
-                if (is_numeric($varName)) {
-                    continue;
-                }
-                if ($moduleVarName===$varName) {
-                    continue;
-                }
-                $this->_replaceVar($text, $varName);
-            }
-        }
-        // параметры ф-й
-        preg_match_all('/[(]([a-zA-Z_]{1}[^)(.="\/ ]*)[)]/', $text, $matches);
-        foreach ($matches[1] as $i => $varNameGroup) {
-            $varNames = explode(',', $varNameGroup);
-            foreach ($varNames as $varName) {
-                if ($moduleVarName===$varName) {
-                    continue;
-                }
-                $this->_replaceVar($text, $varName);
-            }
-        }
-    }
-
-    /**
-     * @param string $text
-     * @param string $varName
-     * @return void
-     */
-    private function _replaceVar(&$text, $varName)
+    private function replaceVar(&$text, $varName): void
     {
         $text = preg_replace("/([^a-zA-Z0-9])($varName)([^a-zA-Z0-9])/", '$1v' . self::$varIndex++ . '$3', $text);
     }
 
-    /**
-     * записываем
-     *
-     * @param string $name
-     * @param string $ext
-     * @param string $text
-     * @param string $publicPath
-     */
-    private function _writeFile(
+    private function writeFile(
         string $name,
         string $ext,
         string $text,
         string $publicPath
-    ) {
-        $path = self::PUBLIC_PATH;
+    ): void {
+        $path = self::PUBLIC_FOLDER_PATH;
         $publicPathArr = explode('/', $publicPath);
         foreach ($publicPathArr as $subPath) {
             $path .= "/$subPath";
@@ -301,16 +157,11 @@ class AssetManager
         file_put_contents("$fileName.gz", gzencode($text, 9));
     }
 
-    /**
-     * @param string        $dirName
-     * @param string | null $publicPath
-     * @param string | null $sourcePath
-     */
     public function publishFolder(
         string $dirName,
         string $publicPath = null,
         string $sourcePath = null
-    ) {
+    ): void {
         $sourcePath = $sourcePath ?? $this->assetsSourcePath;
         $publicPath = $publicPath ?? $this->assetsPublicPath;
         $sourcePath .= "/$dirName";
@@ -321,16 +172,13 @@ class AssetManager
                 $pathinfo = pathinfo($fileName);
                 $name = $pathinfo['filename'];
                 $ext = $pathinfo['extension'];
-                $text = $this->_getFileContents($name, $ext, $sourcePath);
-                $this->_writeFile($name, $ext, $text, $publicPath);
+                $text = $this->getFileContents($name, $ext, $sourcePath);
+                $this->writeFile($name, $ext, $text, $publicPath);
             }
         }
         $sourceDir->close();
     }
 
-    /**
-     * @param string $contents
-     */
     public function finalize(string &$contents)
     {
         if (self::$finalized) {
@@ -344,11 +192,8 @@ class AssetManager
 
     /**
      * публикация скриптов по отдельности
-     *
-     * @param string $contents
-     * @return void
      */
-    public function publishSeparated()
+    public function publishSeparated(): void
     {
         foreach (self::TAGS as $ext => $tag) {
             $scriptPath = "{$this->assetsPublicPath}/$ext";
@@ -370,11 +215,8 @@ class AssetManager
 
     /**
      * склеивание скриптов в спрайт
-     *
-     * @param string $contents
-     * @return void
      */
-    private function publishSprite(&$contents)
+    private function publishSprite(&$contents): void
     {
         $spritesTags = '';
         foreach (self::TAGS as $ext => $tag) {
@@ -407,12 +249,6 @@ class AssetManager
         $contents = str_replace('</head>', "$spritesTags</head>", $contents);
     }
 
-    /**
-     * @param string $path путь
-     * @param array $options
-     *
-     * @return string
-     */
     private function script(string $path, array $options = [])
     {
         if (!isset($options['type'])) {
@@ -428,31 +264,16 @@ class AssetManager
         return "<script $text></script>";
     }
 
-    /**
-     * @param string $path путь
-     *
-     * @return string
-     */
     private function link($path)
     {
         return "<link rel=\"stylesheet\" href=\"/$path\" type=\"text/css\" media=\"screen\">";
     }
 
-    /**
-     * @param string $path
-     *
-     * @return void
-     */
     public function setAssetsPublicPath($path)
     {
         $this->assetsPublicPath = $path;
     }
 
-    /**
-     * @param string $path
-     *
-     * @return void
-     */
     public function setAssetsSourcePath($path)
     {
         $this->assetsSourcePath = $path;
