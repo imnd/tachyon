@@ -5,7 +5,7 @@
  * @this  {validation}
  */
 
-import obj from './obj.js';
+import { obj } from 'imnd-obj';
 
 const validation = (function () {
     const checkRules = {
@@ -176,14 +176,14 @@ const validation = (function () {
             message += '<b>Внимание</b>';
         }
 
-        if (obj.isArray(messageData) === true) {
+        if (obj.isArray(messageData)) {
             message += '<ul>';
             for (i = 0; i < messageData.length; i++) {
                 message += '<li>' + messageData[i].message + '</li>';
             }
 
             message += '</ul>';
-        } else if (obj.isObject(messageData) === true) {
+        } else if (obj.isObject(messageData)) {
             message += '<ul>';
             for (let key in messageData) {
                 message += '<li>' + key + ": " + messageData[key] + '</li>';

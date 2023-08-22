@@ -3,8 +3,18 @@
 namespace tachyon\components\formBuilder;
 
 use ReflectionException;
-use tachyon\{Config, Request, View, traits\ClassName};
-use tachyon\components\{AssetManager, Csrf, Html, Message};
+use tachyon\{
+    Config,
+    Request,
+    View,
+    traits\ClassName
+};
+use tachyon\components\{
+    AssetManager,
+    Csrf,
+    Html,
+    Message
+};
 
 /**
  * Построитель форм
@@ -55,7 +65,7 @@ class FormBuilder
         // сабмитить или посылать ajax-запрос
         'ajax' => false,
         // путь к шаблону
-        'viewsPath' => '../vendor/tachyon/components/formBuilder/tpl/',
+        'viewsPath' => '../vendor/tachyon/components/formBuilder/views/',
         // имя файла шаблона
         'view' => 'form',
         // id по умолчанию
