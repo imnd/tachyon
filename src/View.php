@@ -123,7 +123,7 @@ class View
      * Отображает файл представления $view
      * передавая ему параметры $vars в виде массива
      *
-     * @param string  $viewName
+     * @param string  $viewName имя файла вью
      * @param array   $vars переменные представления
      * @param boolean $return показывать или возвращать
      *
@@ -135,10 +135,27 @@ class View
         bool $return = false
     ) {
         $contents = $this->_view("{$this->viewsPath}/$viewName", $vars);
+        $contents = $this->_displayExtends($contents, $vars);
+
         if ($return) {
             return $contents;
         }
         echo $contents;
+    }
+
+    private function _displayExtends(string $contents, array $vars = []): string
+    {
+        if (false !== $extendsPos = strpos($contents, '@extends')) {
+            $start = $extendsPos + strlen('@extends') + 2;
+            $end = strpos($contents, "'", $start);
+            // устанавливаем родительский лэйаут
+            $this->layout = substr($contents, $start, $end - $start);
+            // убираем тег '@extends'
+            $contents = substr($contents, $end + 2);
+            // отрисовываем родительский лэйаут
+            $contents = $this->_displayLayout($contents, $vars);
+        }
+        return $contents;
     }
 
     /**
@@ -165,21 +182,22 @@ class View
      */
     private function _displayLayout(string $viewContents, array $vars): string
     {
-        $layoutHtml = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
-        if (false !== $extendsPos = strpos($layoutHtml, '@extends')) {
+        $contents = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
+        $contents = $this->_displayExtends($contents, $vars);
+        /*if (false !== $extendsPos = strpos($contents, '@extends')) {
             $start = $extendsPos + strlen('@extends') + 2;
-            $end = strpos($layoutHtml, "'", $start);
+            $end = strpos($contents, "'", $start);
             // устанавливаем родительский лэйаут
-            $this->layout = substr($layoutHtml, $start, $end - $start);
+            $this->layout = substr($contents, $start, $end - $start);
             // убираем тег '@extends'
-            $layoutHtml = substr($layoutHtml, $end + 2);
+            $contents = substr($contents, $end + 2);
             // отрисовываем родительский лэйаут
-            $layoutHtml = $this->_displayLayout($layoutHtml, $vars);
-        }
-        $layoutHtml = $this->_replaceTag($layoutHtml, $viewContents, '@contents');
-        $this->assetManager->finalize($layoutHtml);
+            $contents = $this->_displayLayout($contents, $vars);
+        }*/
+        $contents = $this->_replaceTag($contents, $viewContents, '@contents');
+        $this->assetManager->finalize($contents);
 
-        return $layoutHtml;
+        return $contents;
     }
 
     /**
