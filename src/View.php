@@ -55,7 +55,7 @@ class View
      *
      * @var string $layoutPath
      */
-    protected string $layout;
+    protected string $layout = '';
     /**
      * Заголовок страницы
      *
@@ -131,7 +131,12 @@ class View
     public function view(string $viewsPath, array $vars = []): void
     {
         $this->layoutPath = "{$this->appViewsPath}/layouts";
-        echo $this->_displayLayout($this->display($viewsPath, $vars, true), $vars);
+        $contents = $this->display($viewsPath, $vars, true);
+        if ($this->layout) {
+            echo $this->_displayLayout($contents, $vars);
+        } else {
+            echo $contents;
+        }
     }
 
     /**
@@ -208,7 +213,7 @@ class View
         return substr($textToReplace, 0, $tagPos) . $text . substr($textToReplace, $tagPos + strlen($tag) + 1);
     }
 
-    private function _view($filePath, array $vars = [])
+    private function _view(string $filePath, array $vars = [])
     {
         $filePath = "$filePath.php";
         if (!file_exists($filePath)) {
@@ -288,12 +293,7 @@ class View
     }
 
     /**
-     * widget
      * Запуск виджета на странице
-     *
-     * @param array $params
-     *
-     * @return mixed
      */
     public function widget(array $params)
     {

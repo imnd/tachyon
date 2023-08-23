@@ -22,78 +22,37 @@ class Controller
 
     # Компоненты
 
-    /**
-     * @var Message $msg
-     */
     protected Message $msg;
-    /**
-     * @var Cookie $cookie
-     */
     protected Cookie $cookie;
-    /**
-     * @var Lang $lang
-     */
     protected Lang $lang;
-    /**
-     * @var View $view
-     */
     protected View $view;
-    /**
-     * @var Csrf $csrf
-     */
     protected Csrf $csrf;
-    /**
-     * @var Request
-     */
     protected Request $request;
 
     /**
      * Общий шаблон сайта
-     *
-     * @var string $layout
      */
     protected string $layout = 'main';
-    /**
-     * @var string $defaultAction
-     */
     protected string $defaultAction = 'index';
     /**
      * id контроллера
-     *
-     * @var string $id
      */
     protected string $id;
     /**
      * id экшна
-     *
-     * @var string $action
      */
     protected string $action;
 
     /**
      * Экшны только для $_POST запросов
-     *
-     * @var mixed
      */
     protected $postActions = [];
     /**
      * Экшны только для аутентифицированных юзеров
-     *
-     * @var mixed
      */
     protected $protectedActions;
-    /**
-     * @var string
-     */
     private string $language;
 
-    /**
-     * @param Message $msg
-     * @param Cookie  $cookie
-     * @param Lang    $lang
-     * @param View    $view
-     * @param Csrf    $csrf
-     */
     public function __construct(
         Message $msg,
         Cookie $cookie,
@@ -110,11 +69,6 @@ class Controller
 
     /**
      * Инициализация
-     *
-     * @param Request $request
-     *
-     * @return Controller
-     * @throws HttpException
      */
     public function start(Request $request): self
     {
@@ -154,8 +108,6 @@ class Controller
 
     /**
      * Хук, срабатывающий перед запуском экшна
-     *
-     * @return boolean
      */
     public function beforeAction(): bool
     {
@@ -173,13 +125,13 @@ class Controller
      * Отображает файл представления $view
      * передавая ему параметры $vars в виде массива
      *
-     * @param $view string файл представления
+     * @param $view string|null файл представления
      * @param $vars array переменные представления
      * @param $return boolean показывать или возвращать
      *
      * @return string
      */
-    public function display($view = null, array $vars = [], $return = false): ?string
+    public function display(string $view = null, array $vars = [], bool $return = false): ?string
     {
         if (empty($view)) {
             $view = lcfirst($this->action);
@@ -190,15 +142,12 @@ class Controller
     /**
      * Отображает файл представления, передавая ему параметры
      * в виде массива в заданном лэйауте
-     *
-     * @param $view string
-     * @param $vars array
-     *
-     * @return void
      */
-    public function view($view = null, array $vars = []): void
+    public function view(string $view = '', array $vars = []): void
     {
-        $this->view->setLayout($this->layout);
+        if ($this->layout) {
+            $this->view->setLayout($this->layout);
+        }
         if (empty($view)) {
             $view = lcfirst($this->action);
         }
@@ -207,10 +156,6 @@ class Controller
 
     /**
      * Перенаправляет пользователя на адрес: $path
-     *
-     * @param $path string
-     *
-     * @return void
      */
     public function redirect(string $path): void
     {
@@ -220,33 +165,21 @@ class Controller
 
     # region Getters
 
-    /**
-     * @return string
-     */
     public function getId(): string
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
     public function getAction(): string
     {
         return $this->action;
     }
 
-    /**
-     * @return string
-     */
     public function getDefaultAction(): string
     {
         return $this->defaultAction;
     }
 
-    /**
-     * @return string
-     */
     public function getLanguage(): ?string
     {
         return $this->language;
@@ -256,33 +189,18 @@ class Controller
 
     # region Setters
 
-    /**
-     * @param string $id
-     *
-     * @return self
-     */
     public function setId(string $id): self
     {
         $this->id = $id;
         return $this;
     }
 
-    /**
-     * @param string $actionName
-     *
-     * @return self
-     */
     public function setAction(string $actionName): self
     {
         $this->action = $actionName;
         return $this;
     }
 
-    /**
-     * @param string $layout
-     *
-     * @return self
-     */
     public function setLayout(string $layout): self
     {
         $this->layout = $layout;

@@ -35,26 +35,13 @@ use
  */
 final class Router
 {
-    /**
-     * @var OutputCache $cache
-     */
     private OutputCache $cache;
-    /**
-     * @var Message $msg
-     */
     private Message $msg;
-    /**
-     * @var ServiceContainer $container
-     */
     private ServiceContainer $container;
-    /**
-     * @var Request $request
-     */
     private Request $request;
-    /**
-     * @var array $routes
-     */
-    private $routes;
+    private Config $config;
+
+    private array $routes;
 
     private $controller;
     private $action;
@@ -78,6 +65,7 @@ final class Router
         $this->msg       = $msg;
         $this->container = $container;
         $this->request   = $request;
+        $this->config    = $config;
         $this->routes    = $config->get('routes');
     }
 
@@ -224,21 +212,7 @@ final class Router
             http_response_code($code);
             header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
 
-            echo "Error $code: {$e->getMessage()}\n";
-
-            $trace = $e->getTrace();
-
-            echo "<br/><h3>Stack trace:</h3>\n<table>";
-            foreach ($trace as $item) {
-                echo "
-                <tr>
-                    <td><b>File:</b>&nbsp; {$item['file']}</td>
-                    <td><b>Line:</b>&nbsp; {$item['line']}&nbsp;&nbsp;</td>
-                    <td>" . (isset($item['class']) ? $item['class'] . ':' : '') . "{$item['function']}()</td>
-                </tr>
-                ";
-            }
-            echo "</table>";
+            require 'errors.php';
         }
     }
 }
