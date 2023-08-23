@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "imnd-ajax": "^1.0.1",
-    "imnd-dom": "^1.0.2",
+    "imnd-ajax": "^2.0.0",
+    "imnd-dom": "^3.2.0",
     "imnd-obj": "^1.0.0"
   }
 }

@@ -1,40 +1,57 @@
-var
-    sortOrder = "DESC",
-    sortCols,
-    sortField,
-    parser = new DOMParser()
+import ajax from 'imnd-ajax';
+import dom from 'imnd-dom';
+
+let
+  sortOrder = 'DESC',
+  sortCols,
+  sortField
 ;
-var sort = function(url, field, tblId) {
-    sortOrder = sortField!==field ? "ASC" : sortOrder==="DESC" ? "ASC" : "DESC";
+const
+  parser = new DOMParser(),
+  sort = (field, tblId, url) => {
+    sortOrder = sortField !== field ? 'ASC' : sortOrder === 'DESC' ? 'DESC' : 'ASC';
     sortField = field;
-    ajax.get(
+    ajax
+      .get(
         url,
         {
-            field : sortField,
-            order : sortOrder,
+          'order-by': sortField,
+          order: sortOrder,
         },
-        function(resp) {
-            var xmlDoc = parser.parseFromString(resp, "text/html");
-            var newTable = dom.findByClass("data-grid", xmlDoc);
-            var newTableId = newTable.id;
-            var oldTable = dom.findById(tblId);
-            oldTable.innerHTML = newTable.innerHTML;
-            oldTable.id = newTableId;
-            bindSortHandlers(url, sortCols, newTableId);
-            dom.findById(field).className = sortOrder + " sortable-column";
-        },
-        "html"
-    );
-};
+        'html'
+      )
+      .then(
+        result => {
+          const
+            xmlDoc = parser.parseFromString(result, 'text/html'),
+            newTable = dom(xmlDoc).findByClass('data-grid'),
+            newTableId = newTable.id();
+
+          dom(`#${tblId}`)
+            .html(newTable.html())
+            .id(newTableId);
+
+          bindSortHandlers(sortCols, newTableId, url);
+          dom(`#${field}`).class(`${sortOrder} sortable-column`);
+        }
+      );
+  };
+
 // прикручиваем обработчик к ячейкам таблицы
-var bindSortHandler = function(url, field, tblId) {
-    dom.findById(field).addEventListener("click", function() {
-        sort(url, field, tblId);
-    });
+const bindSortHandler = (field, tblId, url) => {
+  dom(`#${field}`)
+    .attr('style', 'cursor: pointer')
+    .click(() => sort(field, tblId, url));
 };
+
 // прикручиваем обработчики к ячейкам таблицы
-var bindSortHandlers = function(url, columns, tblId) {
-    sortCols = columns;
-    for (var key=0; key<columns.length; key++)
-        bindSortHandler(url, columns[key], tblId)
+const bindSortHandlers = (fields, tblId, url) => {
+  sortCols = fields;
+  dom(() => {
+    for (let key = 0; key < fields.length; key++) {
+      bindSortHandler(fields[key], tblId, url || "")
+    }
+  });
 };
+
+export default bindSortHandlers;
