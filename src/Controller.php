@@ -179,7 +179,7 @@ class Controller
      *
      * @return string
      */
-    public function display($view = null, array $vars = [], $return = false): string
+    public function display($view = null, array $vars = [], $return = false): ?string
     {
         if (empty($view)) {
             $view = lcfirst($this->action);
