@@ -31,11 +31,7 @@ Components:
 - component for publishing js and css resource files.
 - global helper shortcut functions for simplifying access to singletons.
 
-Tere is also JS library. It consists of separated components that can be selectively pluged to the page.  They are all clearified of whitespaces and glued together in one bundle you can serve up to the browser in a single <script> tag. A compressed gzip version also created to reduce traffic.
-
 The code written in compliance with the PSR-2 standard.
-All PHP and JS code, except datepicker is written by me.
-
 
 **MVC микро-PHP-фреймворк**
 
@@ -63,12 +59,9 @@ All PHP and JS code, except datepicker is written by me.
 - отображение флэш-сообщений.
 - глобальные вспомогательные функции быстрого доступа для упрощения доступа к одиночным объектам.
 
-В составе так же есть JS библиотека. Она состоит из отдельных компонентов, которые можно выборочно подключать на страницу. При этом все они очищаются от whitespace'ов и склеиваются в один спрайт. Так же создается сжатая gzip версия для снижения трафика. 
-
 От первой версии отличеется наличием Dependency Injection Container, архитектура полностью переписана под это. Удалены "поведения" и магические методы. Все компоненты полностью независимы.
 
 Код написан с соблюдением стандарта PSR-2.
-Весь PHP и JS код, за исключением дэйтпикера, написан лично мной.
 
 На этом фреймворке работает реальная бухгалтерия  (https://github.com/imnd/bookkeep).
 
