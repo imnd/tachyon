@@ -17,8 +17,7 @@ use tachyon\db\dbal\conditions\{
 /**
  * DBAL
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 abstract class Db
 {
@@ -143,7 +142,7 @@ abstract class Db
     }
 
     /**
-     * Подключаем ДБ
+     * connect db
      * Lazy loading
      *
      * @return void
@@ -164,35 +163,29 @@ abstract class Db
                 }
             }
         } catch (PDOException $e) {
-            throw new DBALException($this->msg->i18n('Unable to connect to database.') . "\n{$e->getMessage()}");
+            throw new DBALException(t('Unable to connect to database.') . "\n{$e->getMessage()}");
         }
     }
 
     /**
-     * Возвращает строку соединения
-     *
-     * @return string
+     * returns the connection string
      */
     abstract protected function getDsn(): string;
 
     /**
-     * Проверка существования таблицы $tableName
+     * checks if the table $tableName exists
      *
-     * @param string $tableName
-     *
-     * @return boolean
      * @throws DBALException
      */
     abstract public function isTableExists(string $tableName): bool;
 
     /**
-     * Извлекает поля $fields записей из таблицы $tblName по условию $where
+     * extracts fields $fields of the records from the table $tblName by condition $where
      *
      * @param string $tblName имя таблицы
      * @param array  $where условие поиска
      * @param array  $fields имена полей
      *
-     * @return array
      * @throws DBALException
      */
     public function select(
@@ -218,9 +211,9 @@ abstract class Db
             $this->explain($query, $expression);
         }
 	    if (!$stmt = $this->connection->prepare($query)) {
-		    throw new DBALException($this->msg->i18n('Error during prepare query.'));
+		    throw new DBALException(t('Error during prepare query.'));
 	    }
-        // очищаем переменные
+        //  clean variables
         $this
             ->clearOrderBy()
             ->clearWhere()
@@ -280,10 +273,9 @@ abstract class Db
      * Обновляет поля таблицы $tblName $fields записей по условию $where
      *
      * @param string $tblName имя таблицы
-     * @param array  $fields массив: [имена => значения] полей
-     * @param array  $where условие поиска
+     * @param array  $fields  массив: [имена => значения] полей
+     * @param array  $where   условие поиска
      *
-     * @return boolean
      * @throws DBALException
      */
     public function update(
@@ -314,7 +306,6 @@ abstract class Db
      * @param string $tblName имя таблицы
      * @param array  $where условие поиска
      *
-     * @return boolean
      * @throws DBALException
      */
     public function delete(string $tblName, array $where = []): bool
@@ -336,9 +327,6 @@ abstract class Db
     /**
      * Быстро очищает таблицу $tblName
      *
-     * @param string $tblName имя таблицы
-     *
-     * @return boolean
      * @throws DBALException
      */
     public function truncate(string $tblName): bool
@@ -351,16 +339,13 @@ abstract class Db
     /**
      * Выполняет запрос $query
      *
-     * @param string $query
-     *
-     * @return mixed
      * @throws DBALException
      */
-    public function query(string $query)
+    public function query(string $query): PDOStatement | false
     {
         $this->connect();
         if (!$stmt = $this->connection->prepare($query)) {
-            throw new DBALException($this->msg->i18n('Error during prepare query.'));
+            throw new DBALException(t('Error during prepare query.'));
         }
         if (!$this->execute($stmt)) {
             return false;
@@ -371,9 +356,6 @@ abstract class Db
     /**
      * Выполняет запрос $query и возвращает результат в виде массива записей
      *
-     * @param string $query
-     *
-     * @return array
      * @throws DBALException
      */
     public function queryAll(string $query): array
@@ -387,9 +369,6 @@ abstract class Db
     /**
      * Выполняет запрос $query и возвращает одну запись в виде массива
      *
-     * @param string $query
-     *
-     * @return array
      * @throws DBALException
      */
     public function queryOne(string $query): array
@@ -402,7 +381,6 @@ abstract class Db
     /**
      * Инициирует транзакцию
      *
-     * @return void
      * @throws DBALException
      */
     public function beginTransaction(): void
@@ -413,8 +391,6 @@ abstract class Db
 
     /**
      * Оканчивает транзакцию
-     *
-     * @return void
      */
     public function endTransaction(): void
     {
@@ -425,10 +401,6 @@ abstract class Db
 
     /**
      * Добавляет условие
-     *
-     * @param array $where условия
-     *
-     * @return Db
      */
     public function addWhere(array $where = null): Db
     {
@@ -440,10 +412,6 @@ abstract class Db
 
     /**
      * Устанавливает условие выборки
-     *
-     * @param array $where условия
-     *
-     * @return Db
      */
     public function setWhere(array $where): Db
     {
@@ -453,8 +421,6 @@ abstract class Db
 
     /**
      * Возвращает условие
-     *
-     * @return array
      */
     public function getWhere(): array
     {
@@ -463,8 +429,6 @@ abstract class Db
 
     /**
      * Очищает условие
-     *
-     * @return Db
      */
     protected function clearWhere(): Db
     {
@@ -474,10 +438,6 @@ abstract class Db
 
     /**
      * Добавляет поля для выборки
-     *
-     * @param array $fieldNames
-     *
-     * @return Db
      */
     public function addFields(array $fieldNames): Db
     {
@@ -487,10 +447,6 @@ abstract class Db
 
     /**
      * Устанавливает поля для выборки
-     *
-     * @param array $fieldNames
-     *
-     * @return Db
      */
     public function setFields(array $fieldNames): Db
     {
@@ -500,8 +456,6 @@ abstract class Db
 
     /**
      * Возвращает поля для выборки
-     *
-     * @return array
      */
     public function getFields(): array
     {
@@ -510,8 +464,6 @@ abstract class Db
 
     /**
      * Очищает поля выборки
-     *
-     * @return Db
      */
     protected function clearFields(): Db
     {
@@ -521,11 +473,6 @@ abstract class Db
 
     /**
      * Устанавливает строку для JOIN
-     *
-     * @param string $tblName
-     * @param string $onCond
-     * @param string $joinMode
-     * @return Db
      */
     public function setJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): Db
     {
@@ -535,11 +482,6 @@ abstract class Db
 
     /**
      * Добавляет строку для JOIN
-     *
-     * @param string $tblName
-     * @param string $onCond
-     * @param string $joinMode
-     * @return Db
      */
     public function addJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): Db
     {
@@ -549,7 +491,6 @@ abstract class Db
 
     /**
      * Очищает join
-     * @return Db
      */
     protected function clearJoin(): Db
     {
@@ -559,11 +500,6 @@ abstract class Db
 
     /**
      * Добавляет в массив orderBy новый элемент
-     *
-     * @param string $fieldName
-     * @param string $order
-     *
-     * @return Db
      */
     public function orderBy(string $fieldName, string $order = 'ASC'): Db
     {
@@ -573,10 +509,6 @@ abstract class Db
 
     /**
      * Устанавливает orderBy
-     *
-     * @param $orderBy
-     *
-     * @return Db
      */
     public function setOrderBy($orderBy): Db
     {
@@ -586,7 +518,6 @@ abstract class Db
 
     /**
      * Возвращает orderBy
-     * @return array
      */
     public function getOrderBy(): array
     {
@@ -595,7 +526,6 @@ abstract class Db
 
     /**
      * Очищает orderBy
-     * @return Db
      */
     protected function clearOrderBy(): Db
     {
@@ -605,17 +535,11 @@ abstract class Db
 
     /**
      * Строка order by cast
-     *
-     * @param string $colName
-     *
-     * @return string
      */
     abstract public function orderByCast(string $colName): string;
 
     /**
      * Возвращает форматированную строку ORDER BY
-     *
-     * @return string
      */
     private function orderByString(): string
     {
@@ -632,11 +556,6 @@ abstract class Db
 
     /**
      * Устанавливает форматированную строку LIMIT
-     *
-     * @param int $limit
-     * @param int $offset
-     *
-     * @return Db
      */
     public function setLimit(int $limit, int $offset = null): Db
     {
@@ -652,8 +571,6 @@ abstract class Db
 
     /**
      * Возвращает limit
-     *
-     * @return string
      */
     public function getLimit(): string
     {
@@ -662,8 +579,6 @@ abstract class Db
 
     /**
      * Очищает limit
-     *
-     * @return Db
      */
     protected function clearLimit(): Db
     {
@@ -673,10 +588,6 @@ abstract class Db
 
     /**
      * Устанавливает groupBy
-     *
-     * @param string $fieldName
-     *
-     * @return Db
      */
     public function setGroupBy(string $fieldName): Db
     {
@@ -686,8 +597,6 @@ abstract class Db
 
     /**
      * Возвращает groupBy
-     *
-     * @return string
      */
     public function getGroupBy(): string
     {
@@ -696,8 +605,6 @@ abstract class Db
 
     /**
      * Очищает groupBy
-     *
-     * @return Db
      */
     protected function clearGroupBy(): Db
     {
@@ -707,8 +614,6 @@ abstract class Db
 
     /**
      * Возвращает форматированную строку GROUP BY
-     *
-     * @return string
      */
     private function groupByString(): string
     {
@@ -718,10 +623,6 @@ abstract class Db
         return '';
     }
 
-    /**
-     * @param array $fields
-     * @return string
-     */
     protected function getPlaceholder(array $fields): string
     {
         $placeholderArr = array_fill(0, count($fields), '?');
@@ -730,9 +631,6 @@ abstract class Db
 
     /**
      * Возвращение одного поля из извлеченного массива строк
-     *
-     * @param array $rows
-     * @return mixed
      */
     protected function getOneRow(array $rows = [])
     {
@@ -758,9 +656,6 @@ abstract class Db
 
 	/**
 	 * Подготовка извлеченной строки, удаление лишнего
-	 *
-	 * @param array $row
-	 * @return array
 	 */
 	protected function prepareRow(array $row = []): array
 	{
@@ -775,17 +670,12 @@ abstract class Db
     /**
      * Выполнение запроса
      *
-     * @param PDOStatement $stmt
-     * @param array $fields
-     *
-     * @return boolean
-     *
      * @throws DBALException
      */
-    protected function execute($stmt, $fields = null): bool
+    protected function execute(PDOStatement $stmt, array $fields = null): bool
     {
         if (!$stmt->execute($fields)) {
-            throw new DBALException($this->msg->i18n('Database error.'));
+            throw new DBALException(t('Database error.'));
         }
         return true;
     }

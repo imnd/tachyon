@@ -4,9 +4,6 @@ namespace tachyon;
 
 class Request
 {
-    /**
-     * @var array
-     */
     private array $parameters = [];
 
     public function __construct()
@@ -16,12 +13,6 @@ class Request
         $this->set('files', $_FILES);
     }
 
-    /**
-     * @param string $name
-     * @param mixed  $val
-     *
-     * @return void
-     */
     public function set(string $name, $val): void
     {
         if (is_null($val)) {
@@ -33,12 +24,6 @@ class Request
         $this->parameters[$name] = $val;
     }
 
-    /**
-     * @param string $name
-     * @param mixed  $val
-     *
-     * @return void
-     */
     public function add(string $name, $val): void
     {
         if ($name !== 'files') {
@@ -47,30 +32,13 @@ class Request
         $this->parameters[$name] = array_merge($this->parameters[$name], $val);
     }
 
-    /**
-     * @param string $name
-     *
-     * @return mixed
-     */
-    public function get(string $name)
+    public function get(string $name): string | array | null
     {
         return $this->parameters[$name] ?? null;
     }
 
     /**
-     * Страница, с которой редиректились
-     *
-     * @return string
-     */
-    public function getReferer(): string
-    {
-        return $_COOKIE['referer'] ?? '/';
-    }
-
-    /**
-     * Запоминаем страницу, с которой редиректимся
-     *
-     * @return void
+     * Remember the page from which we are redirecting
      */
     public function setReferer(): void
     {
@@ -78,11 +46,15 @@ class Request
     }
 
     /**
-     * Шорткат
-     *
-     * @param string|null $queryType string
-     *
-     * @return array|null
+     * Get page from which we are redirecting
+     */
+    public function getReferer(): string
+    {
+        return $_COOKIE['referer'] ?? '/';
+    }
+
+    /**
+     * Shortcut for query
      */
     public function getQuery(string $queryType = null): ?array
     {
@@ -93,13 +65,9 @@ class Request
     }
 
     /**
-     * Шорткат для $_GET
-     *
-     * @param string|null $key
-     *
-     * @return mixed
+     * Shortcut for $_GET
      */
-    public function getGet(string $key = null)
+    public function getGet(string $key = null): string | array | null
     {
         if (!is_null($key)) {
             return $this->parameters['get'][$key] ?? null;
@@ -108,13 +76,9 @@ class Request
     }
 
     /**
-     * Шорткат для $_POST
-     *
-     * @param string|null $key
-     *
-     * @return mixed
+     * Shortcut for $_POST
      */
-    public function getPost(string $key = null)
+    public function getPost(string $key = null): string | array | null
     {
         if (!is_null($key)) {
             return $this->parameters['post'][$key] ?? null;
@@ -122,61 +86,43 @@ class Request
         return $this->parameters['post'] ?? null;
     }
 
-    /**
-     * @return string
-     */
     public function getRoute(): string
     {
         return htmlspecialchars($_SERVER['REQUEST_URI']);
     }
 
-    /**
-     * Разбирает строку запроса
-     *
-     * @return string
-     */
-    public function parseUri(): string
-    {
-        $uri = $_SERVER['REQUEST_URI'];
-        $path = parse_url($uri)['path'];
-        if ($path !== '/') {
-            if (strpos($path, '/') === 0) {
-                $path = substr($path, 1 - strlen($path));
-            }
-            if (substr($path, -1) === '/') {
-                $path = substr($path, 0, -1);
-            }
-        }
-        $this->set('path', $path);
-
-        return $path;
-    }
-
-    /**
-     * @return boolean
-     */
     public function isPost(): bool
     {
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
     /**
-     * Защита от XSS и SQL injection
-     *
-     * @param mixed $data
-     *
-     * @return mixed
+     * Protect against XSS and SQL injection
      */
-    private function filter($data)
+    private function filter(mixed $data): string | array | null
     {
         if (is_string($data)) {
             return htmlentities($data);
         }
         if (is_array($data)) {
-            foreach ($data as &$val) {
-                $val = $this->filter($val);
+            foreach ($data as &$datum) {
+                $datum = $this->filter($datum);
             }
             return array_filter($data);
         }
+    }
+
+    /**
+     * Parses a query string
+     */
+    public function parseUri(): string
+    {
+        $path = parse_url($_SERVER['REQUEST_URI'])['path'];
+        if ($path !== '/') {
+            $path = trim($path, '/');
+        }
+        $this->set('path', $path);
+
+        return $path;
     }
 }

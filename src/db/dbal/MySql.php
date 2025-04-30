@@ -5,8 +5,7 @@ namespace tachyon\db\dbal;
 /**
  * MySql DBAL
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class MySql extends Db
 {

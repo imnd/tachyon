@@ -4,8 +4,7 @@ namespace tachyon\db\activeRecord;
 use tachyon\traits\HasOwner;
 
 /**
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Join
 {

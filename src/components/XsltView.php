@@ -9,8 +9,7 @@ use DOMDocument,
 /**
  * Компонент отображения на основе XSLT шаблонизации
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class XsltView extends View
 {

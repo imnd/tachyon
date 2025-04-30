@@ -8,8 +8,7 @@ use RuntimeException;
 /**
  * Работа со скриптами и стилями
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class AssetManager
 {

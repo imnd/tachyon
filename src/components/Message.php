@@ -8,8 +8,7 @@ use tachyon\Config;
  * class Message
  * Класс работы с текстовыми сообщениями
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Message
 {
@@ -47,7 +46,7 @@ class Message
      *
      * @return string
      */
-    public function i18n(string $msg, array $vars = []): string
+    public function t(string $msg, array $vars = []): string
     {
         if (!isset($this->_messages[$msg])) {
             return $msg;

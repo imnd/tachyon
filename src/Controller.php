@@ -2,24 +2,22 @@
 
 namespace tachyon;
 
+use JetBrains\PhpStorm\NoReturn;
 use
     tachyon\exceptions\HttpException,
     tachyon\components\Cookie,
     tachyon\components\Csrf,
     tachyon\components\Lang,
-    tachyon\components\Message,
-    tachyon\traits\ClassName;
+    tachyon\components\Message
+;
 
 /**
- * Базовый класс для всех контроллеров
+ * Base class for all controllers
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Controller
 {
-    use ClassName;
-
     # Компоненты
 
     protected Message $msg;
@@ -29,27 +27,17 @@ class Controller
     protected Csrf $csrf;
     protected Request $request;
 
-    /**
-     * Общий шаблон сайта
-     */
+    /** Common website template */
     protected string $layout = 'main';
     protected string $defaultAction = 'index';
-    /**
-     * id контроллера
-     */
+    /** controller id */
     protected string $id;
-    /**
-     * id экшна
-     */
+    /** controller action */
     protected string $action;
 
-    /**
-     * Экшны только для $_POST запросов
-     */
+    /** actions for only $_POST requests */
     protected $postActions = [];
-    /**
-     * Экшны только для аутентифицированных юзеров
-     */
+    /** actions only for authenticated users */
     protected $protectedActions;
     private string $language;
 
@@ -68,12 +56,12 @@ class Controller
     }
 
     /**
-     * Инициализация
+     * initialization
      */
     public function start(Request $request): self
     {
         $this->request = $request;
-        // проверка по списку экшнов
+        // check by the actions list
         if (
            (
                   $this->postActions === '*'
@@ -81,13 +69,13 @@ class Controller
            )
         && !$this->request->isPost()) {
             throw new HttpException(
-                $this->msg->i18n('Action %action allowed only through post request.', ['action' => $this->action]),
+                t('Action %action allowed only through post request.', ['action' => $this->action]),
                 HttpException::BAD_REQUEST
             );
         }
-        // проверка CSRF токена
+        // CSRF token check
         if (!$this->csrf->isTokenValid()) {
-            throw new HttpException($this->msg->i18n('Wrong CSRF token.', HttpException::BAD_REQUEST));
+            throw new HttpException(t('Wrong CSRF token.'), HttpException::BAD_REQUEST);
         }
         $this->view->setRequest($request);
         $this->view->setController($this);
@@ -128,8 +116,6 @@ class Controller
      * @param $view string|null файл представления
      * @param $vars array переменные представления
      * @param $return boolean показывать или возвращать
-     *
-     * @return string
      */
     public function display(string $view = null, array $vars = [], bool $return = false): ?string
     {
@@ -157,6 +143,7 @@ class Controller
     /**
      * Перенаправляет пользователя на адрес: $path
      */
+    #[NoReturn]
     public function redirect(string $path): void
     {
         header("Location: $path");

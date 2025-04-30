@@ -5,7 +5,7 @@ namespace tachyon\db\dbal\conditions;
 /**
  * InsertBuilder
  *
- * @author Андрей Сердюк
+ * @author imndsu@gmail.com
  * @copyright (c) 2021 IMND
  */
 class InsertBuilder extends ExpressionsBuilder

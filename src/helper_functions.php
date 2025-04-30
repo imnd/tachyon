@@ -3,6 +3,7 @@
 use app\ServiceContainer;
 use tachyon\components\Flash;
 use tachyon\components\Html;
+use tachyon\components\Lang;
 use tachyon\components\Message;
 use tachyon\Config;
 use tachyon\db\dbal\{
@@ -10,35 +11,18 @@ use tachyon\db\dbal\{
 };
 use tachyon\exceptions\ContainerException;
 
-/**
- * @param $key
- *
- * @return mixed
- * @throws ContainerException | ReflectionException
- */
-function config($key)
+function config(string $key): mixed
 {
     $config = app()->get(Config::class);
     return $config->get($key);
 }
 
-/**
- * @return Db
- * @throws ContainerException | ReflectionException
- */
 function db(): Db
 {
     return app()->get(DbFactory::class)->getDb();
 }
 
-/**
- * @param mixed ...$params
- *
- * @return mixed
- * @throws ContainerException
- * @throws ReflectionException
- */
-function flash(...$params)
+function flash(mixed ...$params): mixed
 {
     $flash = app()->get(Flash::class);
 
@@ -48,30 +32,22 @@ function flash(...$params)
     return $flash->addFlash($params[0], $params[1]);
 }
 
-/**
- * @return Html
- * @throws ContainerException | ReflectionException
- */
 function html(): Html
 {
     return app()->get(Html::class);
 }
 
-/**
- * @param string $msg
- * @param array  $vars
- *
- * @return string
- * @throws ContainerException | ReflectionException
- */
-function i18n(string $msg, array $vars = [])
+function lang(): Lang
 {
-    return app()->get(Message::class)->i18n($msg, $vars);
+    return app()->get(Lang::class);
 }
 
-/** @return ServiceContainer */
+function t(string $msg, array $vars = []): string
+{
+    return app()->get(Message::class)->t($msg, $vars);
+}
+
 function app(): ServiceContainer
 {
     return $_SESSION['app'];
 }
-

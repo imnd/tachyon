@@ -3,12 +3,7 @@
 namespace tachyon\components\formBuilder;
 
 use ReflectionException;
-use tachyon\{
-    Config,
-    Request,
-    View,
-    traits\ClassName
-};
+use tachyon\{Config, Helpers\ClassHelper, Request, View};
 use tachyon\components\{
     AssetManager,
     Csrf,
@@ -19,13 +14,11 @@ use tachyon\components\{
 /**
  * Построитель форм
  *
- * @author Андрей Сердюк
+ * @author imndsu@gmail.com
  * @copyright (c) 2010 IMND
  */
 class FormBuilder
 {
-    use ClassName;
-
     /**
      * @var Message
      */
@@ -292,16 +285,15 @@ class FormBuilder
             && $this->_options['ajax']
         ) {
             $formHandler = isset($this->_options['formHandler']) ? $this->_options['formHandler'] : "dom.findById('$formId').submit();";
-            echo $this->jsCode(
-                "
+            echo $this->jsCode("
             dom.findById('submit_$formId').onclick = function() {
                 validation.msgContainerId = 'errors_list';
                 if (validation.run(" . $model->getValidationFieldsJs($params['fields']) . ")) {
                     $formHandler;
                 }
                 return false;
-            };"
-            );
+            };
+            ");
         }
     }
 
@@ -313,7 +305,7 @@ class FormBuilder
     private function _renderScripts(): void
     {
         $assetsSourcePath = __DIR__ . '/assets';
-        $assetsPublicPath = lcfirst($this->getClassName());
+        $assetsPublicPath = lcfirst(ClassHelper::getClassName($this));
         $this->assetManager->coreJs('obj');
         echo
             $this->assetManager->css('style', $assetsPublicPath, $assetsSourcePath),

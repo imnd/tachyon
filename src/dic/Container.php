@@ -3,7 +3,6 @@
 namespace tachyon\dic;
 
 use
-    Psr\Container\ContainerInterface,
     ReflectionClass,
     tachyon\exceptions\ContainerException,
     ReflectionException;
@@ -11,35 +10,28 @@ use
 /**
  * Dependency Injection Container
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
-class Container /*implements ContainerInterface*/
+abstract class Container
 {
     /**
-     * Массив инстанциированных компонентов
-     *
-     * @var array
+     * instantiated components array
      */
     protected array $services = [];
 
     /**
-     * Конфигурация компонентов и их параметров
-     *
-     * @var array
+     * configuration of the components and their parameters
      */
     protected array $config = [];
 
     /**
-     * Сопоставление интерфейсов и их реализаций
-     *
-     * @var array
+     * comparison of the interfaces and their implementations
      */
     protected array $implementations = [];
 
     public function __construct()
     {
-        // Загружаем компоненты и параметры компонентов в массив $config
+        // load components and parameters of components to the $config array
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         $services = include "$basePath/dic/services.php";
         if (
@@ -69,21 +61,19 @@ class Container /*implements ContainerInterface*/
         }
     }
 
-    public function boot($params = []): Container
-    {
-        return $this;
-    }
+    abstract public function boot($params = []): Container;
 
     /**
-     * Создает экземпляр сервиса
+     * creates an instance of the service
      *
      * @param string $className
-     * @param array  $params динамически назначаемые параметры
+     * @param array $params dynamically assigned parameters
      *
      * @return mixed
-     * @throws ContainerException | ReflectionException
+     * @throws ContainerException
+     * @throws ReflectionException
      */
-    public function get(string $className, array $params = [])
+    public function get(string $className, array $params = []): mixed
     {
         if (
                 $config = $this->getVariables($className)
@@ -95,10 +85,10 @@ class Container /*implements ContainerInterface*/
     }
 
     /**
-     * Создает экземпляр синглтона
+     * creates an instance of the singleton
      *
      * @param string $className
-     * @param array  $params динамически назначаемые параметры
+     * @param array  $params dynamically assigned parameters
      *
      * @return mixed
      * @throws ContainerException | ReflectionException
@@ -117,24 +107,16 @@ class Container /*implements ContainerInterface*/
     }
 
     /**
-     * Извлечение реализации интерфейса
-     *
-     * @param string $interface
-     *
-     * @return mixed|null
+     * extraction of interface implementation
      */
-    private function getImplementation(string $interface)
+    private function getImplementation(string $interface): mixed
     {
         return $this->implementations[$interface] ?? null;
     }
 
     /**
-     * Создает экземпляр сервиса
+     * creates an instance of the service
      *
-     * @param string $name
-     * @param array  $params
-     *
-     * @return object
      * @throws ContainerException | ReflectionException
      */
     private function resolve(string $name, array $params = [])
@@ -159,7 +141,7 @@ class Container /*implements ContainerInterface*/
         $parents = class_parents($implementName);
         $constructor = $reflection->getConstructor();
         foreach ($parents as $parentClassName) {
-            // случай, когда у потомка нет своего конструктора
+            // descendant class has no constructor
             if ($constructor !== null && $constructor->class === $parentClassName) {
                 continue;
             }
@@ -174,15 +156,12 @@ class Container /*implements ContainerInterface*/
             $params = array_merge($dependencies, $params);
         }
         $service = $reflection->newInstanceArgs($params);
-        $this->setVariables($service, $variables);
+        $this->setParameters($service, $variables);
+
         return $service;
     }
 
     /**
-     * @param string      $className
-     * @param string|null $methodName
-     *
-     * @return array
      * @throws ContainerException
      * @throws ReflectionException
      */
@@ -221,33 +200,24 @@ class Container /*implements ContainerInterface*/
     }
 
     /**
-     * Извлечение конфигурации по полному имени класса
-     *
-     * @param string $className
-     *
-     * @return array
+     * get the configuration by full class name
      */
-    private function getVariables($className): array
+    private function getVariables(string $className): array
     {
         return $this->config[$className] ?? [];
     }
 
     /**
-     * Устанавливает св-ва
-     *
-     * @param mixed $service
-     * @param array $config
-     *
-     * @return void
+     * set the properties
      */
-    private function setVariables($service, array $config): void
+    private function setParameters(mixed $service, array $config): void
     {
         if (empty($config)) {
             return;
         }
         if (!empty($config['variables'])) {
             foreach ($config['variables'] as $name => $val) {
-                // Устанавливает св-во объекта $service
+                // set the property of $service
                 if (array_key_exists($name, get_object_vars($service))) {
                     $service->$name = $val;
                 }

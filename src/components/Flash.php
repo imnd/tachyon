@@ -7,8 +7,7 @@ use Iterator;
 /**
  * Методы для создания и отображения флэш сообщений
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Flash
 {

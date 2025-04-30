@@ -8,8 +8,7 @@ use ReflectionException;
  * class Relation
  * Класс реализующий связи между моделями
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 abstract class Relation
 {
@@ -87,7 +86,7 @@ abstract class Relation
      */
     abstract public function joinWith($owner): void;
 
-    # Геттеры и сеттеры
+    # getters and setters
 
     public function setModelAttrs(): Relation
     {

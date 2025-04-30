@@ -3,34 +3,24 @@ namespace tachyon;
 
 class Env
 {
-    /**
-     * @param Config $config
-     */
+    private Config $config;
+
     public function __construct(Config $config)
     {
         $this->config = $config;
     }
 
-    /**
-     * @return boolean
-     */
-    public function isProduction()
+    public function isProduction(): bool
     {
         return $this->config->get('env') === 'production';
     }
 
-    /**
-     * @return boolean
-     */
-    public function isDevelop()
+    public function isDevelop(): bool
     {
         return $this->config->get('env') === 'develop';
     }
 
-    /**
-     * @return boolean
-     */
-    public function isLocal()
+    public function isLocal(): bool
     {
         return $this->config->get('env') === 'local';
     }

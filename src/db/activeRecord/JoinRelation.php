@@ -8,8 +8,7 @@ use tachyon\db\Alias;
  * class Relation
  * Класс реализующий связи между моделями
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class JoinRelation extends Relation
 {
@@ -30,7 +29,7 @@ class JoinRelation extends Relation
         $model = $this->get($this->modelName);
         $this->join->leftJoin(
             [
-                $this->tableAlias => $model::getSource()
+                $this->tableAlias => $model->getSource()
             ],
             [$owner->getPkName(), $this->linkKey],
             $this->getTableAlias()

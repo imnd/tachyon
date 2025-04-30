@@ -5,13 +5,11 @@ use tachyon\components\Message;
 use tachyon\db\Alias;
 
 /**
- * class HasoneRelation
  * Класс реализующий связь "имеет один" между моделями
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
-class HasoneRelation extends Relation
+class HasOneRelation extends Relation
 {
     /**
      * @var Join $join

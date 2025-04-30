@@ -2,99 +2,68 @@
 
 namespace tachyon\components\widgets\grid;
 
-use tachyon\dic\Container,
+use
     tachyon\Config,
     tachyon\components\Message,
     tachyon\components\Csrf,
     tachyon\components\widgets\Widget,
-    tachyon\db\activeRecord\ActiveRecord
+    tachyon\db\activeRecord\ActiveRecord,
+    tachyon\Helpers\ClassHelper
 ;
 
 /**
  * Отображает в виде таблицы результат выборки
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Grid extends Widget
 {
     /**
-     * @var ActiveRecord $model
-     */
-    protected $model;
-    /**
      * Поля таблицы
-     *
-     * @var $columns array
      */
-    protected $columns = [];
+    protected array $columns = [];
     /**
      * Записи отображаемые в таблице
-     *
-     * @var $items array
      */
-    protected $items = [];
+    protected array $items = [];
     /**
      * кнопки
-     *
-     * @var $buttons array
      */
-    protected $buttons = [];
+    protected array $buttons = [];
     /**
      * поля по которым фильтруется содержимое
-     *
-     * @var $searchFields array
      */
-    protected $searchFields = [];
+    protected array $searchFields = [];
     /**
      * поля по которым выводится сумма внизу таблицы
-     *
-     * @var $sumFields array
      */
-    protected $sumFields = [];
+    protected array $sumFields = [];
     /**
      * сортируется ли таблица
-     *
-     * @var $sortable array
      */
-    protected $sortable = false;
+    protected bool $sortable = false;
     /**
      * включать ли компонент защиты от csrf-атак
      */
-    protected $csrfJson = '';
-    protected $confirmMsgs = [
+    protected string $csrfJson = '';
+    protected array $confirmMsgs = [
         'deactivate' => 'деактивировать?',
         'delete' => 'удалить?',
     ];
     /**
      * Имя первичного ключа модели таблицы
-     *
-     * @var $pkName string
      */
-    protected $pkName;
+    protected string $pkName;
     /**
      * Имя модели таблицы
-     *
-     * @var $modelName string
      */
-    protected $modelName;
+    protected string $modelName;
 
-    /**
-     * @var Config $config
-     */
-    protected $config;
-    /**
-     * @var Message $msg
-     */
-    protected $msg;
-    /**
-     * @var Csrf $csrf
-     */
-    protected $csrf;
+    protected ActiveRecord $model;
+    protected Config $config;
+    protected Message $msg;
+    protected Csrf $csrf;
 
-    /**
-     * @return void
-     */
     public function __construct(Config $config, Message $msg, Csrf $csrf, ...$params)
     {
         $this->config = $config;
@@ -103,7 +72,7 @@ class Grid extends Widget
         parent::__construct(...$params);
     }
 
-    public function run()
+    public function run(): void
     {
         $this->assetManager->publishFolder(
             'images',
@@ -117,7 +86,7 @@ class Grid extends Widget
         if (is_null($this->model)) {
             $this->model = app()->get($this->modelName);
         } else {
-            $this->modelName = $this->model->getClassName();
+            $this->modelName = ClassHelper::getClassName($this->model);
         }
         $this->pkName = $this->model->getPkName();
         $sumArr = [];
@@ -139,7 +108,7 @@ class Grid extends Widget
                 $btnOptions['htmlOptions'] = [];
             }
             $btnOptions['htmlOptions']['class'] = "button-$action";
-            $btnOptions['htmlOptions']['title'] = $btnOptions['title'] ?? $this->msg->i18n($action);
+            $btnOptions['htmlOptions']['title'] = $btnOptions['title'] ?? t($action);
             if (isset($btnOptions['vars'])) {
                 $action .= '/' . implode(
                         '/',

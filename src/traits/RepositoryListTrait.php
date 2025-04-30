@@ -10,8 +10,7 @@ use tachyon\exceptions\ContainerException;
 /**
  * Содержит полезные функции для работы со списками для Repository
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 trait RepositoryListTrait
 {
@@ -78,7 +77,7 @@ trait RepositoryListTrait
     ): array {
         if (is_array($this->valueField)) {
             throw new ErrorException(
-                $this->msg->i18n(
+                t(
                     'Method RepositoryListTrait::getSelectListFromArr is not work if valueField is an array.'
                 )
             );

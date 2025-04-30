@@ -10,8 +10,7 @@ use tachyon\{
 /**
  * Класс содержащий правила валидации
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Validator
 {
@@ -37,7 +36,7 @@ class Validator
     {
         $attrVal = $model->getAttribute($fieldName);
         if ($attrVal === '' || $attrVal === null) {
-            $this->addError($fieldName, $this->msg->i18n('fieldRequired'));
+            $this->addError($fieldName, t('fieldRequired'));
         }
     }
 
@@ -51,7 +50,7 @@ class Validator
             return;
         }
         if (!empty($fieldVal) && preg_match('/[^0-9]+/', $fieldVal) > 0) {
-            $this->addError($fieldName, $this->msg->i18n('alpha'));
+            $this->addError($fieldName, t('alpha'));
         }
     }
 
@@ -65,7 +64,7 @@ class Validator
             return;
         }
         if (!empty($fieldVal) && preg_match('/^\s*[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s*$/', $fieldVal) === 0) {
-            $this->addError($fieldName, $this->msg->i18n('alpha'));
+            $this->addError($fieldName, t('alpha'));
         }
     }
 
@@ -79,7 +78,7 @@ class Validator
             return;
         }
         if (!empty($fieldVal) && preg_match('/[^А-ЯЁа-яёA-Za-z ]+/u', $fieldVal) > 0) {
-            $this->addError($fieldName, $this->msg->i18n('alpha'));
+            $this->addError($fieldName, t('alpha'));
         }
     }
 
@@ -93,7 +92,7 @@ class Validator
             return;
         }
         if (!empty($fieldVal) && preg_match('/[^А-ЯЁа-яёA-Za-z-_.,0-9 ]+/u', $fieldVal) > 0) {
-            $this->addError($fieldName, $this->msg->i18n('alpha'));
+            $this->addError($fieldName, t('alpha'));
         }
     }
 
@@ -104,7 +103,7 @@ class Validator
     public function phone($model, string $fieldName): void
     {
         if (!preg_match('/^\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}$/', $model->getAttribute($fieldName))) {
-            $this->addError($fieldName, $this->msg->i18n('phone'));
+            $this->addError($fieldName, t('phone'));
         }
     }
 
@@ -118,7 +117,7 @@ class Validator
             return;
         }
         if (!empty($fieldVal) && preg_match('/[^A-Za-z0-9]+/u', $fieldVal) > 0) {
-            $this->addError($fieldName, $this->msg->i18n('password'));
+            $this->addError($fieldName, t('password'));
         }
     }
 
@@ -132,7 +131,7 @@ class Validator
             '/^[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&\'*+\\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/',
             $model->getAttribute($fieldName)
         )) {
-            $this->addError($fieldName, $this->msg->i18n('email'));
+            $this->addError($fieldName, t('email'));
         }
     }
 
@@ -150,7 +149,7 @@ class Validator
         $val1 = $model->getAttribute($fieldName1);
         $val2 = $model->getAttribute($fieldName2);
         if (!empty($val1) && !empty($val2) && $val1 !== $val2) {
-            $this->addError($fieldName1, $this->msg->i18n('equals'));
+            $this->addError($fieldName1, t('equals'));
         }
     }
 
@@ -164,7 +163,7 @@ class Validator
             return;
         }
         if ($rows = $model->findAllRaw([$fieldName => $fieldVal])) {
-            $this->addError($fieldName, $this->msg->i18n('unique'));
+            $this->addError($fieldName, t('unique'));
         }
     }
 
@@ -181,7 +180,7 @@ class Validator
             $vals = explode(',', $vals);
         }
         if (!in_array($fieldVal, $vals)) {
-            $this->addError($fieldName, $this->msg->i18n('in', [
+            $this->addError($fieldName, t('in', [
                 'list' => implode(', ', $vals),
             ]));
         }
@@ -265,7 +264,7 @@ class Validator
                                 continue;
                             }
                             if (!method_exists($this, $subRule)) {
-                                throw new ValidationException($this->msg->i18n($methodNotExist, [
+                                throw new ValidationException(t($methodNotExist, [
                                     'name' => $subRule,
                                 ]));
                             }
@@ -285,7 +284,7 @@ class Validator
                         $rule = substr($rule, 0, $colon);
                     }
                     if (!method_exists($this, $rule)) {
-                        throw new ValidationException($this->msg->i18n($methodNotExist, [
+                        throw new ValidationException(t($methodNotExist, [
                             'name' => $rule,
                         ]));
                     }

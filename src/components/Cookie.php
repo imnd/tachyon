@@ -6,8 +6,7 @@ use tachyon\Config;
 /**
  * Инкапсулирует работу с cookie
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Cookie
 {

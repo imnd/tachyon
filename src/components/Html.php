@@ -3,12 +3,12 @@
 namespace tachyon\components;
 
 use tachyon\Config;
+use tachyon\Helpers\ClassHelper;
 
 /**
  * Построитель html-кода
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Html
 {
@@ -226,7 +226,7 @@ class Html
         if (!isset($options['value'])) {
             $options['value'] = $model->$name;
         }
-        $options['attrs']['name'] = "{$model->getClassName()}[$name]";
+        $options['attrs']['name'] = ClassHelper::getClassName($model) . "[$name]";
         if (!empty($options['multiple'])) {
             $options['attrs']['name'] .= '[]';
         }

@@ -2,17 +2,14 @@
 namespace tachyon\traits;
 
 /**
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 trait Configurable
 {
     /**
-     * Установка переменных объекта
-     * @param array $params
-     * @return void
+     * setting of objects variables
      */
-    public function setVariables(array $params = array()): void
+    public function setParameters(array $params = []): void
     {
         foreach ($params as $param => $value) {
             $this->$param = $value;

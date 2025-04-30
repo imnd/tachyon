@@ -1,15 +1,14 @@
 <?php
+
 namespace tachyon;
 
-// exceptions
+# exceptions
 use
-    BadMethodCallException,
-    Exception,
     Error,
     ErrorException,
     PDOException,
-    ReflectionException
-;
+    ReflectionException;
+
 use tachyon\exceptions\{
     ContainerException,
     DBALException,
@@ -21,57 +20,41 @@ use tachyon\exceptions\{
     ValidationException,
     ViewException
 };
-// dependencies
+
+# dependencies
 use
-    app\ServiceContainer,
     tachyon\cache\Output as OutputCache,
     tachyon\components\Message;
+use tachyon\Helpers\ClassHelper;
 
 /**
- * Front Controller приложения
- *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
-final class Router
+final class FrontController
 {
     private OutputCache $cache;
     private Message $msg;
-    private ServiceContainer $container;
     private Request $request;
-    private Config $config;
 
     private array $routes;
-
     private $controller;
-    private $action;
+    private string $action;
     private $inline;
 
-    /**
-     * @param Config           $config
-     * @param OutputCache      $cache
-     * @param Message          $msg
-     * @param ServiceContainer $container
-     * @param Request          $request
-     */
     public function __construct(
         Config $config,
         OutputCache $cache,
         Message $msg,
-        ServiceContainer $container,
         Request $request
     ) {
-        $this->cache     = $cache;
-        $this->msg       = $msg;
-        $this->container = $container;
-        $this->request   = $request;
-        $this->config    = $config;
-        $this->routes    = $config->get('routes');
+        $this->cache = $cache;
+        $this->msg = $msg;
+        $this->request = $request;
+        $this->routes = $config->get('routes');
     }
 
     /**
-     * Обработка входящего запроса
-     * и передача управления соответствующему контроллеру
+     * Processing an incoming request and transferring control to the appropriate controller
      */
     public function dispatch(): void
     {
@@ -97,8 +80,8 @@ final class Router
             }
         }
 
-        $this->container->boot([
-            'controller' => $this->controller
+        app()->boot([
+            'controller' => $this->controller,
         ]);
 
         // start the controller
@@ -110,34 +93,49 @@ final class Router
 
     /**
      * Extract controller and action names from conf route
-     *
-     * @param string $path
-     *
-     * @return bool
      */
     private function parseRoute(string $path): bool
     {
-        if (!isset($this->routes[$path])) {
-           return false;
+        if ($route = $this->routes[$path]) {
+            [$this->controller, $this->action] = explode('@', $route);
+            return true;
         }
-        $pathArr = explode('@', $this->routes[$path]);
 
-        $this->controller = $pathArr[0];
-        $this->action = $pathArr[1];
+        $pathArr = explode('/', $path);
 
-        return true;
+        foreach ($pathArr as $key => $pathItem) {
+            $found = true;
+            foreach (array_keys($this->routes) as $route) {
+                $routeArr = explode('/', $route);
+                if (!$routeItem = $routeArr[$key] ?? null) {
+                    $found = false;
+                    continue;
+                }
+                if ($routeItem != $pathItem) {
+                    if (substr($routeItem, 0, 1) !== '{' || substr($routeItem, -1, 1) !== '}') {
+                        $found = false;
+                        continue;
+                    }
+                }
+                $found = true;
+            }
+            if ($found) {
+                [$this->controller, $this->action] = explode('@', $route);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * Извлечение имени контроллера или экшна
+     * Retrieving the name of a controller or action
      *
-     * @param $requestArr array Массив параметров
-     * @return string|null
+     * @param array $requestArr array of parameters
      */
     private function getNameFromRequest(array &$requestArr): ?string
     {
         if (
-               count($requestArr)===0
+               count($requestArr) === 0
             || is_numeric($requestArr[0])
         ) {
             return null;
@@ -146,7 +144,7 @@ final class Router
     }
 
     /**
-     * Запускаем контроллер
+     * Launching the controller
      */
     private function startController(): void
     {
@@ -155,62 +153,67 @@ final class Router
                 throw new HttpException('Wrong url');
             }
             /** @var Controller $controller */
-            $controller = $this->container->get($controllerClass);
-            $controllerName = lcfirst(str_replace('Controller', '', $controller->getClassName()));
+            $controller = app()->get($controllerClass);
+            $controllerName = lcfirst(str_replace('Controller', '', ClassHelper::getClassName($controller)));
             if (empty($actionName = $this->action)) {
                 $actionName = $controller->getDefaultAction();
             }
             if (!method_exists($controller, $actionName)) {
-                throw new HttpException($this->msg->i18n('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')), HttpException::NOT_FOUND);
+                throw new HttpException(t('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')), HttpException::NOT_FOUND);
             }
             $controller
                 ->setAction($actionName)
                 ->setId($controllerName)
-                // запускаем
+                // launching
                 ->start($this->request)
-                // инициализация
+                // initialization
                 ->init();
 
             if (!$controller->beforeAction()) {
-                throw new HttpException($this->msg->i18n('Method "beforeAction" returned false'), HttpException::BAD_REQUEST);
+                throw new HttpException(t('Method "beforeAction" returned false'), HttpException::BAD_REQUEST);
             }
 
             ob_start();
-            $actionVars = $this->container->getDependencies($controllerClass, $actionName);
+            $actionVars = app()->getDependencies($controllerClass, $actionName);
             if (!is_null($inline = $this->inline)) {
                 $actionVars[] = $inline;
             }
             $controller->$actionName(...$actionVars);
             $controller->afterAction();
 
-            // всё в порядке, отдаём страницу
+            // everything is ok, we hand over the page
             header('HTTP/1.1 200 OK');
-            // защита от кликджекинга
+            // clickjacking protection
             header('X-Frame-Options:sameorigin');
-            // Защита от XSS. HTTP Only
+            // XSS protection, HTTP Only
             ini_set('session.cookie_httponly', 1);
 
             echo ob_get_clean();
         } catch (
-              ReflectionException
-            | Error
-            | ErrorException
-            | ContainerException
-            | DBALException
-            | FileNotFoundException
-            | HttpException
-            | MapperException
-            | ModelException
-            | NotFoundException
-            | PDOException
-            | ValidationException
-            | ViewException
+             ReflectionException
+            |Error
+            |ErrorException
+            |ContainerException
+            |DBALException
+            |FileNotFoundException
+            |HttpException
+            |MapperException
+            |ModelException
+            |NotFoundException
+            |PDOException
+            |ValidationException
+            |ViewException
         $e) {
-            // Обработчик неправильного запроса. Вывод сообщения об ошибке
+            // Invalid request handler. Error message output
             $code = $e instanceof HttpException ? $e->getCode() : HttpException::INTERNAL_SERVER_ERROR;
 
             http_response_code($code);
-            header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
+            header("HTTP/1.1 $code ".HttpException::HTTP_STATUS_CODES[$code]);
+
+            if (file_exists($errorPath = __DIR__ . '/../../../../app/views/error.php')) {
+                require $errorPath;
+                return;
+            }
 
             require 'errors.php';
         }

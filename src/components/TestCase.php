@@ -5,35 +5,23 @@ namespace tachyon\components;
 use
     PHPUnit\Framework\TestCase as BaseTestCase,
     GuzzleHttp\Client as HttpClient,
-    tachyon\Config,
-    tachyon\dic\Container;
+    tachyon\Config;
 
 /**
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class TestCase extends BaseTestCase
 {
-    /**
-     * @var Container
-     */
-    protected Container $container;
-    /**
-     * @var Config
-     */
     protected Config $config;
-    /**
-     * @var HttpClient $client
-     */
-    protected $httpClient;
+
+    protected HttpClient $httpClient;
 
     /**
      * @inheritdoc
      */
     public function __construct($name = null, array $data = [], $dataName = '')
     {
-        $this->container = app();
-        $this->config = $this->container->get(Config::class);
+        $this->config = new Config('test');
         $baseUrl = $this->config->get('base_url');
         if (substr($baseUrl, -1) !== '/') {
             $baseUrl = "$baseUrl/";
@@ -45,6 +33,7 @@ class TestCase extends BaseTestCase
                 'http_errors' => false,
             ]
         );
+
         parent::__construct($name, $data, $dataName);
     }
 }

@@ -4,52 +4,41 @@ namespace tachyon\components\widgets;
 use tachyon\components\AssetManager,
     tachyon\components\Message,
     tachyon\View;
+use tachyon\Controller;
+use tachyon\Helpers\ClassHelper;
+use tachyon\traits\Configurable;
+use tachyon\traits\HasOwner;
 
 /**
  * Базовый класс для всех виджетов
  * 
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 abstract class Widget
 {
-    use \tachyon\traits\HasOwner;
-    use \tachyon\traits\ClassName;
-    use \tachyon\traits\Configurable;
+    use HasOwner;
+    use Configurable;
 
-    /**
-     * @var \tachyon\components\AssetManager $assetManager
-     */
-    protected $assetManager;
-    /**
-     * @var \tachyon\components\Message $msg
-     */
-    protected $msg;
-    /**
-     * @var \tachyon\View $view
-     */
-    protected $view;
+    protected AssetManager $assetManager;
+    protected Message $msg;
+    protected View $view;
 
     /**
      * id виджета
-     * @var $id string
      */
-    protected $id;
+    protected string $id;
     /**
      * Из какого контроллера вызван
-     * @var $controller \tachyon\Controller
      */
-    protected $controller;
+    protected Controller $controller;
     /**
      * Путь файла отображения
-     * @var $view string
      */
-    protected $viewsPath;
+    protected string $viewsPath;
     /**
      * Выводить или возвращать вывод
-     * @var $return boolean
      */
-    protected $return = false;
+    protected bool $return = false;
 
     public function __construct(AssetManager $assetManager, Message $msg, View $view)
     {
@@ -62,7 +51,7 @@ abstract class Widget
             $this->viewsPath = lcfirst(get_called_class());
         }
         if (is_null($this->id)) {
-            $this->id = strtolower($this->getClassName()) . '_' . uniqid();
+            $this->id = strtolower(ClassHelper::getClassName($this)) . '_' . uniqid();
         }
     }
 
@@ -77,12 +66,12 @@ abstract class Widget
      * 
      * @param $view string файл представления
      * @param $vars array переменные представления
-     * @param $return boolean показывать или возвращать 
+     * @param $return boolean|null показывать или возвращать
      */
-    protected function display($view = '', array $vars = array(), $return = null)
+    protected function display(string $view = '', array $vars = [], bool $return = null): ?string
     {
         if (empty($view)) {
-            $view = strtolower($this->getClassName());
+            $view = strtolower(ClassHelper::getClassName($this));
         }
         if (is_null($return)) {
             $return = $this->return;
@@ -96,22 +85,16 @@ abstract class Widget
 
     /**
      * Выводит скрипт виджета
-     * 
-     * @param string $name
-     * @return string
      */
-    public function js($name)
+    public function js(string $name): string
     {
         return $this->assetManager->js($name, $this->getAssetsPublicPath() . '/', $this->getAssetsSourcePath());
     }
 
     /**
      * Выводит стиль виджета
-     * 
-     * @param string $name
-     * @return string
      */
-    public function css($name)
+    public function css(string $name): string
     {
         return $this->assetManager->css($name, $this->getAssetsPublicPath() . '/', $this->getAssetsSourcePath());
     }
@@ -120,48 +103,39 @@ abstract class Widget
 
     /**
      * Путь до ресурсов
-     * 
-     * @return string
      */
-    public function getAssetsPublicPath()
+    public function getAssetsPublicPath(): string
     {
-        return '/widgets/' . strtolower($this->getClassName());
+        return '/widgets/' . strtolower(ClassHelper::getClassName($this));
     }
 
     /**
      * Путь до ресурсов
-     * 
-     * @return string
      */
-    public function getAssetsSourcePath()
+    public function getAssetsSourcePath(): string
     {
         return __DIR__ . '/assets';
     }
 
-    /**
-     * getViewPath
-     * 
-     * @return string
-     */
-    public function getViewPath()
+    public function getViewPath(): string
     {
         $reflection = new \ReflectionClass($this);
         $directory = dirname($reflection->getFileName());
         return $directory . DIRECTORY_SEPARATOR . 'views';
     }
     
-    public function setController($controller)
+    public function setController($controller): static
     {
         $this->controller = $controller;
         return $this;
     }
 
-    public function getController()
+    public function getController(): Controller
     {
         return $this->controller;
     }
 
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
     }

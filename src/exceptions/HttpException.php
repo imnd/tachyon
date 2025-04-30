@@ -3,8 +3,7 @@
 namespace tachyon\exceptions;
 
 /**
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class HttpException extends \Exception
 {

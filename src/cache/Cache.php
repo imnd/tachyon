@@ -1,37 +1,28 @@
 <?php
 namespace tachyon\cache;
 
-use ReflectionClass,
+use
+    /*Psr\SimpleCache\CacheInterface,*/
+    ReflectionClass,
     ReflectionException,
     tachyon\Config,
     tachyon\Env;
 
 /**
- * кеширование
- *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
-abstract class Cache
+abstract class Cache /*implements CacheInterface*/
 {
-    /**
-     * @var Env $env
-     */
-    protected $env;
+    protected Env $env;
 
-    protected $duration = 60;
-    protected $cacheFolder = '../runtime/cache/';
-    protected $cacheFile = '';
-    protected $key = '';
-    protected $enabled = false;
-    protected $serialize = false;
+    protected int $duration = 60;
+    protected string $cacheFolder = '../runtime/cache';
+    protected string $cacheFile = '';
+    protected string $key = '';
+    protected bool $enabled = false;
+    protected bool $serialize = false;
 
     /**
-     * Инициализация
-     *
-     * @param Env    $env
-     * @param Config $config
-     *
      * @throws ReflectionException
      */
     public function __construct(Env $env, Config $config)
@@ -51,23 +42,19 @@ abstract class Cache
     }
 
     /**
-     * возвращает содержимое файла кэша или включает буфферинг вывода
-     * @param string $cacheKey
+     * returns the contents of the file cache or includes output buffering
      */
-    abstract public function start($cacheKey);
+    abstract public function start(string $cacheKey): ?string;
 
     /**
-     * заканчиваем кеширование (слив содержимого вывода в файл)
-     * @param string $contents
+     * finishes caching (dump the contents of the output to a file)
      */
-    abstract public function end($contents = null);
+    abstract public function end(string $contents = null): void;
 
     /**
-     * @param $key
-     *
      * @return false|mixed|string|void
      */
-    protected function getContents($key)
+    protected function getContents(string $key)
     {
         $this->setKey($key);
         $this->setCacheFilePath();
@@ -89,14 +76,11 @@ abstract class Cache
         }
     }
 
-    protected function setKey($key): void
+    protected function setKey(string $key): void
     {
         $this->key = md5($key);
     }
 
-    /**
-     * @inheritdoc
-     */
     protected function save($contents): void
     {
         $this->setCacheFilePath();
@@ -106,8 +90,8 @@ abstract class Cache
         file_put_contents($this->cacheFile, $contents);
     }
 
-    protected function setCacheFilePath()
+    protected function setCacheFilePath(): void
     {
-        $this->cacheFile = "{$this->cacheFolder}{$this->key}.php";
+        $this->cacheFile = "{$this->cacheFolder}/{$this->key}.php";
     }
 }

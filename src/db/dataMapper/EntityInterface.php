@@ -3,8 +3,7 @@
 namespace tachyon\db\dataMapper;
 
 /**
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 interface EntityInterface
 {

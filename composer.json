@@ -10,9 +10,11 @@
         }
     },
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.2",
         "ext-dom": "*",
+        "ext-pdo": "*",
         "guzzlehttp/guzzle": "^6.4",
-        "psr/container": "^1.0"
+        "psr/container": "^1.0",
+        "psr/simple-cache": "^3.0"
     }
 }

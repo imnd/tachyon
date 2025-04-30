@@ -5,7 +5,7 @@ namespace tachyon\db\dbal\conditions;
 /**
  * ConditionsBuilder
  *
- * @author Андрей Сердюк
+ * @author imndsu@gmail.com
  * @copyright (c) 2021 IMND
  */
 abstract class ExpressionsBuilder
@@ -35,8 +35,7 @@ abstract class ExpressionsBuilder
         string $keyword,
         string $operator,
         string $glue
-    ): array
-    {
+    ): array {
         $clause = '';
         $vals = [];
         if (count($conditions) !== 0) {

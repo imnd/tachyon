@@ -2,26 +2,18 @@
 
 namespace tachyon\traits;
 
-use ReflectionException;
-use tachyon\dic\Container;
-use tachyon\exceptions\ContainerException;
-use tachyon\components\Lang;
-
 /**
- * Трейт аутентификации
- *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 trait DateTime
 {
-    private array $_months = [
+    private const MONTHS = [
         'ru' => [
             'short' => [
                 'nom' => ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
                 'gen' => ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
             ],
-            'long' => [
+            'long'  => [
                 'nom' => [
                     'январь',
                     'февраль',
@@ -54,74 +46,43 @@ trait DateTime
         ],
     ];
 
-    /**
-     * @param        $date
-     * @param        $glue string
-     * @param string $length
-     * @param string $case
-     *
-     * @return string
-     * @throws ReflectionException
-     * @throws ContainerException
-     */
     public function convDateToReadable(
-        $date,
-        $glue = ' ',
-        $length = 'long',
-        $case = 'gen'
+        string $date,
+        string $glue = ' ',
+        string $length = 'long',
+        string $case = 'gen'
     ): string {
         if (empty($date)) {
             return '';
         }
         $dateArr = explode('-', $date);
         $dateArr = array_reverse($dateArr);
-        $dateArr[1] = $this->_months[app()->get(Lang::class)->getLanguage(
-        )][$length][$case][(int)$dateArr[1] - 1];
+        $dateArr[1] = self::MONTHS[lang()->getLanguage()][$length][$case][(int)$dateArr[1] - 1];
         return implode($glue, $dateArr) . ' г.';
     }
 
-    /**
-     * @param null $date
-     *
-     * @return string
-     */
-    public function getDay($date = null): string
+    public function getDay(string $date = null): string
     {
         $dateArr = explode('-', $date ?? $this->date);
         return $dateArr[2];
     }
 
-    /**
-     * @param null   $date
-     * @param string $length
-     * @param string $case
-     *
-     * @return string
-     * @throws ContainerException
-     * @throws ReflectionException
-     */
-    public function getMonth($date = null, $length = 'long', $case = 'gen')
-    {
+    public function getMonth(
+        string $date = null,
+        string $length = 'long',
+        string $case = 'gen'
+    ): string {
         $dateArr = explode('-', $date ?? $this->date);
-        return $this->_months[
-            app()
-                ->get(Lang::class)
-                ->getLanguage()
-        ][$length][$case][(int)$dateArr[1] - 1];
+        return self::MONTHS[lang()->getLanguage()][$length][$case][(int)$dateArr[1] - 1];
     }
 
-    /**
-     * @param null $date
-     *
-     * @return string
-     */
-    public function getYear($date = null): string
+    public function getYear(string $date = null): string
     {
         $dateArr = explode('-', $date ?? $this->date);
         return $dateArr[0];
     }
 
-    public function timestampToDateTime($timestamp): string
+    public function timestampToDateTime(int $timestamp): string
     {
         $date = new \DateTime;
         $date->setTimestamp($timestamp);
@@ -129,25 +90,19 @@ trait DateTime
     }
 
     /**
-     * Возвращает первый и последний день года.
-     *
-     * @return array
+     * Returns the first and last day of the year.
      */
     public function getYearBorders(): array
     {
         $curYear = date('Y');
         return [
             'first' => "$curYear-01-01",
-            'last' => "$curYear-12-31",
+            'last'  => "$curYear-12-31",
         ];
     }
 
     /**
-     * Устанавливает диапазон первый и последний день года.
-     *
-     * @param array $conditions
-     *
-     * @return array
+     * Sets the range of the first and last day of the year
      */
     public function setYearBorders(array $conditions = []): array
     {

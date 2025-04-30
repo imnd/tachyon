@@ -1,63 +1,53 @@
 <?php
 namespace tachyon;
 
-use ErrorException;
-
 /**
- * Класс инкапсулирующий конфигурацию
- *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Config
 {
     public const APP_DIR = '/../../../';
 
-    /**
-     * Все опции
-     * @var array
-     */
     private array $options;
-    /**
-     * Путь к папке файлу настроек
-     * @var string
-     */
-    private string $filePath = self::APP_DIR . 'app/config/main.php';
 
-    /**
-     * @param string|null $mode
-     */
     public function __construct(string $mode = null)
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
-        // все опции
-        $this->options = require("$basePath{$this->filePath}");
-        // base path
-        $this->options['base_path'] = $basePath;
-        // environment
-        $this->options['mode'] = defined('APP_MODE') ? APP_MODE : $mode ?? 'work';
+        // Constant options
+        $this->options = [
+            'base_path' => $basePath,
+            // the path to the routes file
+            'routes' => require($basePath . self::APP_DIR . 'app/config/routes.php'),
+            'mode' => $GLOBALS['APP_MODE'] ?? $mode ?? 'work'
+        ];
+        // Environment options
+        $this->loadEnv($basePath);
+    }
+
+    private function loadEnv($basePath): void
+    {
         // read .env file
-        $envFileName = ($this->options['mode']==='test') ? '.env-test' : '.env';
+        $envFileName = '.env' . ($this->options['mode'] === 'test' ? '-test' : '');
         if (!file_exists($envFilePath = $basePath . self::APP_DIR . $envFileName)) {
             return;
         }
         $envFile = file($envFilePath);
         foreach ($envFile as $string) {
-            if ("\n"===$string || "\r\n"===$string) {
+            if ("\n" === $string || "\r\n" === $string) {
                 continue;
             }
             $arr = explode(':', $string);
-            $key = trim($arr[0]);
-            if (0===strpos($key, '#')) {
+            $key = strtolower( trim($arr[0]) );
+            if (str_starts_with($key, '#')) {
                 continue;
             }
             $val = trim($arr[1]);
-            if (false!==$point = strpos($key, '.')) {
+            if (false !== $point = strpos($key, '.')) {
                 $key0 = substr($key, 0, $point);
                 if (!isset($this->options[$key0])) {
                     $this->options[$key0] = array();
                 }
-                $key1 = substr($key, $point+1);
+                $key1 = substr($key, $point + 1);
                 $this->options[$key0][$key1] = $val;
             } else {
                 $this->options[$key] = $val;
@@ -66,13 +56,9 @@ class Config
     }
 
     /**
-     * Извлечение значения по ключу
-     *
-     * @param string $key
-     *
-     * @return mixed
+     * extract value by key
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         return $this->options[$key] ?? null;
     }

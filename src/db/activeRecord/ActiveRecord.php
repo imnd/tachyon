@@ -2,29 +2,26 @@
 
 namespace tachyon\db\activeRecord;
 
+use ReflectionException;
+use tachyon\{cache\Db as DbCache,
+    components\Message,
+    exceptions\ContainerException,
+    exceptions\DBALException,
+    exceptions\ModelException,
+    exceptions\ValidationException,
+    Helpers\ClassHelper,
+    Helpers\StringHelper,
+    Model,
+    traits\DateTime};
 use tachyon\db\{
     Alias,
-    dbal\DbFactory,
     dbal\Db,
+    dbal\DbFactory,
     Terms,
 };
-use tachyon\{exceptions\ContainerException,
-    exceptions\DBALException,
-    exceptions\ValidationException,
-    Model,
-    dic\Container,
-    exceptions\ModelException,
-    components\Message,
-    cache\Db as DbCache,
-    traits\DateTime
-};
-use ReflectionException;
 
 /**
- * Класс модели Active Record
- *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 abstract class ActiveRecord extends Model
 {
@@ -35,91 +32,67 @@ abstract class ActiveRecord extends Model
         Terms::lt as _like;
     }
 
-    /**
-     * @var DbCache $cache
-     */
     protected DbCache $cache;
-    /**
-     * @var DbFactory
-     */
     protected DbFactory $dbFactory;
-    /**
-     * @var Alias $alias
-     */
     protected Alias $alias;
-    /**
-     * @var Join $join
-     */
     protected Join $join;
-    /**
-     * @var Terms $terms
-     */
-    protected Terms $terms;
-    /**
-     * @var Message $msg
-     */
-    protected $msg;
+    protected Message $msg;
 
     /**
-     * Имя таблицы в БД или алиаса
+     * the name of the table in the database or alias
      */
-    protected static string $tableName;
+    protected static string $tableName = '';
     /**
-     * Имя поля первичного ключа
+     * the name of the primary key field
      */
-    protected string $pkName;
+    protected string $pkName = 'id';
     /**
-     * Поля таблицы
-     *
-     * @var array
+     * table fields
      */
     protected array $fields = [];
     /**
-     * Поля выборки
+     * selected fields
      */
     protected array $selectFields = [];
     /**
-     * SQL-типы полей таблицы
+     * SQL types of table fields
      */
     protected array $fieldTypes = [];
     /**
-     * Алиас текущей (главной) таблицы запроса
+     * Alias of the main request table
      */
     protected string $tableAlias = '';
     /**
-     * Поля, по которым таблица сортируется с помощью ORDER BY CAST
-     *
-     * @var $scalarFields array
+     * The fields by which the table is sorted using ORDER BY CAST
      */
     protected array $scalarFields = [];
     /**
-     * Поля, по которым таблица сортируется по умолчанию
-     *
-     * @var $defSortBy array
+     * Fields by which the table is sorted by default
      */
     protected array $defSortBy = [];
 
     protected array $entityNames = [];
+
     /**
      * СВЯЗАННЫЕ Ч/З ВНЕШНИЕ КЛЮЧИ МОДЕЛИ
      * 'has_one': связь "один к одному" вида
-     * array('название объекта' => array(
+     * ['название объекта' => [
      *      'внешняя модель',
      *      'has_one',
      *      'внешний ключ данной таблицы, указывающий на первичный ключ внешней таблицы',
      *      array(список интересующих полей)(optional, если пропущен, выбираются все поля, объявленные в св-ве
      * $attributes внешней модели)
-     * ));
+     * ]];
      * 'has_many': связь "один ко многим" вида
-     * array('название объекта' => array(
+     * ['название объекта' => [
      *      'внешняя модель',
      *      'has_many',
      *      'внешний ключ внешней таблицы, указывающий на первичный ключ данной таблицы',
      *      array(список интересующих полей) (optional, если пропущен, выбираются все поля, объявленные в св-ве
      * $attributes внешней модели)
-     * ));
+     * ]];
      * 'many_to_many': связь "многие ко многим" вида
-     * array('название объекта' => array(
+     * ['название объекта' => [
      *      'внешняя модель',
      *      'many_to_many',
      *      array(
@@ -129,46 +102,35 @@ abstract class ActiveRecord extends Model
      *      )
      *      array(список интересующих полей)(optional, если пропущен, выбираются все поля, объявленные в св-ве
      * $attributes внешней модели)
-     * ));
-     * 'join': подзапрос. связь "один ко многим" вида
-     * array('название объекта' => array(
+     * ]];
+     * 'join': подзапрос связь "один ко многим" вида
+     * ['название объекта' => [
      *      'внешняя модель',
      *      'join',
      *      'внешний ключ внешней таблицы, указывающий на первичный ключ данной таблицы',
      *      array(список интересующих полей) (optional, если пропущен, выбираются все поля, объявленные в св-ве
      * $attributes внешней модели)
-     * ));
+     * ]];
      */
     protected array $relations = [];
+
     /**
-     * связанные модели, по которым происходит выборка
+     * Related models by which a selection occurs
      */
     protected array $with = [];
 
     /**
-     * маркер: новая это несохраненная модель или извлеченная из БД
+     * Marker: is it a new model or extracted from the database
      */
     protected bool $isNew = true;
     /**
-     * маркер: изменившаяся несохраненная модель
-     * пока не используется
+     * Marker: Changed unsaved model
+     * Not used yet
      */
     protected bool $isDirty = false;
 
     protected array $relationClasses = [];
 
-    /**
-     * Инициализация
-     *
-     * @param Message   $msg
-     * @param DbCache   $cache
-     * @param Alias     $alias
-     * @param DbFactory $dbFactory
-     * @param Join      $join
-     * @param array     $params
-     *
-     * @throws ModelException
-     */
     public function __construct(
         Message $msg,
         DbCache $cache,
@@ -177,7 +139,7 @@ abstract class ActiveRecord extends Model
         Join $join,
         ...$params
     ) {
-        // зависимости
+        // dependencies
         $this->msg = $msg;
         $this->cache = $cache;
         $this->alias = $alias;
@@ -185,55 +147,56 @@ abstract class ActiveRecord extends Model
         $this->dbFactory = $dbFactory;
         $this->join = $join;
         $this->join->setOwner($this);
-        if (is_null(static::$tableName)) {
-            throw new ModelException($this->msg->i18n('Property "tableName" is not set'));
+
+        if ('' === static::$tableName) {
+            static::$tableName = StringHelper::camelToSnake(
+                ClassHelper::getClassName(static::class)
+            ) . 's';
         }
 
         parent::__construct(...$params);
     }
 
     /**
-     * Лениво извлекаем связанные записи
-     *
-     * @param $var
-     *
-     * @return array|mixed|ActiveRecord|null
+     * Lazily extract related records
      *
      * @throws ContainerException
      * @throws DBALException
      * @throws ModelException
      * @throws ReflectionException
      */
-    public function __get($var)
+    public function __get($var): array | string | self | null
     {
-        // если это не подключенное ч/з with св-во ("жадная" загрузка)
-        // ищем среди присоединенных ч/з внешние ключи объектов
+        // If this is not connected through the "with" property (greedy loading),
+        // we look among the objects connected through external keys
         // TODO: перенести в Relations
         $container = app();
         if (isset($this->relations[$var])) {
-            // добавляем внешние ключи по объявленным связям
+            // add external keys to declared connections
             $relationParams = $this->relations[$var];
             $relationModel = $container->get($this->_getFullModelName($relationParams[0]));
-            // приделываем поля связанной таблицы (если не заданы в связи)
+            // attach the fields of the related table (if not specified in connection)
             if (!isset($relationParams[3])) {
                 $relationParams[3] = $relationModel->getTableFields();
             }
-            // приделываем первичные ключи связанной таблицы
+            // attach the primary keys of the related table
             $relationParams[3] = array_merge($relationParams[3], $relationModel->getPkArr());
             if ($relationModel instanceof self) {
-                // приделываем алиасы первичных ключей связанной таблицы
+                // attach the aliases of primary keys of the related table
                 $relationParams[3] = array_merge(
                     $relationParams[3],
-                    $relationModel->getAlias()->getPrimKeyAliasArr(
-                        $with,
-                        $relationModel->getPkName()
-                    )
+                    $relationModel
+                        ->getAlias()
+                        ->getPrimKeyAliasArr(
+                            $this->with,
+                            $relationModel->getPkName()
+                        )
                 );
             }
-            /** @var ActiveRecord $relModel */
-            $relModel = $container->get("\\app\\models\\{$relationParams[0]}");
+            /** @var self $relModel */
+            $relModel = $container->get("\\app\\models\\$relationParams[0]");
             $type = $relationParams[1];
-            // первичный ключ внешней таблицы
+            // primary key of the external table
             $relPk = $relModel->getPkName();
             switch ($type) {
                 case 'has_one':
@@ -242,16 +205,16 @@ abstract class ActiveRecord extends Model
                     return $relModel
                         ->where($where)
                         ->findOne();
-                    break;
+
                 case 'has_many':
-                    // первичный ключ этой таблицы
+                    // primary key of the main table
                     $thisPk = $this->pkName;
-                    // внешний ключ связанной таблицы, указывающий на первичный ключ этой таблицы
+                    // the related table external key pointing to the primary key of the main table
                     $fk = $relationParams[2];
                     return $relModel
                         ->where([$fk => $this->$thisPk])
                         ->findAll();
-                    break;
+
                 case 'many_to_many':
                     $pk = $this->pkName;
                     $lnkModel = $container->get($relationParams[2][0]);
@@ -266,18 +229,18 @@ abstract class ActiveRecord extends Model
                         }
                     }
                     return $relModel
-                        ->join($linkTableName, "$linkTableName.$relFk2=$relTableName.$relPk")
-                        ->join($thisTableName, "$linkTableName.$relFk1=$thisTableName.$pk")
+                        ->join($linkTableName, "$linkTableName.$relFk2 = $relTableName.$relPk")
+                        ->join($thisTableName, "$linkTableName.$relFk1 = $thisTableName.$pk")
                         ->where(["$thisTableName.$pk" => $this->$pk])
                         ->findAll();
-                    break;
+
                 case 'belongs_to':
-                    // внешний ключ данной таблицы, указывающий на первичный ключ внешней таблицы
+                    // external key of main table pointing to the primary key of the external table
                     $relFk = $relationParams[2];
                     return $relModel
                         ->where([$relPk => $this->$relFk])
                         ->findOne();
-                    break;
+
                 case 'join':
                     $linkKey = $relationParams[2];
                     $relTableName = $relModel->getTableName();
@@ -289,7 +252,7 @@ abstract class ActiveRecord extends Model
                     );
                     $this->getDb()->setFields($relationParams[3]);
                     return $this->getDb()->selectOne($thisTableName, ["$thisTableName.$pk" => $this->$pk]);
-                    break;
+
                 default:
                     break;
             }
@@ -306,9 +269,8 @@ abstract class ActiveRecord extends Model
     /**
      * Все записи в виде массивов
      *
-     * @param array $conditions условия поиска массив поле => значение
+     * @param array $conditions условия поиска массив [поле => значение]
      *
-     * @return array
      * @throws DBALException
      */
     public function findAllRaw(array $conditions = []): array
@@ -341,9 +303,6 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @param array $conditions
-     *
-     * @return array
      * @throws DBALException
      */
     public function findOneRaw(array $conditions = []): ?array
@@ -358,18 +317,15 @@ abstract class ActiveRecord extends Model
     /**
      * Возвращает набор строк по условию
      *
-     * @param array $conditions
-     *
-     * @return array
      * @throws ContainerException
      * @throws DBALException
      * @throws ReflectionException
      */
-    public function findAll($conditions = []): array
+    public function findAll(array $conditions = []): array
     {
         // кеширование
         $cacheKey =
-              json_encode($this->getTableName())
+            json_encode($this->getTableName())
             . json_encode($this->getSelect())
             . json_encode($this->getWhere())
             . json_encode($this->getSortBy())
@@ -461,19 +417,15 @@ abstract class ActiveRecord extends Model
         $this->clearWith();
         $items = array_values($retItems);
         $this->cache->end($items);
+
         return $items;
     }
 
     /**
      * преобразование значений полей (в т.ч. timestamp)
      * // TODO: убрать
-     *
-     * @param $selectedFields
-     * @param $relationFields
-     *
-     * @return array
      */
-    private function _convVals($selectedFields, $relationFields): array
+    private function _convVals(array $selectedFields, array $relationFields): array
     {
         if (count($selectedFields) === 0) {
             return $selectedFields;
@@ -502,9 +454,6 @@ abstract class ActiveRecord extends Model
     /**
      * Поиск записей в соотв с заданными св-вами модели
      *
-     * @param null $fields
-     *
-     * @return array
      * @throws DBALException
      */
     public function search($fields = null): array
@@ -526,12 +475,9 @@ abstract class ActiveRecord extends Model
     /**
      * shortcut
      *
-     * @param $pk
-     *
-     * @return ActiveRecord
      * @throws DBALException
      */
-    public function findByPk($pk): ?ActiveRecord
+    public function findByPk(int | string $pk): ?self
     {
         $pkName = $this->pkName;
         if (is_array($pkName)) {
@@ -545,12 +491,9 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @param array $conditions
-     *
-     * @return ActiveRecord
      * @throws DBALException
      */
-    public function findOne($conditions = []): ?ActiveRecord
+    public function findOne(array $conditions = []): ?self
     {
         if ($items = $this
             ->limit(1)
@@ -574,11 +517,10 @@ abstract class ActiveRecord extends Model
      *
      * @param $validate boolean производить ли валидацию
      *
-     * @return integer
      * @throws DBALException
      * @throws ValidationException
      */
-    public function save($validate = true)
+    public function save(bool $validate = true): false | int | string
     {
         if ($validate && !$this->validate()) {
             return false;
@@ -593,14 +535,13 @@ abstract class ActiveRecord extends Model
     /**
      * Сохраняет набор полей модели в БД
      *
-     * @param $attrs array массив поле=>значение
-     * @param $validate boolean производить ли валидацию
+     * @param array $attrs массив [поле => значение]
+     * @param boolean $validate производить ли валидацию
      *
-     * @return integer
      * @throws DBALException
      * @throws ValidationException
      */
-    public function saveAttrs(array $attrs, $validate = false)
+    public function saveAttrs(array $attrs, bool $validate = false): false | int
     {
         $this->setAttributes($attrs);
         if ($validate && !$this->validate(array_keys($attrs))) {
@@ -611,8 +552,6 @@ abstract class ActiveRecord extends Model
 
     /**
      * Хук на событие сохранения модели
-     *
-     * @return boolean
      */
     protected function afterSave(): bool
     {
@@ -622,10 +561,9 @@ abstract class ActiveRecord extends Model
     /**
      * вставляет модель в БД возвращает $pk модели
      *
-     * @return mixed
      * @throws DBALException
      */
-    public function insert()
+    public function insert(): false | string
     {
         if (!$lastInsertId = $this->getDb()->insert(static::$tableName, $this->attributes)) {
             return false;
@@ -636,7 +574,6 @@ abstract class ActiveRecord extends Model
     /**
      * Сохраняет модель в БД
      *
-     * @return integer
      * @throws DBALException
      */
     public function update(): int
@@ -670,9 +607,8 @@ abstract class ActiveRecord extends Model
     /**
      * Удаляет все модели, соотв. условиям
      *
-     * @param $attrs array массив поле=>значение
+     * @param array $attrs массив [поле => значение]
      *
-     * @return boolean
      * @throws DBALException
      */
     public function deleteAllByAttrs(array $attrs): bool
@@ -683,7 +619,7 @@ abstract class ActiveRecord extends Model
     /**
      * удаляем модели, связанные с текущей ч/з has_many
      */
-    public function deleteRelatedModels($relName): void
+    public function deleteRelatedModels(string $relName): void
     {
         foreach ($this->$relName as $relModel) {
             $relModel->delete();
@@ -693,12 +629,8 @@ abstract class ActiveRecord extends Model
 
     /**
      * Присваивание значений аттрибутам модели
-     *
-     * @param array $attributes
-     *
-     * @return ActiveRecord
      */
-    public function setAttributes(array $attributes): ActiveRecord
+    public function setAttributes(array $attributes): Model
     {
         foreach ($attributes as $name => $value) {
             if (in_array($name, $this->fields, true)) {
@@ -717,7 +649,6 @@ abstract class ActiveRecord extends Model
     # WHERE
 
     /**
-     * @return array
      * @throws DBALException
      */
     public function getWhere(): array
@@ -726,24 +657,18 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @param $where
-     *
-     * @return $this
      * @throws DBALException
      */
-    public function where($where): ActiveRecord
+    public function where($where): self
     {
         $this->getDb()->setWhere($where);
         return $this;
     }
 
     /**
-     * @param $where
-     *
-     * @return $this
      * @throws DBALException
      */
-    public function addWhere($where): ActiveRecord
+    public function addWhere($where): self
     {
         $this->getDb()->addWhere($where);
         return $this;
@@ -751,42 +676,26 @@ abstract class ActiveRecord extends Model
 
     /**
      * Устанавливает условия поиска для модели
-     *
-     * @param array $conditions
-     *
-     * @return ActiveRecord
      */
-    public function setSearchConditions(array $conditions = []): ActiveRecord
+    public function setSearchConditions(array $conditions = []): self
     {
         $this->addWhere($conditions);
         return $this;
     }
 
     /**
-     * @param array $where
-     * @param       $field
-     * @param       $arrKey
-     * @param bool  $precise
-     *
-     * @return $this
      * @throws DBALException
      */
-    public function gt(array &$where, $field, $arrKey, $precise = false): ActiveRecord
+    public function gt(array &$where, string $field, string $arrKey, bool $precise = false): self
     {
         $this->getDb()->addWhere($this->_gt($where, $field, $arrKey, $precise));
         return $this;
     }
 
     /**
-     * @param array $where
-     * @param       $field
-     * @param       $arrKey
-     * @param bool  $precise
-     *
-     * @return $this
      * @throws DBALException
      */
-    public function lt(array &$where, $field, $arrKey, $precise = false): ActiveRecord
+    public function lt(array &$where, string $field, string $arrKey, bool $precise = false): self
     {
         $this->getDb()->addWhere($this->_lt($where, $field, $arrKey, $precise));
         return $this;
@@ -795,20 +704,17 @@ abstract class ActiveRecord extends Model
     /**
      * Устанавливает условие LIKE
      *
-     * @param $where array
-     * @param $field string
-     *
-     * @return ActiveRecord
      * @throws DBALException
      */
-    public function like(array $where, $field): ActiveRecord
+    public function like(array $where, string $field): self
     {
         $this->getDb()->addWhere($this->_like($where, $field));
         return $this;
     }
 
     # ORDER BY
-    public function setSortConditions($attrs): ActiveRecord
+
+    public function setSortConditions($attrs): self
     {
         if (isset($attrs['order'])) {
             $this->sortBy($attrs['field'], $attrs['order']);
@@ -819,13 +725,9 @@ abstract class ActiveRecord extends Model
     /**
      * добавление сортировки выбранных записей по полю $sortBy
      *
-     * @param string $colName
-     * @param string $order
-     *
-     * @return ActiveRecord
      * @throws DBALException
      */
-    public function sortBy(string $colName, $order = 'ASC'): ActiveRecord
+    public function sortBy(string $colName, string $order = 'ASC'): self
     {
         $colName = $this->_orderByCast($colName);
         $this->getDb()->orderBy($colName, $order);
@@ -835,12 +737,9 @@ abstract class ActiveRecord extends Model
     /**
      * сортировка выбранных записей только по полю $sortBy
      *
-     * @param array $sortBy
-     *
-     * @return ActiveRecord
      * @throws DBALException
      */
-    public function setSortBy(array $sortBy): ActiveRecord
+    public function setSortBy(array $sortBy): self
     {
         $this->getDb()->setOrderBy($sortBy);
         return $this;
@@ -850,7 +749,6 @@ abstract class ActiveRecord extends Model
     {
         return $this->getDb()->getOrderBy();
     }
-
 
     /**
      * устанавливаем массив полей для сортировки по умолчанию
@@ -875,12 +773,9 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @param $colName string
-     *
-     * @return string
      * @throws DBALException
      */
-    private function _orderByCast($colName): string
+    private function _orderByCast(string $colName): string
     {
         $searchColName = str_replace("{$this->getTableAlias()}.", '', $colName);
         if (in_array($searchColName, $this->scalarFields)) {
@@ -894,20 +789,15 @@ abstract class ActiveRecord extends Model
     /**
      * ограничение числа выбранных записей
      *
-     * @param int  $limit
-     * @param null $offset
-     *
-     * @return ActiveRecord
      * @throws DBALException
      */
-    public function limit(int $limit, $offset = null): ActiveRecord
+    public function limit(int $limit, int $offset = null): self
     {
         $this->getDb()->setLimit($limit, $offset);
         return $this;
     }
 
     /**
-     * @return string
      * @throws DBALException
      */
     public function getLimit(): string
@@ -920,19 +810,15 @@ abstract class ActiveRecord extends Model
     /**
      * группировка выбранных записей по полю $fieldName
      *
-     * @param $fieldName
-     *
-     * @return ActiveRecord
      * @throws DBALException
      */
-    public function groupBy($fieldName): ActiveRecord
+    public function groupBy($fieldName): self
     {
         $this->getDb()->setGroupBy($fieldName);
         return $this;
     }
 
     /**
-     * @return string
      * @throws DBALException
      */
     public function getGroupBy(): string
@@ -947,7 +833,7 @@ abstract class ActiveRecord extends Model
      *
      * @throws DBALException
      */
-    public function select(): ActiveRecord
+    public function select(): self
     {
         $fieldNames = func_get_args();
         if (is_array($fieldNames[0])) {
@@ -976,7 +862,7 @@ abstract class ActiveRecord extends Model
     /**
      * устанавливаем массив полей для выборки
      */
-    public function setSelect(): ActiveRecord
+    public function setSelect(): self
     {
         // если он пуст
         if (empty($this->getSelect())) {
@@ -1004,14 +890,11 @@ abstract class ActiveRecord extends Model
     # JOIN
 
     /**
-     * @param $with
-     *
-     * @return $this
      * @throws ContainerException
      * @throws ModelException
      * @throws ReflectionException
      */
-    public function with($with): ActiveRecord
+    public function with($with): self
     {
         if (is_array($with)) {
             foreach ($with as $item) {
@@ -1024,18 +907,15 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @param $with
-     *
-     * @return $this
      * @throws ModelException
      * @throws ReflectionException
      * @throws ContainerException
      */
-    public function setWith($with): ActiveRecord
+    public function setWith($with): self
     {
         if (!$relationParams = $this->relations[$with]) {
             throw new ModelException(
-                $this->msg->i18n(
+                t(
                     'Relation "%relation" not declared in class: ' . get_called_class(),
                     ['relation' => $with]
                 )
@@ -1053,7 +933,7 @@ abstract class ActiveRecord extends Model
             ]
         )) {
             throw new ModelException(
-                $this->msg->i18n(
+                t(
                     'Relation "%relation" not declared in class: ' . get_called_class(),
                     ['relation' => $relType]
                 )
@@ -1078,14 +958,11 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @param $join array
-     *
-     * @return array
      * @throws ContainerException
      * @throws ModelException
      * @throws ReflectionException
      */
-    private function _getJoin($join): array
+    private function _getJoin(array $join): array
     {
         $relationName = $this->join->getRelationName($join);
         $relation = $this->relations[$relationName];
@@ -1094,17 +971,14 @@ abstract class ActiveRecord extends Model
             return [$joinModel::getTableName() => $join[$relationName]];
         }
         throw new ModelException(
-            $this->msg->i18n('Determine the join condition of the table %table', ['table' => $join])
+            t('Determine the join condition of the table %table', ['table' => $join])
         );
     }
 
     /**
-     * @param $join array
-     *
-     * @return string
      * @throws ModelException
      */
-    private function _getJoinCond($join): string
+    private function _getJoinCond(array $join): string
     {
         $relationName = $this->join->getRelationName($join);
         $relation = $this->relations[$relationName];
@@ -1117,14 +991,11 @@ abstract class ActiveRecord extends Model
             return "$tableName.{$this->pkName}={$join[$relationName]}.{$relation[2]}";
         }
         throw new ModelException(
-            $this->msg->i18n('Determine the join condition of the table %table', ['table' => $join])
+            t('Determine the join condition of the table %table', ['table' => $join])
         );
     }
 
     /**
-     * @param $join
-     *
-     * @return $this
      * @throws ContainerException
      * @throws ModelException
      * @throws ReflectionException
@@ -1138,26 +1009,12 @@ abstract class ActiveRecord extends Model
 
     # JOIN шорткаты
 
-    /**
-     * @param       $join
-     * @param array $on
-     * @param null  $tblName
-     *
-     * @return $this
-     */
-    public function join($join, $on = [], $tblName = null): self
+    public function join($join, array $on = [], string $tblName = null): self
     {
         return $this->leftJoin($join, $on, $tblName);
     }
 
-    /**
-     * @param       $join
-     * @param array $on
-     * @param null  $tblName
-     *
-     * @return $this
-     */
-    public function innerJoin($join, $on = [], $tblName = null): ActiveRecord
+    public function innerJoin($join, array $on = [], string $tblName = null): self
     {
         if (is_null($tblName)) {
             $tblName = $this->getTableAlias();
@@ -1166,14 +1023,7 @@ abstract class ActiveRecord extends Model
         return $this;
     }
 
-    /**
-     * @param       $join
-     * @param array $on
-     * @param null  $tblName
-     *
-     * @return $this
-     */
-    public function leftJoin($join, $on = [], $tblName = null): ActiveRecord
+    public function leftJoin($join, array $on = [], string $tblName = null): self
     {
         if (is_null($tblName)) {
             $tblName = $this->getTableAlias();
@@ -1182,14 +1032,7 @@ abstract class ActiveRecord extends Model
         return $this;
     }
 
-    /**
-     * @param       $join
-     * @param array $on
-     * @param null  $tblName
-     *
-     * @return $this
-     */
-    public function rightJoin($join, $on = [], $tblName = null): ActiveRecord
+    public function rightJoin($join, array $on = [], string $tblName = null): self
     {
         if (is_null($tblName)) {
             $tblName = $this->getTableAlias();
@@ -1198,14 +1041,7 @@ abstract class ActiveRecord extends Model
         return $this;
     }
 
-    /**
-     * @param       $join
-     * @param array $on
-     * @param null  $tblName
-     *
-     * @return $this
-     */
-    public function outerJoin($join, $on = [], $tblName = null): ActiveRecord
+    public function outerJoin($join, array $on = [], string $tblName = null): self
     {
         if (is_null($tblName)) {
             $tblName = $this->getTableAlias();
@@ -1216,12 +1052,8 @@ abstract class ActiveRecord extends Model
 
     /**
      * Устанавливает алиас текущей (главной) таблицы запроса.
-     *
-     * @param string $alias
-     *
-     * @return ActiveRecord
      */
-    public function asa($alias): ActiveRecord
+    public function asa(string $alias): self
     {
         $this->tableAlias = $alias;
         return $this;
@@ -1256,14 +1088,10 @@ abstract class ActiveRecord extends Model
         $this->select($modelFields);
     }
 
-    # Геттеры и сеттеры
+    # getters and setters
 
     /**
      * Возвращает название аттрибута модели
-     *
-     * @param string $key
-     *
-     * @return string
      */
     public function getAttributeName(string $key): string
     {
@@ -1279,13 +1107,11 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @param string $singOrPlur число как грамматическая категория
-     *
-     * @return string
+     * @param string $singleOrPlural число как грамматическая категория
      */
-    public function getEntityName($singOrPlur): ?string
+    public function getEntityName(string $singleOrPlural): ?string
     {
-        return $this->entityNames[$singOrPlur] ?? null;
+        return $this->entityNames[$singleOrPlural] ?? null;
     }
 
     /**
@@ -1345,7 +1171,7 @@ abstract class ActiveRecord extends Model
     {
         if (!$pkName = $this->pkName) {
             throw new ModelException(
-                app()->get('msg')->i18n('The primary key of the related table is not declared.')
+                t('The primary key of the related table is not declared.')
             );
         }
         return (array)($pkName);
@@ -1364,7 +1190,7 @@ abstract class ActiveRecord extends Model
         return $this->isNew;
     }
 
-    public function setIsNew($isNew): ActiveRecord
+    public function setIsNew($isNew): self
     {
         $this->isNew = $isNew;
         return $this;
@@ -1375,7 +1201,7 @@ abstract class ActiveRecord extends Model
         return $this->selectFields;
     }
 
-    public function setSelectFields($selectFields): ActiveRecord
+    public function setSelectFields($selectFields): self
     {
         $this->selectFields = $selectFields;
         return $this;

@@ -17,7 +17,7 @@ if (!empty($searchFields)) {
             'options' => [
                 'action' => "/{$widget->getController()->getId()}",
                 'class' => 'search-form',
-                'submitCaption' => $this->i18n('search'),
+                'submitCaption' => t('search'),
                 'view' => 'searchForm',
                 'viewsPath' => $widget->getViewPath(),
             ],

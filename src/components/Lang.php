@@ -4,26 +4,15 @@ namespace tachyon\components;
 use tachyon\Config;
 
 /**
- * Класс работы с языковыми настройками
+ * class for working with the language settings
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Lang
 {
-    /**
-     * @var Config $config
-     */
     protected Config $config;
-    /**
-     * @var Cookie $cookie
-     */
     protected Cookie $cookie;
 
-    /**
-     * @param Config $config
-     * @param Cookie $cookie
-     */
     public function __construct(Config $config, Cookie $cookie)
     {
         $this->config = $config;
@@ -31,13 +20,11 @@ class Lang
     }
 
     /**
-     * извлечение текущего языка
-     *
-     * @return string
+     * retrieving current language
      */
     public function getLanguage(): string
     {
-        // установка и текущего языка из cookie
+        // setting the current language from cookies
         if (!$lang = $this->cookie->get('lang')) {
             $lang = $this->config->get('lang');
             $this->cookie->set('lang', $lang);

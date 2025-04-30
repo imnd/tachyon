@@ -5,7 +5,7 @@ namespace tachyon\db\dbal\conditions;
 /**
  * UpdateBuilder
  *
- * @author Андрей Сердюк
+ * @author imndsu@gmail.com
  * @copyright (c) 2021 IMND
  */
 class UpdateBuilder extends ExpressionsBuilder

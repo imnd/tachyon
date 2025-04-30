@@ -8,34 +8,20 @@ use tachyon\components\validation\{
     Validation
 };
 use tachyon\components\Lang;
-use tachyon\traits\{
-    ClassName,
-    HasAttributes
-};
+use tachyon\traits\HasAttributes;
 
 /**
- * Базовый класс для всех моделей
+ * Basic class for all models
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 abstract class Model implements ValidationInterface
 {
-    use ClassName, Validation, HasAttributes;
+    use Validation, HasAttributes;
 
-    /**
-     * @var Lang $lang
-     */
     protected Lang $lang;
-    /**
-     * @var Validator $validator
-     */
     protected Validator $validator;
 
-    /**
-     * @param Lang      $lang
-     * @param Validator $validator
-     */
     public function __construct(Lang $lang, Validator $validator)
     {
         $this->lang      = $lang;

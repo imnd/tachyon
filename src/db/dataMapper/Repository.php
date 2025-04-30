@@ -5,18 +5,17 @@ namespace tachyon\db\dataMapper;
 use ErrorException,
     Iterator,
     tachyon\db\Terms,
-    tachyon\traits\ClassName,
+    tachyon\traits\ClassHelper,
     tachyon\exceptions\DBALException;
 
 /**
  * EntityManager является центральной точкой доступа к функциональности DataMapper ORM.
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 abstract class Repository implements RepositoryInterface
 {
-    use ClassName, Terms;
+    use ClassHelper, Terms;
 
     /**
      * @var Persistence
@@ -77,7 +76,9 @@ abstract class Repository implements RepositoryInterface
      */
     public function setSearchConditions(array $conditions = []): self
     {
-        $this->where($conditions);
+        $where = $conditions;
+        $this->where(array_diff_key($conditions, ['order' => null, 'order-by' => null]));
+
         return $this;
     }
 
@@ -218,8 +219,8 @@ abstract class Repository implements RepositoryInterface
      */
     public function setSort($attrs): self
     {
-        if (isset($attrs['order'])) {
-            $this->addSortBy($attrs['field'], $attrs['order']);
+        if ($orderBy = $attrs['order-by'] ?? null) {
+            $this->addSortBy($orderBy, $attrs['order'] ?? 'ASC');
         }
         return $this;
     }
@@ -233,9 +234,9 @@ abstract class Repository implements RepositoryInterface
      * @return void
      * @throws ErrorException
      */
-    public function addSortBy(string $field, string $order): void
+    public function addSortBy(string $orderBy, string $order): void
     {
-        $this->persistence->orderBy($field, $order);
+        $this->persistence->orderBy($orderBy, $order);
     }
 
     /**

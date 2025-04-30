@@ -5,8 +5,7 @@ namespace tachyon\db\dbal;
 /**
  * PostgreSQL DBAL
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class PgSql extends Db
 {

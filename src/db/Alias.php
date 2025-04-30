@@ -11,8 +11,7 @@ use tachyon\{
 /**
  * Класс отвечающий за подбор псевдонимов таблиц
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Alias
 {
@@ -188,18 +187,16 @@ class Alias
     /**
      * алиас первичного ключа
      *
-     * @param $with
-     * @param $pkName
-     *
      * @return array
      * @throws ModelException
      */
-    public function getPrimKeyAliasArr($with, $pkName): array
+    public function getPrimKeyAliasArr(string $with, string $pkName): array
     {
         if (!$pkName) {
-            throw new ModelException($this->msg->i18n('The primary key of the related table is not declared.'));
+            throw new ModelException(t('The primary key of the related table is not declared.'));
         }
         $primKeyAlias = [];
+
         // ключ может быть составным
         if (is_array($pkName)) {
             $i = 0;

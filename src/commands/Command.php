@@ -3,7 +3,7 @@
 namespace tachyon\commands;
 
 /**
- * @author Андрей Сердюк
+ * @author imndsu@gmail.com
  * @copyright (c) 2021 IMND
  */
 abstract class Command

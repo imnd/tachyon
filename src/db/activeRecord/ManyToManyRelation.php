@@ -7,8 +7,7 @@ use tachyon\db\Alias;
 /**
  * Класс реализующий связь "многие ко многим" между моделями
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class ManyToManyRelation extends Relation
 {

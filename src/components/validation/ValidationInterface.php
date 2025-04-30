@@ -3,8 +3,7 @@
 namespace tachyon\components\validation;
 
 /**
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 interface ValidationInterface
 {

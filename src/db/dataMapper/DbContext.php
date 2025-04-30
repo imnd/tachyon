@@ -7,8 +7,7 @@ use tachyon\exceptions\DBALException;
 /**
  * Реализация Unit of work.
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class DbContext
 {

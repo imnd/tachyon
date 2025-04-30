@@ -3,22 +3,19 @@
 namespace tachyon\db;
 
 /**
- * Трейт отвечающий за генерацию SQL выражений условий выборки
+ * A trait responsible for generating sql selection queries conditions
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 trait Terms
 {
     /**
-     * Устанавливает условие больше чем
+     * Sets the condition more than
      *
-     * @param array   $where массив условий
-     * @param string  $field поле на котором устанавливается условие
-     * @param string  $arrKey ключ массива условий
-     * @param boolean $precise "меньше" или "меньше или равно"
-     *
-     * @return array
+     * @param array   $where   array of conditions
+     * @param string  $field   the field on which the condition is established
+     * @param string  $arrKey  the key of the array of conditions
+     * @param boolean $precise "greater" or "greater or equal"
      */
     public function gt(
         array $where,
@@ -29,21 +26,19 @@ trait Terms
     {
         if (!empty($where[$arrKey])) {
             return [
-                "$field>" . ($precise ? '' : '=') => $where[$arrKey],
+                "$field > " . ($precise ? '' : '=') => $where[$arrKey],
             ];
         }
         return [];
     }
 
     /**
-     * Устанавливает условие меньше чем
+     * Sets the condition less than
      *
-     * @param array   $where массив условий
-     * @param string  $field поле на котором устанавливается условие
-     * @param string  $arrKey ключ массива условий
-     * @param boolean $precise "меньше" или "меньше или равно"
-     *
-     * @return array
+     * @param array   $where   array of conditions
+     * @param string  $field   the field on which the condition is established
+     * @param string  $arrKey  the key of the array of conditions
+     * @param boolean $precise "less" or "less or equal"
      */
     public function lt(
         array  $where,
@@ -53,24 +48,19 @@ trait Terms
     ): array
     {
         if (!empty($where[$arrKey])) {
-            return ["$field<" . ($precise ? '' : '=') => $where[$arrKey]];
+            return ["$field < " . ($precise ? '' : '=') => $where[$arrKey]];
         }
         return [];
     }
 
     /**
-     * Устанавливает условие LIKE
-     *
-     * @param array  $where
-     * @param string $field
-     *
-     * @return array
+     * Sets the LIKE condition
      */
     public function like(array $where, string $field): array
     {
         if (!empty($where[$field])) {
             return [
-                "$field LIKE" => $where[$field],
+                "$field LIKE " => $where[$field],
             ];
         }
         return [];

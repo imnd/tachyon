@@ -1,100 +1,137 @@
 <?php
 /**
- * @var tachyon\components\widgets\Widget $widget
  * @throws ErrorException
+ * @var tachyon\components\widgets\Widget $widget
  */
 
 // search form
 $this->display('_search', compact('model', 'searchFields', 'widget'));
 
-if (empty($items)) {?>
+if (empty($items)) { ?>
     <p>Список пуст</p>
-<?php } else {?>
-<table class="data-grid" id="<?=$widget->getId()?>">
-    <thead>
+<?php
+} else { ?>
+    <table class="data-grid" id="<?= $widget->getId() ?>">
+        <thead>
         <tr>
             <?php
-            $columnNames = array();
+            $columnNames = [];
             $tableFields = $model->getTableFields();
             foreach ($columns as $key => $options) {
                 if (is_numeric($key)) {
                     if (is_array($options)) {
-                        if (isset($options['name']))
+                        if (isset($options['name'])) {
                             $fieldName = $options['name'];
-                        else
-                            throw new \ErrorException($this->msg->i18n('Undefined field name'));
-                    } else
+                        } else {
+                            throw new \ErrorException(t('Undefined field name'));
+                        }
+                    } else {
                         $fieldName = $options;
-                } else
+                    }
+                } else {
                     $fieldName = $key;
+                }
 
                 $sortable = in_array($fieldName, $tableFields);
-                if ($sortable)
+                if ($sortable) {
                     $columnNames[] = $fieldName;
-            ?>
-            <th id="<?=$fieldName?>"<?php if ($sortable) {?> class="sortable-column"<?php }?>><?=$model->getAttributeName($fieldName)?></th>
-            <?php }
-            if (!empty($buttons)) {?>
-                <th class="buttons" colspan="<?=count($buttons)?>">операции</th>
-            <?php }?>
+                }
+                ?>
+                <th id="<?= $fieldName ?>"<?php
+                if ($sortable) { ?> class="sortable-column"<?php
+                } ?>>
+                    <?= $model->getAttributeName($fieldName) ?>
+                </th>
+            <?php
+            }
+            if (!empty($buttons)) { ?>
+                <th class="buttons" colspan="<?= count($buttons) ?>">операции</th>
+            <?php
+            } ?>
         </tr>
-    </thead>
+        </thead>
 
-    <tbody>
-    <?php foreach ($items as $item) {?>
-    <tr id="<?=$widget->getRowId($item)?>" class="editable">
-        <?php foreach ($columns as $key => $value) {
-            if (is_numeric($key)) {?>
-                <td><?=$item[$value]?></td>
-            <?php } else {?>
-                <td><?=eval("return $value;")?></td>
-            <?php }
-        }
-        // кнопки
-        foreach ($buttons as $button) {
-            $button['htmlOptions']['id'] = $widget->getBtnId($button['action'], $item);
-            if (empty($button['htmlOptions']['href']))
-                $button['htmlOptions']['href'] = $widget->getActionUrl($button['action'], $item);
-            
-            $button['htmlOptions']['href'] = eval('return "' . $button['htmlOptions']['href'] . '";');
-            ?>
-            <td><a <?php foreach ($button['htmlOptions'] as $key => $value) { echo $key?>="<?=$value?>" <?php }?>>
-                <?php if ($button['captioned']) {echo $button['htmlOptions']['title'];}?>
-            </a></td>
+        <tbody>
         <?php
+        foreach ($items as $item) { ?>
+            <tr id="<?= $widget->getRowId($item) ?>" class="editable">
+                <?php
+                foreach ($columns as $key => $value) {
+                    if (is_numeric($key)) { ?>
+                        <td><?= $item[$value] ?></td>
+                    <?php
+                    } else { ?>
+                        <td><?= eval("return $value") ?></td>
+                    <?php
+                    }
+                }
+                // кнопки
+                foreach ($buttons as $button) {
+                    $button['htmlOptions']['id'] = $widget->getBtnId($button['action'], $item);
+                    if (empty($button['htmlOptions']['href'])) {
+                        $button['htmlOptions']['href'] = $widget->getActionUrl($button['action'], $item);
+                    }
+
+                    $button['htmlOptions']['href'] = eval('return "'.$button['htmlOptions']['href'].'";');
+                    ?>
+                    <td><a <?php
+                        foreach ($button['htmlOptions'] as $key => $value) {
+                            echo $key ?>="<?= $value ?>" <?php
+                        } ?>>
+                        <?php
+                        if ($button['captioned']) {
+                            echo $button['htmlOptions']['title'];
+                        } ?>
+                        </a></td>
+                    <?php
+                }
+                foreach ($sumFields as $sumField) {
+                    $sumArr[$sumField] += $item[$sumField];
+                }
+                ?>
+            </tr>
+            <?php
         }
-        foreach ($sumFields as $sumField)
-            $sumArr[$sumField] += $item[$sumField];
-        ?>
-    </tr>
-    <?php
-    }
-    if (!empty($sumFields)) {
-    ?>
-    <tr>
-        <td colspan="<?=count($columns)?>"><div style="float: left;"><b>Всего записей:</b> <?=count($items)?></div><div style="float: right;"><b>Итого:</b></div></td>
-    </tr>
-    <tr>
-        <?php foreach ($columns as $column) {?>
-            <td><?php if (in_array($column, $sumFields)) {echo $sumArr[$column];}?></td>
-        <?php }?>
-    </tr>
-    <?php }?>
-    </tbody>
-</table>
-<?php }
+        if (!empty($sumFields)) {
+            ?>
+            <tr>
+                <td colspan="<?= count($columns) ?>">
+                    <div style="float: left;">
+                        <b>Всего записей:</b> <?= count($items) ?>
+                    </div>
+                    <div style="float: right;">
+                        <b>Итого:</b>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <?php
+                foreach ($columns as $column) { ?>
+                    <td><?php
+                        if (in_array($column, $sumFields)) {
+                            echo $sumArr[$column];
+                        } ?></td>
+                <?php
+                } ?>
+            </tr>
+        <?php
+        } ?>
+        </tbody>
+    </table>
+<?php
+}
 
 $this->display('_btnHandler', compact('buttons', 'items', 'csrfJson', 'widget'));
 
 echo
-    $this->assetManager->coreJs('ajax'),
-    $this->owner->js('sort'),
-    $this->owner->css('style')
+$this->assetManager->coreJs('ajax'),
+$this->owner->js('sort'),
+$this->owner->css('style')
 ?>
 
 <script>
-    // включаем обработчики
-    window.onload = function() {
-        bindSortHandlers("<?=$widget->getActionUrl('index')?>", <?=json_encode($widget->getColumns())?>, "<?=$widget->getId()?>");
-    };
+  // включаем обработчики
+  window.onload = function () {
+    bindSortHandlers("<?=$widget->getActionUrl('index')?>", <?=json_encode($widget->getColumns())?>, "<?=$widget->getId()?>");
+  };
 </script>

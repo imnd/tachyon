@@ -2,21 +2,17 @@
 namespace tachyon\cache;
 
 /**
- * class DbCache
- * кеширование содержимого Db
+ * caching db content
  * 
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Db extends Cache
 {
-    /**
-     * @inheritdoc
-     */
-    public function start($cacheKey)
+    /** @inheritdoc */
+    public function start(string $cacheKey): ?string
     {
         if (!$this->enabled) {
-            return;
+            return null;
         }
         if ($cacheContents = $this->getContents($cacheKey)) {
             return $cacheContents;
@@ -24,12 +20,12 @@ class Db extends Cache
         // запускаем кеширование
         $this->setKey($cacheKey);
         ob_start();
+
+        return null;
     }
-    
-    /**
-     * @inheritdoc
-     */
-    public function end($contents=null)
+
+    /** @inheritdoc */
+    public function end(mixed $contents = null): void
     {
         if (!$this->enabled) {
             return;

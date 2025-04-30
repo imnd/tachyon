@@ -7,8 +7,7 @@ use RuntimeException;
 /**
  * Класс работы с файлами
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Upload
 {

@@ -2,7 +2,7 @@
 namespace tachyon\exceptions;
 
 /**
- * @author Андрей Сердюк
+ * @author imndsu@gmail.com
  * @copyright (c) 2021 IMND
  */
 class ViewException extends \Exception

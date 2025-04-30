@@ -12,8 +12,7 @@ use tachyon\dic\Container,
  * Реализует паттерн "фабричный метод"
  * Инстанциирует соответствующий класс DBAL
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class DbFactory
 {

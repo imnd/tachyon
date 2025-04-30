@@ -6,8 +6,7 @@ use tachyon\Config;
 /**
  * Компонент защиты от CSRF-атак
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class Csrf
 {

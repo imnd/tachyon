@@ -7,8 +7,7 @@ use tachyon\db\Alias;
 /**
  * Класс, реализующий связь "имеет много" между моделями
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class HasManyRelation extends Relation
 {

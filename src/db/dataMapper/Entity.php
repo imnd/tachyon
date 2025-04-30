@@ -3,120 +3,77 @@
 namespace tachyon\db\dataMapper;
 
 use tachyon\exceptions\ValidationException;
+use tachyon\Helpers\{
+    ClassHelper, StringHelper
+};
 use tachyon\components\validation\{
     ValidationInterface, Validator
 };
-use tachyon\traits\ClassName;
 
 abstract class Entity implements EntityInterface, UnitOfWorkInterface, ValidationInterface
 {
-    use ClassName;
-
     /**
-     * Извлеченная из БД или вновь созданная сущность
-     *
-     * @var boolean
+     * fetched from the database or a newly created entity
      */
     protected bool $isNew = true;
     /**
-     * Имя таблицы БД
-     *
-     * @var string
+     * the name of the database table
      */
     protected string $tableName = '';
 
     /**
-     * Подписи для поля сущностей
-     *
-     * @var array
+     * captions for entity fields
      */
     protected array $attributeCaptions = [];
     /**
-     * Имя поля первичного ключа
-     *
-     * @var mixed
+     * the name of the primary key field
      */
-    protected $pk = 'id';
+    protected mixed $pk = 'id';
     /**
-     * Ошибки валидации
-     *
-     * @var array $errors
+     * validation errors
      */
     protected array $errors = [];
 
-    /**
-     * @param DbContext $dbContext
-     * @param Validator $validator
-     */
     public function __construct(DbContext $dbContext, Validator $validator)
     {
         $this->dbContext = $dbContext;
         $this->validator = $validator;
         if (empty($this->tableName)) {
-            $tableNameArr = preg_split('/(?=[A-Z])/', $this->getClassName());
+            $tableNameArr = preg_split('/(?=[A-Z])/', ClassHelper::getClassName($this));
             array_shift($tableNameArr);
             $this->tableName = strtolower(implode('_', $tableNameArr)) . 's';
         }
     }
 
-    /**
-     * @return string
-     */
     public function getTableName(): string
     {
         return $this->tableName;
     }
 
     /**
-     * Подпись для поля сущности
-     *
-     * @param string $attribute имя сущности
-     *
-     * @return string
+     * the caption for fields of the entity
      */
     public function getCaption(string $attribute): string
     {
-        return $this->attributeCaptions[$attribute] ?? $this->attributeCaptions[$this->getAttrName($attribute)] ?? $attribute;
+        return $this->attributeCaptions[$attribute] ?? $this->attributeCaptions[StringHelper::snakeToCamel($attribute)] ?? $attribute;
     }
 
     /**
      * Извлечение значения аттрибута $attribute
-     *
-     * @param string $attribute
-     *
-     * @return mixed
      */
     public function getAttribute(string $attribute)
     {
-        $method = 'get' . ucfirst($this->getAttrName($attribute));
+        $method = 'get' . ucfirst(StringHelper::snakeToCamel($attribute));
         if (method_exists($this, $method)) {
             return $this->$method();
         }
     }
 
     /**
-     * Переводит из snake_case в camelCase
-     *
-     * @param string $attribute
-     * @return string
+     * the assignment of the value $value to the attribute $attribute
+     * the entity is not marked as modified
      */
-    private function getAttrName(string $attribute): string
-    {
-        $arr = array_map(
-            static fn($elem) => ucfirst($elem),
-            explode('_', $attribute)
-        );
-        return lcfirst(implode('', $arr));
-    }
-
-    /**
-     * Присваивание значения $value аттрибуту $attribute
-     * При этом сущность не помечается как измененная.
-     *
-     * @param mixed $attribute
-     * @param mixed $value
-     */
-    public function setAttribute($attribute, $value = null): void
+    public function setAttribute(mixed $attribute, mixed $value = null): void
     {
         if (is_array($attribute)) {
             $value = current($attribute);
@@ -125,21 +82,12 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         $this->$attribute = $value;
     }
 
-    /**
-     * @param bool $isNew
-     */
     public function setIsNew(bool $isNew): void
     {
         $this->isNew = $isNew;
     }
 
-    /**
-     * @param string      $attribute
-     * @param string|null $value
-     *
-     * @return $this
-     */
-    protected function _setAttribute(string $attribute, string $value = null): Entity
+    protected function _setAttribute(string $attribute, string $value = null): self
     {
         if (!is_null($value)) {
             $this->$attribute = $value;
@@ -151,9 +99,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Имя поля первичного ключа
-     *
-     * @return string
+     * the primary key field name
      */
     public function getPkName(): string
     {
@@ -161,72 +107,47 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Значение первичного ключа
-     *
-     * @return mixed
+     * the primary key value
      */
-    public function getPk()
+    public function getPk(): mixed
     {
         return $this->getAttribute($this->pk);
     }
 
     /**
-     * Установка значения первичного ключа
-     *
-     * @param mixed $pk
-     *
-     * @return mixed
+     * setting the primary key value
      */
-    public function setPk($pk)
+    public function setPk(mixed $pk): void
     {
         $this->{$this->pk} = $pk;
     }
 
     # region Unit of work
 
-    /**
-     * @var DbContext
-     */
     protected DbContext $dbContext;
 
-    /**
-     * @return DbContext
-     */
     public function getDbContext(): DbContext
     {
         return $this->dbContext;
     }
 
-    /**
-     * @return bool
-     */
     public function isNew(): bool
     {
         return $this->dbContext->isNew($this);
     }
 
-    /**
-     * @param Entity $entity
-     *
-     * @return bool
-     */
-    public function isDirty(self $entity): bool
+    public function isDirty(): bool
     {
         return $this->dbContext->isDirty($this);
     }
 
-    /**
-     * @param Entity $entity
-     *
-     * @return bool
-     */
-    public function isDeleted(self $entity): bool
+    public function isDeleted(): bool
     {
         return $this->dbContext->isDeleted($this);
     }
 
     /**
-     * Помечает только что созданную сущность как новую.
+     * mark the newly created entity as new
      */
     public function markNew(): self
     {
@@ -235,7 +156,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Помечает сущность как измененную.
+     * mark the entity as modified
      */
     public function markDirty(): self
     {
@@ -244,7 +165,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Помечает сущность на удаление.
+     * marks the entity for deletion
      */
     public function markDeleted(): self
     {
@@ -256,15 +177,10 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
 
     # region Validation
 
-    /**
-     * @var Validator $validator
-     */
     protected Validator $validator;
 
     /**
-     * Возвращает список правил валидации
-     *
-     * @return array
+     * returns a list of validation rules
      */
     public function rules(): array
     {
@@ -272,11 +188,10 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Валидация полей сущности
+     * entity fields validation
      *
-     * @param array|null $attributes массив полей
+     * @param array|null $attributes array of the fields
      *
-     * @return boolean
      * @throws ValidationException
      */
     public function validate(array $attributes = null): bool
@@ -285,23 +200,13 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         return empty($this->errors);
     }
 
-    /**
-     * @param string $fieldName
-     *
-     * @return array
-     */
     public function getRules(string $fieldName): array
     {
         return $this->validator->getRules($this, $fieldName);
     }
 
     /**
-     * добавляет ошибку к списку ошибок
-     *
-     * @param string $fieldName
-     * @param string $message
-     *
-     * @return void
+     * add an error to the error list
      */
     public function addError(string $fieldName, string $message): void
     {
@@ -309,9 +214,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Сообщение об ошибках
-     *
-     * @return array
+     * errors message
      */
     public function getErrors(): array
     {
@@ -319,9 +222,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Сообщение об ошибках
-     *
-     * @return string
+     * error message
      */
     public function getErrorsSummary(): string
     {

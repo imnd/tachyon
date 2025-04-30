@@ -3,37 +3,30 @@
 namespace tachyon\components\validation;
 
 use tachyon\exceptions\ValidationException;
+use tachyon\Helpers\ClassHelper;
 
 /**
  * Трейт валидации
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 trait Validation
 {
     /**
      * сценарий валидации
-     *
-     * @var string
      */
     protected string $scenario = '';
     /**
      * ошибки валидации
-     *
-     * @var array
      */
     protected array $errors = [];
 
     /**
      * Присваивание аттрибутов модели с учетом правил валидации
-     *
-     * @param array   $arr
-     * @param boolean $useModelName
      */
     public function attachAttributes(array $arr, bool $useModelName = false): void
     {
-        $modelName = $this->getClassName();
+        $modelName = ClassHelper::getClassName($this);
         if ($useModelName) {
             if (!isset($arr[$modelName])) {
                 return;
@@ -52,8 +45,6 @@ trait Validation
 
     /**
      * Возвращает список правил валидации
-     *
-     * @return array
      */
     public function rules(): array
     {
@@ -63,9 +54,8 @@ trait Validation
     /**
      * Валидация полей модели
      *
-     * @param array $attributes массив полей
+     * @param array | null $attributes массив полей
      *
-     * @return boolean
      * @throws ValidationException
      */
     public function validate(array $attributes = null): bool
@@ -74,21 +64,11 @@ trait Validation
         return empty($errors);
     }
 
-    /**
-     * @param string $fieldName
-     *
-     * @return array
-     */
     public function getRules(string $fieldName): array
     {
         return $this->validator->getRules($this, $fieldName);
     }
 
-    /**
-     * @param string $fieldName
-     *
-     * @return bool
-     */
     public function isRequired(string $fieldName): bool
     {
         $rules = $this->rules();
@@ -103,8 +83,6 @@ trait Validation
 
     /**
      * Ошибки
-     *
-     * @return array
      */
     public function getErrors(): array
     {
@@ -113,34 +91,24 @@ trait Validation
 
     /**
      * Извлекает ошибку
-     *
-     * @param string $attr
-     *
-     * @return null|string
      */
     public function getError(string $attr): ?string
     {
         if ($errors = $this->validator->getErrors()) {
             return implode(' ', $errors[$attr] ?? []);
         }
+
+        return null;
     }
 
     /**
      * добавляет ошибку к списку ошибок
-     *
-     * @param string $fieldName
-     * @param string $message
-     *
-     * @return void
      */
     public function addError(string $fieldName, string $message): void
     {
         $this->validator->addError($fieldName, $message);
     }
 
-    /**
-     * @return boolean
-     */
     public function hasErrors(): bool
     {
         return !empty($this->validator->getErrors());
@@ -148,8 +116,6 @@ trait Validation
 
     /**
      * Вывод всех сообщений об ошибках
-     *
-     * @return string
      */
     public function getErrorsSummary(): string
     {
@@ -162,15 +128,11 @@ trait Validation
 
     /**
      * Возвращает поля для JS валидации
-     *
-     * @param array $fields
-     *
-     * @return string
      */
     public function getValidationFieldsJs(array $fields = []): string
     {
         $validationItems = [];
-        $modelName = $this->getClassName();
+        $modelName = ClassHelper::getClassName($this);
         $rules = $this->rules();
         $check = [];
         foreach ($rules as $fieldName => $fieldRules) {
@@ -209,12 +171,8 @@ trait Validation
 
     /**
      * устанавливает сценарий валидации
-     *
-     * @param string $scenario
-     *
-     * @return mixed
      */
-    public function setScenario(string $scenario)
+    public function setScenario(string $scenario): static
     {
         $this->scenario = $scenario;
         return $this;

@@ -16,93 +16,47 @@ use tachyon\traits\{
 use tachyon\exceptions\ViewException;
 
 /**
- * class View
- * Компонент отображения
+ * View component
  *
- * @author Андрей Сердюк
- * @copyright (c) 2020 IMND
+ * @author imndsu@gmail.com
  */
 class View
 {
     use HasOwner, HasProperties;
 
     /**
-     * Контроллер, вызывающий вью
-     *
-     * @var Controller $controller
+     * the controller invokes view
      */
     protected Controller $controller;
     /**
-     * Путь к отображениям
-     *
-     * @var string $rootViewsPath
+     * views path
      */
     protected string $viewsPath;
     /**
-     * Путь к отображениям
-     *
-     * @var string $rootViewsPath
+     * views path
      */
     protected string $appViewsPath;
     /**
-     * Путь к папке лэйаута
-     *
-     * @var string $layoutPath
+     * layout path
      */
     protected string $layoutPath;
     /**
-     * Имя лэйаута
-     *
-     * @var string $layoutPath
+     * layout name
      */
     protected string $layout = '';
-    /**
-     * Заголовок страницы
-     *
-     * @var string $pageTitle
-     */
     protected string $pageTitle = '';
-
-    /**
-     * @var AssetManager $assetManager
-     */
     protected AssetManager $assetManager;
-    /**
-     * @var Message $msg
-     */
     protected Message $msg;
-    /**
-     * Компонент построителя html-кода
-     *
-     * @var Html $html
-     */
     protected Html $html;
-    /**
-     * @var Flash
-     */
     protected Flash $flash;
-    /**
-     * @var Env $env
-     */
-    protected $env;
+    protected Env $env;
 
     /**
-     * Сохраняем переменные между отрисовкой наследуемых лэйаутов
+     * persistent variables between drawing inheritable layouts
      */
     protected array $layoutVars = [];
-    /**
-     * @var Request
-     */
     protected Request $request;
 
-    /**
-     * @param Env          $env
-     * @param Config       $config
-     * @param AssetManager $assetManager
-     * @param Message      $msg
-     * @param Html         $html
-     * @param Flash        $flash
-     */
     public function __construct(
         Env $env,
         Config $config,
@@ -120,13 +74,7 @@ class View
     }
 
     /**
-     * Отображает файл представления, передавая ему параметры
-     * в виде массива в заданном лэйауте
-     *
-     * @param string $viewsPath
-     * @param array  $vars
-     *
-     * @return void
+     * displays the view file, passing it the parameters as an array in the specified layout
      */
     public function view(string $viewsPath, array $vars = []): void
     {
@@ -140,20 +88,17 @@ class View
     }
 
     /**
-     * Отображает файл представления $view
-     * передавая ему параметры $vars в виде массива
+     * displays the view $view passing it the parameters $vars in an array
      *
-     * @param string  $viewName имя файла вью
-     * @param array   $vars переменные представления
-     * @param boolean $return показывать или возвращать
-     *
-     * @return mixed
+     * @param string  $viewName view file name
+     * @param array   $vars     view variables
+     * @param boolean $return   show or return
      */
     public function display(
         string $viewName,
         array $vars = [],
         bool $return = false
-    ) {
+    ): ?string {
         $contents = $this->_view("{$this->viewsPath}/$viewName", $vars);
         $contents = $this->_displayExtends($contents, $vars, false);
 
@@ -161,6 +106,8 @@ class View
             return $contents;
         }
         echo $contents;
+
+        return null;
     }
 
     private function _displayExtends(string $contents, array $vars, bool $layout = true): string
@@ -169,12 +116,12 @@ class View
         if (false !== $extendsPos = strpos($contents, "@$keyWord")) {
             $start = $extendsPos + strlen("@$keyWord") + 2;
             $end = strpos($contents, "'", $start);
-            // устанавливаем родительский лэйаут
+            // set the parent layout
             $this->layout = substr($contents, $start, $end - $start);
-            // убираем тег '@extends'
+            // remove the tag '@extends'
             $contents = substr($contents, $end + 2);
             if ($layout) {
-                // отрисовываем родительский лэйаут
+                // render the parent layout
                 $contents = $this->_displayLayout($contents, $vars);
             }
         }
@@ -182,10 +129,6 @@ class View
     }
 
     /**
-     * @param string $viewContents
-     * @param array  $vars
-     *
-     * @return string
      * @throws ViewException
      */
     private function _displayLayout(string $viewContents, array $vars): string
@@ -199,13 +142,7 @@ class View
     }
 
     /**
-     * Заменяет текст тэга $tag в тексте $textToReplace на $text
-     *
-     * @param string $textToReplace
-     * @param string $text
-     * @param string $tag
-     *
-     * @return string
+     * replaces the text of the tag $tag in the text $textToReplace to $text
      */
     private function _replaceTag(string $textToReplace, string $text, string $tag): string
     {
@@ -213,17 +150,17 @@ class View
         return substr($textToReplace, 0, $tagPos) . $text . substr($textToReplace, $tagPos + strlen($tag) + 1);
     }
 
-    private function _view(string $filePath, array $vars = [])
+    private function _view(string $filePath, array $vars = []): false | string
     {
         $filePath = "$filePath.php";
         if (!file_exists($filePath)) {
-            throw new ViewException("{$this->msg->i18n('No view file found')}: \"$filePath\"");
+            throw new ViewException("{t('No view file found')}: \"$filePath\"");
         }
         $buffer = file_get_contents($filePath);
         if (false !== strpos($buffer, '{{')) {
             $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
             if (
-                   // в debug mode скомпиленные шаблоны переписываются всегда
+                   // в debug mode скомпилированные шаблоны переписываются всегда
                    !$this->env->isProduction()
                 || !file_exists($tempViewFilePath)
             ) {
@@ -241,7 +178,7 @@ class View
         ob_start();
         extract($vars);
         if ('_displayLayout' === debug_backtrace()[1]['function']) {
-            // отрисовка лэйаута
+            // layout render
             require($filePath);
             $layoutVars = get_defined_vars();
             foreach ($layoutVars as $name => $var) {
@@ -252,16 +189,16 @@ class View
             foreach (['filePath', 'buffer', 'vars', 'this'] as $varName) {
                 unset($layoutVars[$varName]);
             }
-            // переписываем значения переменных в дочерних лэйаутах
+            // rewrite the values of the variables in the child layout
             foreach ($this->layoutVars as $name => $var) {
                 if (isset($this->layoutVars[$name])) {
                     unset($layoutVars[$name]);
                 }
             }
-            // собираем все переменные объявленные в лэйаутах
+            // collect all variables declared in layout
             $this->layoutVars = array_merge($this->layoutVars, $layoutVars);
         } else {
-            // отрисовка вью
+            // view render
             extract($this->layoutVars);
             require($filePath);
         }
@@ -272,12 +209,10 @@ class View
     }
 
     /**
-     * Подключение js-кода
+     * js code connection
      *
-     * @param string $source текст кода либо путь
-     * @param string $mode инлайн либо внешний файл
-     *
-     * @return string
+     * @param string $source code text either path
+     * @param string $mode inline or external file
      */
     public function jsCode(string $source, string $mode = 'inner'): string
     {
@@ -293,14 +228,14 @@ class View
     }
 
     /**
-     * Запуск виджета на странице
+     * run the widget on the page
      */
     public function widget(array $params)
     {
         $class = $params['class'];
         unset($params['class']);
         $widget = app()->get($class);
-        $widget->setVariables($params);
+        $widget->setParameters($params);
         $widget->setOwner($this);
         $controller = $this->controller ?: $params['controller'];
         $widget->setController($controller);
@@ -308,113 +243,60 @@ class View
     }
 
     /**
-     * Выводит переведенные сообщения
-     *
-     * @param string
-     *
-     * @return string
-     */
-    public function i18n(string $msg): string
-    {
-        return $this->msg->i18n($msg);
-    }
-
-    /**
-     * Экранирование вывода
-     *
-     * @param string $text
-     *
-     * @return string
+     * escape output
      */
     public function escape(string $text = null): string
     {
         return htmlspecialchars($text ?: '');
     }
 
-    # Геттеры и сеттеры
+    # getters and setters
 
-    /**
-     * @param string $path
-     *
-     * @return self
-     */
     public function setViewsPath(string $path): self
     {
         $this->viewsPath = $path;
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getViewsPath(): string
     {
         return $this->viewsPath;
     }
 
-    /**
-     * @return string
-     */
     public function getLayout(): string
     {
         return $this->layout;
     }
 
-    /**
-     * @param string $layout
-     *
-     * @return self
-     */
     public function setLayout(string $layout): self
     {
         $this->layout = $layout;
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getPageTitle(): string
     {
         return $this->pageTitle;
     }
 
-    /**
-     * @param string $pageTitle
-     *
-     * @return self
-     */
     public function setPageTitle(string $pageTitle): self
     {
         $this->pageTitle = $pageTitle;
         return $this;
     }
 
-    /**
-     * @param Controller $controller
-     *
-     * @return self
-     */
-    public function setController(Controller $controller): self
-    {
-        $this->controller = $controller;
-        return $this;
-    }
-
-    /**
-     * @param Request $request
-     *
-     * @return self
-     */
     public function setRequest(Request $request): self
     {
         $this->request = $request;
         return $this;
     }
 
-    /**
-     * @return Controller
-     */
+    public function setController(Controller $controller): self
+    {
+        $this->controller = $controller;
+        return $this;
+    }
+
     public function getController(): Controller
     {
         return $this->controller;

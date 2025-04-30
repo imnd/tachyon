@@ -12,31 +12,22 @@ use tachyon\exceptions\{
     ContainerException, DBALException
 };
 use tachyon\db\Migration;
-use tachyon\traits\ArrayTrait;
+use tachyon\Helpers\{
+    ArrayHelper, ClassHelper
+};
 
 /**
- * Производит миграции
  * usage: tachyon migrate
  *
- * @author Андрей Сердюк
+ * @author imndsu@gmail.com
  * @copyright (c) 2021 IMND
  */
 class Migrate extends Command
 {
-    use ArrayTrait;
-
-    /**
-     * @var Db
-     */
     protected Db $db;
-    /**
-     * @var bool
-     */
     protected bool $migrate = false;
 
     /**
-     * @param DbFactory $dbFactory
-     *
      * @throws ReflectionException | ContainerException | DBALException
      */
     public function __construct(DbFactory $dbFactory)
@@ -52,7 +43,7 @@ class Migrate extends Command
     public function run(): void
     {
         $migrations = $this->db->select('migrations');
-        $migrations = $this->twitch($migrations, 'name');
+        $migrations = ArrayHelper::extract($migrations, 'name');
         if ($handle = opendir(__DIR__ . Config::APP_DIR . '../../migrations')) {
             while (false !== ($fileName = readdir($handle))) {
                 if ($fileName !== '.' && $fileName !== '..') {
@@ -79,12 +70,8 @@ class Migrate extends Command
     }
 
     /**
-     * Создает таблицу migrations если ее нет создает в ней запись о миграции
-     *
-     * @param Migration $migration
-     *
-     * @return void
-     * @throws DBALException
+     * create a migrations table if there is no such table, create a record of the migration
+     * @throws DBALException|ReflectionException
      */
     public function register(Migration $migration): void
     {
@@ -97,7 +84,7 @@ class Migrate extends Command
         ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;");
 
         $this->db->insert('migrations', [
-            'name' => $migration->getClassName(),
+            'name' => ClassHelper::getClassName($migration),
         ]);
 
         $this->migrate = true;
