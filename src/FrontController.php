@@ -186,20 +186,7 @@ final class FrontController
         } catch (HttpException $e) {
             $this->sendHeaders($e->getCode());
             $this->showErrorPage($e, 404);
-        } catch (
-            ReflectionException
-          | Error
-          | ErrorException
-          | ContainerException
-          | DBALException
-          | FileNotFoundException
-          | MapperException
-          | ModelException
-          | NotFoundException
-          | PDOException
-          | ValidationException
-          | ViewException
-        $e) {
+        } catch (Exception $e) {
             // Invalid request handler. Error message output
             $this->sendHeaders(HttpException::INTERNAL_SERVER_ERROR);
             $this->showErrorPage($e, 500);
