@@ -12,7 +12,7 @@ use tachyon\exceptions\{
     ContainerException, DBALException
 };
 use tachyon\db\Migration;
-use tachyon\Helpers\{
+use tachyon\helpers\{
     ArrayHelper, ClassHelper
 };
 

@@ -2,11 +2,7 @@
 
 namespace tachyon\db\dataMapper;
 
-use ErrorException,
-    Iterator,
-    tachyon\db\Terms,
-    tachyon\traits\ClassHelper,
-    tachyon\exceptions\DBALException;
+use Iterator;
 
 /**
  * EntityManager является центральной точкой доступа к функциональности DataMapper ORM.
@@ -15,28 +11,18 @@ use ErrorException,
  */
 abstract class Repository implements RepositoryInterface
 {
-    use ClassHelper, Terms;
-
-    /**
-     * @var Persistence
-     */
     protected Persistence $persistence;
     /**
      * Имя таблицы БД
-     *
-     * @var string
      */
     protected string $tableName = '';
+    protected string $tableAlias = 't';
     /**
      * Класс сущности
-     *
-     * @var Entity
      */
     protected Entity $entity;
     /**
      * Массив сущностей
-     *
-     * @var array
      */
     protected array $collection = [];
 
@@ -51,18 +37,12 @@ abstract class Repository implements RepositoryInterface
         }
     }
 
-    /**
-     * @return string
-     */
     public function getTableName(): string
     {
         return $this->tableName;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function create($markNew = true): ?Entity
+    public function create(bool $markNew = true): ?Entity
     {
         $entity = clone($this->entity);
         if ($markNew) {
@@ -71,20 +51,13 @@ abstract class Repository implements RepositoryInterface
         return $entity;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function setSearchConditions(array $conditions = []): self
     {
-        $where = $conditions;
         $this->where(array_diff_key($conditions, ['order' => null, 'order-by' => null]));
 
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function findOne(array $where = []): ?Entity
     {
         if (!$entity = $this->findOneRaw($where)) {
@@ -93,20 +66,12 @@ abstract class Repository implements RepositoryInterface
         return $this->convertData($entity);
     }
 
-    /**
-     * @param array $data
-     *
-     * @return array
-     */
-    protected function convertData($data): Entity
+    protected function convertData(array $data): Entity
     {
         $entity = $this->entity->fromState($data);
         return $this->collection[$entity->getPk()] = $entity;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function findOneRaw(array $where = []): ?array
     {
         return $this
@@ -115,9 +80,6 @@ abstract class Repository implements RepositoryInterface
             ->findOne($where);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function findAllRaw(array $where = [], array $sort = []): array
     {
         return $this->persistence
@@ -125,20 +87,12 @@ abstract class Repository implements RepositoryInterface
             ->findAll($where, $sort);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function findAll(array $where = [], array $sort = []): Iterator
     {
         $arrayData = $this->findAllRaw($where, $sort);
         return $this->convertArrayData($arrayData);
     }
 
-    /**
-     * @param array $arrayData
-     *
-     * @return Iterator
-     */
     protected function convertArrayData(array $arrayData): Iterator
     {
         foreach ($arrayData as $data) {
@@ -150,13 +104,8 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * Получить сущность по первичному ключу и поместить в $this->collection.
-     *
-     * @param $pk
-     *
-     * @return Entity
-     * @throws DBALException
      */
-    public function findByPk($pk): ?Entity
+    public function findByPk(mixed $pk): ?Entity
     {
         if (!isset($this->collection[$pk])) {
             $this->collection[$pk] = $this->getByPk($pk);
@@ -166,13 +115,8 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * Получить сущность из БД по первичному ключу.
-     *
-     * @param int $pk
-     *
-     * @return Entity
-     * @throws DBALException
      */
-    protected function getByPk($pk): ?Entity
+    protected function getByPk(int $pk): ?Entity
     {
         if ($data = $this
             ->persistence
@@ -185,12 +129,8 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * Устанавливает условие выборки.
-     *
-     * @param array $where
-     *
-     * @return self
      */
-    public function where($where): self
+    public function where(array $where): self
     {
         $this->persistence->setWhere($where);
         return $this;
@@ -198,12 +138,8 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * Устанавливает поля выборки.
-     *
-     * @param array $fields
-     *
-     * @return self
      */
-    public function select($fields): self
+    public function select(mixed $fields): self
     {
         $this->persistence->select((array)$fields);
         return $this;
@@ -211,13 +147,8 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * Устанавливает условия сортировки для хранилища
-     *
-     * @param array $attrs
-     *
-     * @return self
-     * @throws ErrorException
      */
-    public function setSort($attrs): self
+    public function setSort(array $attrs): self
     {
         if ($orderBy = $attrs['order-by'] ?? null) {
             $this->addSortBy($orderBy, $attrs['order'] ?? 'ASC');
@@ -227,12 +158,6 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * Добавляет условия сортировки для хранилища к уже существующим
-     *
-     * @param string $field
-     * @param string $order
-     *
-     * @return void
-     * @throws ErrorException
      */
     public function addSortBy(string $orderBy, string $order): void
     {
@@ -241,9 +166,6 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * truncates table
-     *
-     * @return void
-     * @throws DBALException
      */
     public function clear(): void
     {

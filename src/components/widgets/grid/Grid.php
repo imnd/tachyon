@@ -8,7 +8,7 @@ use
     tachyon\components\Csrf,
     tachyon\components\widgets\Widget,
     tachyon\db\activeRecord\ActiveRecord,
-    tachyon\Helpers\ClassHelper
+    tachyon\helpers\ClassHelper
 ;
 
 /**

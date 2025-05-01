@@ -3,7 +3,7 @@
 namespace tachyon\components;
 
 use tachyon\Config;
-use tachyon\Helpers\ClassHelper;
+use tachyon\helpers\ClassHelper;
 
 /**
  * Построитель html-кода

@@ -3,7 +3,7 @@
 namespace tachyon\db\dataMapper;
 
 use tachyon\exceptions\ValidationException;
-use tachyon\Helpers\{
+use tachyon\helpers\{
     ClassHelper, StringHelper
 };
 use tachyon\components\validation\{

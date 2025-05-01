@@ -1,13 +1,13 @@
 <?php
 
-namespace tachyon\db;
+namespace tachyon\db\dbal\conditions;
 
 /**
  * A trait responsible for generating sql selection queries conditions
  *
  * @author imndsu@gmail.com
  */
-trait Terms
+class Terms
 {
     /**
      * Sets the condition more than
@@ -26,7 +26,7 @@ trait Terms
     {
         if (!empty($where[$arrKey])) {
             return [
-                "$field > " . ($precise ? '' : '=') => $where[$arrKey],
+                "$field >" . ($precise ? '' : '=') => $where[$arrKey],
             ];
         }
         return [];
@@ -48,7 +48,7 @@ trait Terms
     ): array
     {
         if (!empty($where[$arrKey])) {
-            return ["$field < " . ($precise ? '' : '=') => $where[$arrKey]];
+            return ["$field <" . ($precise ? '' : '=') => $where[$arrKey]];
         }
         return [];
     }

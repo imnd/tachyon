@@ -1,6 +1,6 @@
 <?php
 
-namespace tachyon\Helpers;
+namespace tachyon\helpers;
 
 /**
  * @author imndsu@gmail.com

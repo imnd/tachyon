@@ -21,14 +21,8 @@ trait RepositoryListTrait
 
     /**
      * Список для select`а из массива строк таблицы $items
-     *
-     * @param string $valueField
-     *
-     * @return array
-     * @throws ContainerException
-     * @throws ReflectionException
      */
-    public function getAllSelectList($valueField = 'name'): array
+    public function getAllSelectList(string $valueField = 'name'): array
     {
         $this->valueField = $valueField;
         $model = app()->get(static::class);
@@ -39,8 +33,6 @@ trait RepositoryListTrait
      * Список для select`а из массива строк таблицы $items
      *
      * @param array $items Массив строк таблицы
-     *
-     * @return array
      */
     public function getSelectList(array $items): array
     {
@@ -66,9 +58,6 @@ trait RepositoryListTrait
      * @param array   $array
      * @param boolean $keyIndexed индексировать ключами или значениями массива
      * @param string  $emptyVal
-     *
-     * @return array
-     * @throws ErrorException
      */
     public function getSelectListFromArr(
         array $array,
@@ -95,8 +84,6 @@ trait RepositoryListTrait
 
     /**
      * Список значений да/нет для select`а
-     *
-     * @return array
      */
     public function getYesNoListData(): array
     {
@@ -116,11 +103,6 @@ trait RepositoryListTrait
 
     /**
      * Список значений поля $fieldName из массива $items
-     *
-     * @param array  $items
-     * @param string $fieldName
-     *
-     * @return array
      */
     public function getValsList(array $items, string $fieldName): array
     {
@@ -131,11 +113,6 @@ trait RepositoryListTrait
         return $retArr;
     }
 
-    /**
-     * @param array $item
-     *
-     * @return string
-     */
     private function _getItemValue(array $item): string
     {
         if (is_array($this->valueField)) {
@@ -150,41 +127,21 @@ trait RepositoryListTrait
 
     # SETTERS
 
-    /**
-     * @param string $valueField
-     *
-     * @return void
-     */
     public function setValueField(string $valueField): void
     {
         $this->valueField = $valueField;
     }
 
-    /**
-     * @param string $valsGlue
-     *
-     * @return void
-     */
     public function setValsGlue(string $valsGlue): void
     {
         $this->valsGlue = $valsGlue;
     }
 
-    /**
-     * @param string $pkField
-     *
-     * @return void
-     */
     public function setPkField(string $pkField): void
     {
         $this->pkField = $pkField;
     }
 
-    /**
-     * @param string $emptyVal
-     *
-     * @return void
-     */
     public function setEmptyVal(string $emptyVal): void
     {
         $this->emptyVal = $emptyVal;

@@ -1,6 +1,6 @@
 <?php
 
-namespace tachyon\Helpers;
+namespace tachyon\helpers;
 
 use ReflectionClass;
 use ReflectionException;

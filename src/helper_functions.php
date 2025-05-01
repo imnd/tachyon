@@ -1,20 +1,25 @@
 <?php
 
 use app\ServiceContainer;
-use tachyon\components\Flash;
-use tachyon\components\Html;
-use tachyon\components\Lang;
-use tachyon\components\Message;
-use tachyon\Config;
+use tachyon\components\{
+    Flash, Html, Lang, Message
+};
 use tachyon\db\dbal\{
     Db, DbFactory
 };
-use tachyon\exceptions\ContainerException;
+use tachyon\{
+    Config, View
+};
 
 function config(string $key): mixed
 {
     $config = app()->get(Config::class);
     return $config->get($key);
+}
+
+function view(): View
+{
+    return app()->get(View::class);
 }
 
 function db(): Db

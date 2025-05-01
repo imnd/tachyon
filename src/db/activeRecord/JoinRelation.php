@@ -5,16 +5,12 @@ use tachyon\components\Message;
 use tachyon\db\Alias;
 
 /**
- * class Relation
  * Класс реализующий связи между моделями
  *
  * @author imndsu@gmail.com
  */
 class JoinRelation extends Relation
 {
-    /**
-     * @var Join $join
-     */
     protected Join $join;
 
     public function __construct(Message $msg, Alias $alias, Join $join)
@@ -26,7 +22,7 @@ class JoinRelation extends Relation
 
     public function joinWith($owner): void
     {
-        $model = $this->get($this->modelName);
+        $model = app()->get($this->modelName);
         $this->join->leftJoin(
             [
                 $this->tableAlias => $model->getSource()

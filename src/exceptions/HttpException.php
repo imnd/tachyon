@@ -7,7 +7,7 @@ namespace tachyon\exceptions;
  */
 class HttpException extends \Exception
 {
-    /** @const Коды */
+    /** @const Codes */
     const OK                    = 200;
     const MOVED_PERMANENTLY     = 301;
     const BAD_REQUEST           = 400;
@@ -16,7 +16,7 @@ class HttpException extends \Exception
     const NOT_FOUND             = 404;
     const INTERNAL_SERVER_ERROR = 500;
 
-    /** @const Коды и их сообщения */
+    /** @const Codes and their messages */
     const HTTP_STATUS_CODES = [
         self::OK                    => 'OK',
         self::MOVED_PERMANENTLY     => 'Moved Permanently',

@@ -5,7 +5,7 @@ use tachyon\components\AssetManager,
     tachyon\components\Message,
     tachyon\View;
 use tachyon\Controller;
-use tachyon\Helpers\ClassHelper;
+use tachyon\helpers\ClassHelper;
 use tachyon\traits\Configurable;
 use tachyon\traits\HasOwner;
 
@@ -26,7 +26,7 @@ abstract class Widget
     /**
      * id виджета
      */
-    protected string $id;
+    protected string $id = '';
     /**
      * Из какого контроллера вызван
      */
@@ -34,7 +34,7 @@ abstract class Widget
     /**
      * Путь файла отображения
      */
-    protected string $viewsPath;
+    protected string $viewsPath = '';
     /**
      * Выводить или возвращать вывод
      */

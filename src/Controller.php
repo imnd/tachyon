@@ -3,13 +3,11 @@
 namespace tachyon;
 
 use JetBrains\PhpStorm\NoReturn;
-use
-    tachyon\exceptions\HttpException,
-    tachyon\components\Cookie,
-    tachyon\components\Csrf,
-    tachyon\components\Lang,
-    tachyon\components\Message
-;
+use tachyon\components\Cookie;
+use tachyon\components\Csrf;
+use tachyon\components\Lang;
+use tachyon\components\Message;
+use tachyon\exceptions\HttpException;
 
 /**
  * Base class for all controllers
@@ -18,13 +16,6 @@ use
  */
 class Controller
 {
-    # Компоненты
-
-    protected Message $msg;
-    protected Cookie $cookie;
-    protected Lang $lang;
-    protected View $view;
-    protected Csrf $csrf;
     protected Request $request;
 
     /** Common website template */
@@ -39,21 +30,14 @@ class Controller
     protected $postActions = [];
     /** actions only for authenticated users */
     protected $protectedActions;
-    private string $language;
 
     public function __construct(
-        Message $msg,
-        Cookie $cookie,
-        Lang $lang,
-        View $view,
-        Csrf $csrf
-    ) {
-        $this->msg = $msg;
-        $this->cookie = $cookie;
-        $this->lang = $lang;
-        $this->view = $view;
-        $this->csrf = $csrf;
-    }
+        protected Message $msg,
+        protected Cookie $cookie,
+        protected Lang $lang,
+        protected View $view,
+        protected Csrf $csrf
+    ) {}
 
     /**
      * initialization
@@ -63,11 +47,11 @@ class Controller
         $this->request = $request;
         // check by the actions list
         if (
-           (
-                  $this->postActions === '*'
-               || in_array($this->action, $this->postActions)
-           )
-        && !$this->request->isPost()) {
+                (
+                       $this->postActions === '*'
+                    || in_array($this->action, $this->postActions)
+                )
+            && !$this->request->isPost()) {
             throw new HttpException(
                 t('Action %action allowed only through post request.', ['action' => $this->action]),
                 HttpException::BAD_REQUEST
@@ -81,8 +65,6 @@ class Controller
         $this->view->setController($this);
         // путь к отображениям
         $this->view->setViewsPath("{$this->view->getViewsPath()}/{$this->id}");
-        // текущий язык сайта
-        $this->language = $this->lang->getLanguage();
 
         return $this;
     }
@@ -165,11 +147,6 @@ class Controller
     public function getDefaultAction(): string
     {
         return $this->defaultAction;
-    }
-
-    public function getLanguage(): ?string
-    {
-        return $this->language;
     }
 
     # endregion

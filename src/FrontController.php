@@ -3,12 +3,12 @@
 namespace tachyon;
 
 # exceptions
-use
-    Error,
-    ErrorException,
-    PDOException,
-    ReflectionException;
-
+use Error;
+use ErrorException;
+use Exception;
+use PDOException;
+use ReflectionException;
+use tachyon\cache\Output as OutputCache;
 use tachyon\exceptions\{
     ContainerException,
     DBALException,
@@ -20,36 +20,25 @@ use tachyon\exceptions\{
     ValidationException,
     ViewException
 };
+use tachyon\helpers\ClassHelper;
 
 # dependencies
-use
-    tachyon\cache\Output as OutputCache,
-    tachyon\components\Message;
-use tachyon\Helpers\ClassHelper;
 
 /**
  * @author imndsu@gmail.com
  */
 final class FrontController
 {
-    private OutputCache $cache;
-    private Message $msg;
-    private Request $request;
-
-    private array $routes;
-    private $controller;
-    private string $action;
-    private $inline;
+    private array $routes = [];
+    private string $controller = '';
+    private string $action = '';
+    private array $inline = [];
 
     public function __construct(
         Config $config,
-        OutputCache $cache,
-        Message $msg,
-        Request $request
+        private readonly OutputCache $cache,
+        private readonly Request $request
     ) {
-        $this->cache = $cache;
-        $this->msg = $msg;
-        $this->request = $request;
         $this->routes = $config->get('routes');
     }
 
@@ -62,15 +51,14 @@ final class FrontController
         $this->cache->start($_SERVER['REQUEST_URI']);
 
         // parse the request
-        $path = $this->request->parseUri();
-        if (!$this->parseRoute($path)) {
+        if (!$this->parseRoute($path = $this->request->parseUri())) {
             $requestArr = explode('/', $path);
             // retrieving the name of the controller and action
             $this->controller = 'app\controllers\\' . ucfirst($this->getNameFromRequest($requestArr)) . 'Controller';
-            $this->action = $this->getNameFromRequest($requestArr);
+            $this->action = $this->getNameFromRequest($requestArr) ?? 'index';
             // parse the array of parameters
             if (!empty($requestArr)) {
-                $this->inline = array_shift($requestArr);
+                $this->inline[] = array_shift($requestArr);
                 $requestArr = array_chunk($requestArr, 2);
                 foreach ($requestArr as $pair) {
                     if (isset($pair[1])) {
@@ -96,34 +84,39 @@ final class FrontController
      */
     private function parseRoute(string $path): bool
     {
-        if ($route = $this->routes[$path]) {
+        if ($route = $this->routes[$path] ?? null) {
             [$this->controller, $this->action] = explode('@', $route);
             return true;
         }
 
-        $pathArr = explode('/', $path);
+        $pathParts = explode('/', $path);
 
-        foreach ($pathArr as $key => $pathItem) {
+        foreach ($this->routes as $route => $controllerAndAction) {
             $found = true;
-            foreach (array_keys($this->routes) as $route) {
-                $routeArr = explode('/', $route);
-                if (!$routeItem = $routeArr[$key] ?? null) {
+            $routeParts = explode('/', $route);
+            if (count($pathParts) !== count($routeParts)) {
+                continue;
+            }
+            foreach ($pathParts as $i => $pathPart) {
+                if (!$routePart = $routeParts[$i] ?? null) {
                     $found = false;
-                    continue;
+                    break;
                 }
-                if ($routeItem != $pathItem) {
-                    if (substr($routeItem, 0, 1) !== '{' || substr($routeItem, -1, 1) !== '}') {
+                if ($routePart !== $pathPart) {
+                    if (!str_starts_with($routePart, '{') || !str_ends_with($routePart, '}')) {
                         $found = false;
-                        continue;
+                        break;
                     }
+                    $paramName = str_replace(['{', '}'], '', $routePart);
+                    $this->inline[$paramName] = $pathPart;
                 }
-                $found = true;
             }
             if ($found) {
-                [$this->controller, $this->action] = explode('@', $route);
+                [$this->controller, $this->action] = explode('@', $controllerAndAction);
                 return true;
             }
         }
+
         return false;
     }
 
@@ -150,7 +143,7 @@ final class FrontController
     {
         try {
             if (!$controllerClass = $this->controller) {
-                throw new HttpException('Wrong url');
+                throw new HttpException('Wrong url', HttpException::NOT_FOUND);
             }
             /** @var Controller $controller */
             $controller = app()->get($controllerClass);
@@ -159,7 +152,7 @@ final class FrontController
                 $actionName = $controller->getDefaultAction();
             }
             if (!method_exists($controller, $actionName)) {
-                throw new HttpException(t('There is no action "%actionName" in controller "%controllerName".', compact('controllerName', 'actionName')), HttpException::NOT_FOUND);
+                throw new HttpException('Wrong url', HttpException::NOT_FOUND);
             }
             $controller
                 ->setAction($actionName)
@@ -174,48 +167,63 @@ final class FrontController
             }
 
             ob_start();
-            $actionVars = app()->getDependencies($controllerClass, $actionName);
-            if (!is_null($inline = $this->inline)) {
-                $actionVars[] = $inline;
-            }
+
+            $actionVars = [
+                ...app()->getDependencies($controllerClass, $actionName),
+                ...$this->inline
+            ];
             $controller->$actionName(...$actionVars);
             $controller->afterAction();
 
             // everything is ok, we hand over the page
-            header('HTTP/1.1 200 OK');
+            $this->sendHeaders(200);
             // clickjacking protection
             header('X-Frame-Options:sameorigin');
             // XSS protection, HTTP Only
             ini_set('session.cookie_httponly', 1);
 
             echo ob_get_clean();
+        } catch (HttpException $e) {
+            $this->sendHeaders($e->getCode());
+            $this->showErrorPage($e, 404);
         } catch (
-             ReflectionException
-            |Error
-            |ErrorException
-            |ContainerException
-            |DBALException
-            |FileNotFoundException
-            |HttpException
-            |MapperException
-            |ModelException
-            |NotFoundException
-            |PDOException
-            |ValidationException
-            |ViewException
+            ReflectionException
+          | Error
+          | ErrorException
+          | ContainerException
+          | DBALException
+          | FileNotFoundException
+          | MapperException
+          | ModelException
+          | NotFoundException
+          | PDOException
+          | ValidationException
+          | ViewException
         $e) {
             // Invalid request handler. Error message output
-            $code = $e instanceof HttpException ? $e->getCode() : HttpException::INTERNAL_SERVER_ERROR;
-
-            http_response_code($code);
-            header("HTTP/1.1 $code ".HttpException::HTTP_STATUS_CODES[$code]);
-
-            if (file_exists($errorPath = __DIR__ . '/../../../../app/views/error.php')) {
-                require $errorPath;
-                return;
-            }
-
-            require 'errors.php';
+            $this->sendHeaders(HttpException::INTERNAL_SERVER_ERROR);
+            $this->showErrorPage($e, 500);
         }
+    }
+
+    private function sendHeaders(int $code): void
+    {
+        http_response_code($code);
+        header("HTTP/1.1 $code " . HttpException::HTTP_STATUS_CODES[$code]);
+    }
+
+    private function showErrorPage(Exception $e, string $fileName = 'error'): void
+    {
+        if (file_exists($errorPath = __DIR__ . "/../../../../app/views/$fileName.php")) {
+            view()
+                ->setPageTitle('Error')
+                ->view($fileName, [
+                    'message' => $e->getMessage(),
+                ]);
+
+            return;
+        }
+
+        require 'errors.php';
     }
 }

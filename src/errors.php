@@ -6,7 +6,7 @@
     .error {
         padding: 8px 12px;
         color: #FFF;
-        background-color: #4F4F4F;
+        background-color: #FF0000;
         width: fit-content;
     }
     table {
@@ -60,5 +60,3 @@
         </tr>
     <?php }?>
 </table>
-
-

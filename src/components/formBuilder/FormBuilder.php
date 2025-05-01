@@ -3,7 +3,7 @@
 namespace tachyon\components\formBuilder;
 
 use ReflectionException;
-use tachyon\{Config, Helpers\ClassHelper, Request, View};
+use tachyon\{Config, helpers\ClassHelper, Request, View};
 use tachyon\components\{
     AssetManager,
     Csrf,

@@ -3,21 +3,26 @@
 namespace tachyon\db\activeRecord;
 
 use ReflectionException;
-use tachyon\{cache\Db as DbCache,
-    components\Message,
-    exceptions\ContainerException,
-    exceptions\DBALException,
-    exceptions\ModelException,
-    exceptions\ValidationException,
-    Helpers\ClassHelper,
-    Helpers\StringHelper,
-    Model,
-    traits\DateTime};
-use tachyon\db\{
-    Alias,
-    dbal\Db,
-    dbal\DbFactory,
-    Terms,
+use tachyon\cache\Db as DbCache;
+use tachyon\components\Message;
+use tachyon\Model;
+
+use tachyon\exceptions\{
+    ContainerException,
+    DBALException,
+    ModelException,
+    ValidationException,
+};
+use tachyon\helpers\{
+    ClassHelper,
+    StringHelper,
+    DateTimeHelper,
+};
+use tachyon\db\Alias;
+use tachyon\db\dbal\conditions\Terms;
+use tachyon\db\dbal\{
+    Db,
+    DbFactory,
 };
 
 /**
@@ -25,19 +30,6 @@ use tachyon\db\{
  */
 abstract class ActiveRecord extends Model
 {
-    use DateTime;
-    use Terms {
-        Terms::gt as _gt;
-        Terms::lt as _lt;
-        Terms::lt as _like;
-    }
-
-    protected DbCache $cache;
-    protected DbFactory $dbFactory;
-    protected Alias $alias;
-    protected Join $join;
-    protected Message $msg;
-
     /**
      * the name of the table in the database or alias
      */
@@ -132,20 +124,16 @@ abstract class ActiveRecord extends Model
     protected array $relationClasses = [];
 
     public function __construct(
-        Message $msg,
-        DbCache $cache,
-        Alias $alias,
-        DbFactory $dbFactory,
-        Join $join,
+        protected Message $msg,
+        protected DbCache $cache,
+        protected Alias $alias,
+        protected DbFactory $dbFactory,
+        protected Join $join,
+        protected Terms $terms,
         ...$params
     ) {
         // dependencies
-        $this->msg = $msg;
-        $this->cache = $cache;
-        $this->alias = $alias;
         $this->alias->setOwner($this);
-        $this->dbFactory = $dbFactory;
-        $this->join = $join;
         $this->join->setOwner($this);
 
         if ('' === static::$tableName) {
@@ -440,7 +428,7 @@ abstract class ActiveRecord extends Model
                     $fieldType = $relationFields[$key];
                     switch ($fieldType) {
                         case 'timestamp':
-                            return $this->timestampToDateTime($val);
+                            return DateTimeHelper::timestampToDateTime($val);
                         default:
                             return $val;
                     }
@@ -686,9 +674,14 @@ abstract class ActiveRecord extends Model
     /**
      * @throws DBALException
      */
-    public function gt(array &$where, string $field, string $arrKey, bool $precise = false): self
+    public function gt(
+        array &$where,
+        string $field,
+        string $arrKey,
+        bool $precise = false
+    ): self
     {
-        $this->getDb()->addWhere($this->_gt($where, $field, $arrKey, $precise));
+        $this->getDb()->addWhere($this->terms->gt($where, $field, $arrKey, $precise));
         return $this;
     }
 
@@ -697,7 +690,7 @@ abstract class ActiveRecord extends Model
      */
     public function lt(array &$where, string $field, string $arrKey, bool $precise = false): self
     {
-        $this->getDb()->addWhere($this->_lt($where, $field, $arrKey, $precise));
+        $this->getDb()->addWhere($this->terms->lt($where, $field, $arrKey, $precise));
         return $this;
     }
 
@@ -708,7 +701,7 @@ abstract class ActiveRecord extends Model
      */
     public function like(array $where, string $field): self
     {
-        $this->getDb()->addWhere($this->_like($where, $field));
+        $this->getDb()->addWhere($this->terms->like($where, $field));
         return $this;
     }
 

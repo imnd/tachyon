@@ -3,7 +3,7 @@
 namespace tachyon\components\validation;
 
 use tachyon\exceptions\ValidationException;
-use tachyon\Helpers\ClassHelper;
+use tachyon\helpers\ClassHelper;
 
 /**
  * Трейт валидации

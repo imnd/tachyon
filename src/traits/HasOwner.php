@@ -7,27 +7,14 @@ namespace tachyon\traits;
  */
 trait HasOwner
 {
-    /**
-     * Объект, вызывающий сервис
-     *
-     * @var mixed $owner
-     */
-    protected $owner;
+    protected mixed $owner;
 
-    /**
-     * @return mixed
-     */
-    public function getOwner()
+    public function getOwner(): mixed
     {
         return $this->owner;
     }
 
-    /**
-     * @param mixed $owner
-     *
-     * @return void
-     */
-    public function setOwner($owner = null): void
+    public function setOwner(mixed $owner = null): void
     {
         $this->owner = $owner;
     }

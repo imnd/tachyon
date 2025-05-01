@@ -16,8 +16,6 @@ use tachyon\traits\{
 use tachyon\exceptions\ViewException;
 
 /**
- * View component
- *
  * @author imndsu@gmail.com
  */
 class View
@@ -25,9 +23,9 @@ class View
     use HasOwner, HasProperties;
 
     /**
-     * the controller invokes view
+     * the controller that invokes view
      */
-    protected Controller $controller;
+    protected ?Controller $controller = null;
     /**
      * views path
      */
@@ -45,11 +43,6 @@ class View
      */
     protected string $layout = '';
     protected string $pageTitle = '';
-    protected AssetManager $assetManager;
-    protected Message $msg;
-    protected Html $html;
-    protected Flash $flash;
-    protected Env $env;
 
     /**
      * persistent variables between drawing inheritable layouts
@@ -58,19 +51,14 @@ class View
     protected Request $request;
 
     public function __construct(
-        Env $env,
         Config $config,
-        AssetManager $assetManager,
-        Message $msg,
-        Html $html,
-        Flash $flash
+        protected Env $env,
+        protected AssetManager $assetManager,
+        protected Message $msg,
+        protected Html $html,
+        protected Flash $flash
     ) {
-        $this->env = $env;
         $this->appViewsPath = $this->viewsPath = $config->get('base_path') . Config::APP_DIR . 'app/views';
-        $this->assetManager = $assetManager;
-        $this->msg = $msg;
-        $this->html = $html;
-        $this->flash = $flash;
     }
 
     /**
@@ -128,9 +116,6 @@ class View
         return $contents;
     }
 
-    /**
-     * @throws ViewException
-     */
     private function _displayLayout(string $viewContents, array $vars): string
     {
         $contents = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
@@ -150,10 +135,9 @@ class View
         return substr($textToReplace, 0, $tagPos) . $text . substr($textToReplace, $tagPos + strlen($tag) + 1);
     }
 
-    private function _view(string $filePath, array $vars = []): false | string
+    private function _view(string $path, array $vars = []): false | string
     {
-        $filePath = "$filePath.php";
-        if (!file_exists($filePath)) {
+        if (!file_exists($filePath = "$path.php")) {
             throw new ViewException("{t('No view file found')}: \"$filePath\"");
         }
         $buffer = file_get_contents($filePath);
@@ -212,7 +196,7 @@ class View
      * js code connection
      *
      * @param string $source code text either path
-     * @param string $mode inline or external file
+     * @param string $mode   inline or external file
      */
     public function jsCode(string $source, string $mode = 'inner'): string
     {
@@ -237,7 +221,7 @@ class View
         $widget = app()->get($class);
         $widget->setParameters($params);
         $widget->setOwner($this);
-        $controller = $this->controller ?: $params['controller'];
+        $controller = $this->controller ?: $params['controller'] ?? null;
         $widget->setController($controller);
         return $widget->run();
     }
