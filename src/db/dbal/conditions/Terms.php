@@ -3,7 +3,7 @@
 namespace tachyon\db\dbal\conditions;
 
 /**
- * A trait responsible for generating sql selection queries conditions
+ * Responsible for generating sql selection queries conditions
  *
  * @author imndsu@gmail.com
  */
