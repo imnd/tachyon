@@ -3,25 +3,25 @@ namespace tachyon;
 
 class Env
 {
-    private Config $config;
+    private string $env;
 
     public function __construct(Config $config)
     {
-        $this->config = $config;
+        $this->env = $config->get('env');
     }
 
     public function isProduction(): bool
     {
-        return $this->config->get('env') === 'production';
+        return $this->env === 'production';
     }
 
     public function isDevelop(): bool
     {
-        return $this->config->get('env') === 'develop';
+        return $this->env === 'develop';
     }
 
     public function isLocal(): bool
     {
-        return $this->config->get('env') === 'local';
+        return $this->env === 'local';
     }
 }

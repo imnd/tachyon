@@ -7,26 +7,16 @@ namespace tachyon\traits;
 trait HasProperties
 {
     /**
-     * @var $properties array
+     * setting of objects properties
      */
-    protected array $properties = [];
-
-    /**
-     * @param $var
-     * @param $val
-     */
-    public function setProperty($var, $val): void
+    public function setProperties(array $properties = []): static
     {
-        $this->properties[$var] = $val;
-    }
+        foreach ($properties as $property => $value) {
+            if (property_exists($this, $property)) {
+                $this->$property = $value;
+            }
+        }
 
-    /**
-     * @param $var
-     *
-     * @return mixed|null
-     */
-    public function getProperty($var)
-    {
-        return $this->properties[$var] ?? null;
+        return $this;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace tachyon;
 
-use tachyon\dic\Container;
 use tachyon\components\{
     AssetManager,
     Message,
@@ -11,7 +10,7 @@ use tachyon\components\{
 };
 use tachyon\traits\{
     HasOwner,
-    HasProperties
+    HasOptions
 };
 use tachyon\exceptions\ViewException;
 
@@ -20,35 +19,21 @@ use tachyon\exceptions\ViewException;
  */
 class View
 {
-    use HasOwner, HasProperties;
+    use HasOwner, HasOptions;
 
     /**
      * the controller that invokes view
      */
     protected ?Controller $controller = null;
-    /**
-     * views path
-     */
-    protected string $viewsPath;
-    /**
-     * views path
-     */
-    protected string $appViewsPath;
-    /**
-     * layout path
-     */
-    protected string $layoutPath;
-    /**
-     * layout name
-     */
+    protected string $viewsPath = '';
+    protected string $appViewsPath = '';
+    protected string $layoutPath = '';
     protected string $layout = '';
     protected string $pageTitle = '';
-
     /**
      * persistent variables between drawing inheritable layouts
      */
     protected array $layoutVars = [];
-    protected Request $request;
 
     public function __construct(
         Config $config,
@@ -68,11 +53,7 @@ class View
     {
         $this->layoutPath = "{$this->appViewsPath}/layouts";
         $contents = $this->display($viewsPath, $vars, true);
-        if ($this->layout) {
-            echo $this->_displayLayout($contents, $vars);
-        } else {
-            echo $contents;
-        }
+        echo $this->layout ? $this->_displayLayout($contents, $vars) : $contents;
     }
 
     /**
@@ -138,10 +119,10 @@ class View
     private function _view(string $path, array $vars = []): false | string
     {
         if (!file_exists($filePath = "$path.php")) {
-            throw new ViewException("{t('No view file found')}: \"$filePath\"");
+            throw new ViewException(t('No view file found') . ": \"$filePath\"");
         }
         $buffer = file_get_contents($filePath);
-        if (false !== strpos($buffer, '{{')) {
+        if (str_contains($buffer, '{{')) {
             $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
             if (
                    // в debug mode скомпилированные шаблоны переписываются всегда
@@ -193,34 +174,14 @@ class View
     }
 
     /**
-     * js code connection
-     *
-     * @param string $source code text either path
-     * @param string $mode   inline or external file
-     */
-    public function jsCode(string $source, string $mode = 'inner'): string
-    {
-        $script = '<script';
-        if ($mode === 'inner') {
-            $script .= ">
-                $source
-            ";
-        } else {
-            $script .= " src=\"$source\">";
-        }
-        return "$script</script>";
-    }
-
-    /**
-     * run the widget on the page
+     * add the widget to page
      */
     public function widget(array $params)
     {
         $class = $params['class'];
         unset($params['class']);
         $widget = app()->get($class);
-        $widget->setParameters($params);
-        $widget->setOwner($this);
+        $widget->setProperties($params)->setOwner($this);
         $controller = $this->controller ?: $params['controller'] ?? null;
         $widget->setController($controller);
         return $widget->run();
@@ -266,12 +227,6 @@ class View
     public function setPageTitle(string $pageTitle): self
     {
         $this->pageTitle = $pageTitle;
-        return $this;
-    }
-
-    public function setRequest(Request $request): self
-    {
-        $this->request = $request;
         return $this;
     }
 

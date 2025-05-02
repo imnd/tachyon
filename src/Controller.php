@@ -3,35 +3,32 @@
 namespace tachyon;
 
 use JetBrains\PhpStorm\NoReturn;
-use tachyon\components\Cookie;
-use tachyon\components\Csrf;
-use tachyon\components\Lang;
-use tachyon\components\Message;
+use tachyon\components\{
+    Cookie, Csrf, Lang, Message,
+};
 use tachyon\exceptions\HttpException;
 
 /**
- * Base class for all controllers
+ * Parent class for all controllers
  *
  * @author imndsu@gmail.com
  */
 class Controller
 {
-    protected Request $request;
-
-    /** Common website template */
+    /** default website layout */
     protected string $layout = 'main';
+    /** default controller action */
     protected string $defaultAction = 'index';
-    /** controller id */
     protected string $id;
-    /** controller action */
     protected string $action;
 
     /** actions for only $_POST requests */
-    protected $postActions = [];
+    protected string | array $postActions = [];
     /** actions only for authenticated users */
-    protected $protectedActions;
+    protected string | array $protectedActions;
 
     public function __construct(
+        protected readonly Request $request,
         protected Message $msg,
         protected Cookie $cookie,
         protected Lang $lang,
@@ -42,9 +39,8 @@ class Controller
     /**
      * initialization
      */
-    public function start(Request $request): self
+    public function start(): self
     {
-        $this->request = $request;
         // check by the actions list
         if (
                 (
@@ -61,23 +57,22 @@ class Controller
         if (!$this->csrf->isTokenValid()) {
             throw new HttpException(t('Wrong CSRF token.'), HttpException::BAD_REQUEST);
         }
-        $this->view->setRequest($request);
         $this->view->setController($this);
-        // путь к отображениям
+        // The path to views
         $this->view->setViewsPath("{$this->view->getViewsPath()}/{$this->id}");
 
         return $this;
     }
 
     /**
-     * Инициализация в клиентском коде
+     * Initialization in the client code
      */
     public function init(): void
     {
     }
 
     /**
-     * Хук, срабатывающий перед запуском экшна
+     * Hook triggering before the action launch
      */
     public function beforeAction(): bool
     {
@@ -85,19 +80,18 @@ class Controller
     }
 
     /**
-     * Хук, срабатывающий после запуска экшна
+     * Hook triggering after the action launch
      */
     public function afterAction(): void
     {
     }
 
     /**
-     * Отображает файл представления $view
-     * передавая ему параметры $vars в виде массива
+     * Displays the presentation file, transmitting the parameters as an array
      *
-     * @param $view string|null файл представления
-     * @param $vars array переменные представления
-     * @param $return boolean показывать или возвращать
+     * @param $view string|null presentation file
+     * @param $vars array       representation variables
+     * @param $return boolean   show or return
      */
     public function display(string $view = null, array $vars = [], bool $return = false): ?string
     {
@@ -108,8 +102,7 @@ class Controller
     }
 
     /**
-     * Отображает файл представления, передавая ему параметры
-     * в виде массива в заданном лэйауте
+     * Displays the presentation file, transmitting the parameters as an array in a given layout
      */
     public function view(string $view = '', array $vars = []): void
     {
@@ -123,7 +116,7 @@ class Controller
     }
 
     /**
-     * Перенаправляет пользователя на адрес: $path
+     * Redirects a user to the address: $path
      */
     #[NoReturn]
     public function redirect(string $path): void
@@ -132,7 +125,7 @@ class Controller
         die;
     }
 
-    # region Getters
+    # region getters
 
     public function getId(): string
     {

@@ -59,7 +59,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * Извлечение значения аттрибута $attribute
+     * Extracting the value of the attribute $attribute
      */
     public function getAttribute(string $attribute)
     {
@@ -67,27 +67,32 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
         if (method_exists($this, $method)) {
             return $this->$method();
         }
+
+        return null;
     }
 
     /**
      * the assignment of the value $value to the attribute $attribute
      * the entity is not marked as modified
      */
-    public function setAttribute(mixed $attribute, mixed $value = null): void
+    public function setAttribute(mixed $attribute, mixed $value = null): static
     {
         if (is_array($attribute)) {
             $value = current($attribute);
             $attribute = key($attribute);
         }
         $this->$attribute = $value;
+
+        return $this;
     }
 
-    public function setIsNew(bool $isNew): void
+    public function setIsNew(bool $isNew): static
     {
         $this->isNew = $isNew;
+        return $this;
     }
 
-    protected function _setAttribute(string $attribute, string $value = null): self
+    protected function _setAttribute(string $attribute, string $value = null): static
     {
         if (!is_null($value)) {
             $this->$attribute = $value;
@@ -117,9 +122,10 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * setting the primary key value
      */
-    public function setPk(mixed $pk): void
+    public function setPk(mixed $pk): static
     {
         $this->{$this->pk} = $pk;
+        return $this;
     }
 
     # region Unit of work
@@ -149,7 +155,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * mark the newly created entity as new
      */
-    public function markNew(): self
+    public function markNew(): static
     {
         $this->dbContext->registerNew($this);
         return $this;
@@ -158,7 +164,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * mark the entity as modified
      */
-    public function markDirty(): self
+    public function markDirty(): static
     {
         $this->dbContext->registerDirty($this);
         return $this;
@@ -167,7 +173,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     /**
      * marks the entity for deletion
      */
-    public function markDeleted(): self
+    public function markDeleted(): static
     {
         $this->dbContext->registerDeleted($this);
         return $this;
@@ -222,7 +228,7 @@ abstract class Entity implements EntityInterface, UnitOfWorkInterface, Validatio
     }
 
     /**
-     * error message
+     * error message summary
      */
     public function getErrorsSummary(): string
     {

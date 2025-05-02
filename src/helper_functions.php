@@ -8,7 +8,9 @@ use tachyon\db\dbal\{
     Db, DbFactory
 };
 use tachyon\{
-    Config, View
+    Config,
+    Request,
+    View
 };
 
 function config(string $key): mixed
@@ -45,6 +47,11 @@ function html(): Html
 function lang(): Lang
 {
     return app()->get(Lang::class);
+}
+
+function request(): Request
+{
+    return app()->get(Request::class);
 }
 
 function t(string $msg, array $vars = []): string

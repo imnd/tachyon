@@ -2,27 +2,12 @@
 
 namespace tachyon;
 
-# exceptions
-use Error;
-use ErrorException;
-use Exception;
-use PDOException;
-use ReflectionException;
-use tachyon\cache\Output as OutputCache;
-use tachyon\exceptions\{
-    ContainerException,
-    DBALException,
-    FileNotFoundException,
-    HttpException,
-    MapperException,
-    ModelException,
-    NotFoundException,
-    ValidationException,
-    ViewException
-};
 use tachyon\helpers\ClassHelper;
-
+# exceptions
+use Exception;
+use tachyon\exceptions\HttpException;
 # dependencies
+use tachyon\cache\Output as OutputCache;
 
 /**
  * @author imndsu@gmail.com

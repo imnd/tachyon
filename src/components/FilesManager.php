@@ -12,10 +12,9 @@ class FilesManager
      * Склеивание файла
      *
      * @param array $files имена файлов кусков
-     * @param string $name имя файла, в который будет запись
-     * @return boolean
+     * @param string $fileName имя файла, в который будет запись
      */
-    public function spliceChunks($files, $fileName)
+    public function spliceChunks(array $files, string $fileName): bool
     {
         $spliceFileName = self::UPLOAD_DIR . $fileName;
         $success = $this->writeFile($spliceFileName, '');
@@ -31,11 +30,8 @@ class FilesManager
 
     /**
      * Загрузка части файла на сервер
-     *
-     * @param string $tmpName
-     * @return boolean
      */
-    public function saveChunk($tmpName)
+    public function saveChunk(string $tmpName): ?bool
     {
         if ($fileContents = $this->readFile($tmpName)) {
             return $this->writeFile(self::CHUNKS_DIR . 'chunk_' . str_pad($_GET['fileNum'], 4, 0, STR_PAD_LEFT), $this->base64ToData($fileContents));
@@ -45,21 +41,16 @@ class FilesManager
 
     /**
      * Количество сохраненных кусков. Считаем с нуля
-     *
-     * @return array
      */
-    public function getChunkNames()
+    public function getChunkNames(): array
     {
         return $this->getDirFileNames(self::CHUNKS_DIR);
     }
 
     /**
      * Удаление файла.
-     *
-     * @param string $fileName
-     * @return boolean
      */
-    public function deleteFile($fileName)
+    public function deleteFile(string $fileName): bool
     {
         if (!is_file($fileName)) {
             return false;
@@ -69,11 +60,8 @@ class FilesManager
 
     /**
      * Чтение файла.
-     *
-     * @param string $fileName
-     * @return string
      */
-    public function readFile($fileName)
+    public function readFile(string $fileName): false | string
     {
         if (!is_file($fileName)) {
             return false;
@@ -92,12 +80,8 @@ class FilesManager
 
     /**
      * Запись в файл.
-     *
-     * @param string $fileName
-     * @param string $fileContents
-     * @return void
      */
-    public function writeFile($fileName, $fileContents, $append = false)
+    public function writeFile(string $fileName, string $fileContents, bool $append = false): true
     {
         while (
                !$handle = fopen($fileName, $append ? 'a' : 'w')
@@ -112,11 +96,8 @@ class FilesManager
 
     /**
      * Массив файлов в папке
-     *
-     * @param string $dirPath
-     * @return array
      */
-    public function getDirFileNames($dirPath)
+    public function getDirFileNames(string $dirPath): array
     {
         $fileNames = [];
         $dir = dir($dirPath);
@@ -129,7 +110,7 @@ class FilesManager
         return $fileNames;
     }
 
-    public function base64ToData($string)
+    public function base64ToData(string $string): false | string
     {
         return base64_decode(substr($string, strpos($string, 'base64') + 7));
     }

@@ -6,22 +6,19 @@ use tachyon\components\AssetManager,
     tachyon\View;
 use tachyon\Controller;
 use tachyon\helpers\ClassHelper;
-use tachyon\traits\Configurable;
+use tachyon\interfaces\HasOwnerInterface;
 use tachyon\traits\HasOwner;
+use tachyon\traits\HasProperties;
 
 /**
  * Базовый класс для всех виджетов
  * 
  * @author imndsu@gmail.com
  */
-abstract class Widget
+abstract class Widget implements HasOwnerInterface
 {
     use HasOwner;
-    use Configurable;
-
-    protected AssetManager $assetManager;
-    protected Message $msg;
-    protected View $view;
+    use HasProperties;
 
     /**
      * id виджета
@@ -40,11 +37,11 @@ abstract class Widget
      */
     protected bool $return = false;
 
-    public function __construct(AssetManager $assetManager, Message $msg, View $view)
-    {
-        $this->assetManager = $assetManager;
-        $this->msg = $msg;
-        $this->view = $view;
+    public function __construct(
+        protected AssetManager $assetManager,
+        protected Message $msg,
+        protected View $view
+    ) {
         $this->view->setOwner($this);
 
         if (is_null($this->viewsPath)) {
@@ -88,7 +85,10 @@ abstract class Widget
      */
     public function js(string $name): string
     {
-        return $this->assetManager->js($name, $this->getAssetsPublicPath() . '/', $this->getAssetsSourcePath());
+        return $this->assetManager->js(
+            $name,
+            "{$this->getAssetsPublicPath()}/{$this->getAssetsSourcePath()}",
+        );
     }
 
     /**
@@ -99,10 +99,10 @@ abstract class Widget
         return $this->assetManager->css($name, $this->getAssetsPublicPath() . '/', $this->getAssetsSourcePath());
     }
 
-    # геттеры
+    # region getters
 
     /**
-     * Путь до ресурсов
+     * The public path to assets
      */
     public function getAssetsPublicPath(): string
     {
@@ -110,7 +110,7 @@ abstract class Widget
     }
 
     /**
-     * Путь до ресурсов
+     * The path to source assets
      */
     public function getAssetsSourcePath(): string
     {
@@ -124,7 +124,7 @@ abstract class Widget
         return $directory . DIRECTORY_SEPARATOR . 'views';
     }
     
-    public function setController($controller): static
+    public function setController(Controller $controller): static
     {
         $this->controller = $controller;
         return $this;
@@ -139,4 +139,6 @@ abstract class Widget
     {
         return $this->id;
     }
+
+    # endregion
 }

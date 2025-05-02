@@ -1,12 +1,13 @@
 <?php
 namespace tachyon\db\activeRecord;
 
+use tachyon\interfaces\HasOwnerInterface;
 use tachyon\traits\HasOwner;
 
 /**
  * @author imndsu@gmail.com
  */
-class Join
+class Join implements HasOwnerInterface
 {
     use HasOwner;
 
@@ -31,20 +32,23 @@ class Join
     }
 
     /**
-     * setJoin
-     * Устанавливает джойн таблицы
+     * set table join
      *
-     * @param $join string | array
-     *      string - название таблицы
-     *      array - название таблицы => алиас
-     * @param $on array по каким полям присоединяется пк => фк
-     * @param $mode string тип
-     * @param $alias string алиас главной таблицы запроса
+     * @param $join array | string
+     *      string - table name
+     *      array  - table [name => alias]
+     * @param $on array | string by what fields join [pk => fk]
+     * @param $type string join type
+     * @param $alias string alias of the main request table
      *
      * @return Join
      */
-    public function setJoin($join, $on, $mode, $alias): Join
-    {
+    public function setJoin(
+        array | string $join,
+        array | string $on,
+        string $type,
+        string $alias
+    ): Join {
         if (is_array($join)) {
             $joinKeys = array_keys($join);
             $joinVals = array_values($join);
@@ -55,16 +59,12 @@ class Join
         }
         $onCond = is_array($on) ? " $alias.{$on[0]}=$tblName.{$on[1]} " : " $on ";
 
-        $this->owner->getDb()->addJoin($expr, $onCond, $mode);
+        $this->owner->getDb()->addJoin($expr, $onCond, $type);
 
         return $this;
     }
 
-    /**
-     * @param $join string | array
-     * @return string
-     */
-    public function getRelationName($join)
+    public function getRelationName(array | string $join): string
     {
         if (is_array($join)) {
             $joinKeys = array_keys($join);

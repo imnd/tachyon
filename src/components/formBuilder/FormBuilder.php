@@ -2,8 +2,11 @@
 
 namespace tachyon\components\formBuilder;
 
-use ReflectionException;
-use tachyon\{Config, helpers\ClassHelper, Request, View};
+use tachyon\{
+    Config,
+    helpers\ClassHelper,
+    View
+};
 use tachyon\components\{
     AssetManager,
     Csrf,
@@ -20,39 +23,11 @@ use tachyon\components\{
 class FormBuilder
 {
     /**
-     * @var Message
-     */
-    private Message $msg;
-    /**
-     * @var AssetManager $assetManager
-     */
-    protected AssetManager $assetManager;
-    /**
-     * Компонент построителя html-кода
-     *
-     * @var Html $formBuilder
-     */
-    protected Html $html;
-    /**
-     * @var Csrf $csrf
-     */
-    protected Csrf $csrf;
-    /**
-     * @var View $view
-     */
-    protected View $view;
-    /**
-     * @var Request
-     */
-    private Request $request;
-    /**
      * включать ли компонент защиты от csrf-атак
      */
-    private $_csrfCheck;
+    private bool $_csrfCheck;
     /**
      * Настройки формы
-     *
-     * @var $_options array
      */
     private array $_options = [
         // сабмитить или посылать ajax-запрос
@@ -86,53 +61,30 @@ class FormBuilder
     ];
     /**
      * Счетчик формы
-     *
-     * @var integer $_formCnt
      */
     private int $_formCnt = 0;
     /**
      * Список полей типа дэйтпикер
-     *
-     * @var array $_dateFieldNames
      */
     private array $_dateFieldNames = [];
 
-    /**
-     * @param Message      $msg
-     * @param Config       $config
-     * @param AssetManager $assetManager
-     * @param Html         $html
-     * @param Csrf         $csrf
-     * @param View         $view
-     * @param Request      $request
-     */
     public function __construct(
-        Config $config,
-        AssetManager $assetManager,
-        Html $html,
-        Csrf $csrf,
-        View $view,
-        Message $msg,
-        Request $request
+        protected Config $config,
+        protected AssetManager $assetManager,
+        protected Html $html,
+        protected Csrf $csrf,
+        protected View $view,
+        protected Message $msg,
     ) {
-        $this->assetManager = $assetManager;
-        $this->html = $html;
-        $this->csrf = $csrf;
-        $this->view = $view;
-        $this->msg = $msg;
-        $this->request   = $request;
         $this->_csrfCheck = $config->get('csrf_check') ?? false;
         // текстовые
         $this->_options['text'] = $this->_options['text'][$config->get('lang')];
     }
 
     /**
-     * build
      * Отрисовка формы
-     *
-     * @param $params array
      */
-    public function build($params = []): void
+    public function build(array $params = []): void
     {
         // Custom опции
         $options = $params['options'] ?? [];
@@ -280,12 +232,12 @@ class FormBuilder
         );
         // включаем скрипт валидации
         if (
-            !empty($params['model'])
+               !empty($params['model'])
             && !empty($params['fields'])
             && $this->_options['ajax']
         ) {
             $formHandler = isset($this->_options['formHandler']) ? $this->_options['formHandler'] : "dom.findById('$formId').submit();";
-            echo $this->jsCode("
+            echo "<script>
             dom.findById('submit_$formId').onclick = function() {
                 validation.msgContainerId = 'errors_list';
                 if (validation.run(" . $model->getValidationFieldsJs($params['fields']) . ")) {
@@ -293,14 +245,12 @@ class FormBuilder
                 }
                 return false;
             };
-            ");
+            </script>";
         }
     }
 
     /**
      * Выводим скрипты и стили формы
-     *
-     * @throws ReflectionException
      */
     private function _renderScripts(): void
     {
@@ -313,17 +263,11 @@ class FormBuilder
             $this->assetManager->js('validation', $assetsPublicPath, $assetsSourcePath);
     }
 
-    /**
-     * @return bool|mixed
-     */
-    public function getCsrfCheck()
+    public function getCsrfCheck(): bool
     {
         return $this->_csrfCheck;
     }
 
-    /**
-     * @return Html
-     */
     public function getHtml(): Html
     {
         return $this->html;
