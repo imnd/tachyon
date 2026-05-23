@@ -186,7 +186,7 @@ final class FrontController
 
     private function showErrorPage(Exception $e, string $fileName = 'error'): void
     {
-        if (file_exists($errorPath = __DIR__ . "/../../../../app/views/$fileName.php")) {
+        if (file_exists($errorPath = APP_ROOT . "/app/views/$fileName.php")) {
             view()
                 ->setPageTitle('Error')
                 ->view($fileName, [

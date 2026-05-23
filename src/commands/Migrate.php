@@ -44,7 +44,7 @@ class Migrate extends Command
     {
         $migrations = $this->db->select('migrations');
         $migrations = ArrayHelper::extract($migrations, 'name');
-        if ($handle = opendir(__DIR__ . Config::APP_DIR . '../../migrations')) {
+        if ($handle = opendir(APP_ROOT . '/migrations')) {
             while (false !== ($fileName = readdir($handle))) {
                 if ($fileName !== '.' && $fileName !== '..') {
                     $ext = substr($fileName, strpos($fileName, '.') + 1);

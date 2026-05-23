@@ -133,7 +133,7 @@ abstract class Db
         $this->insertBuilder = $insertBuilder;
         $this->options       = $options;
         if ($this->explain = $this->options['explain'] ?? $this->env->isDevelop()) {
-            $this->explainPath = $this->options['explain_path'] ?? __DIR__ . '/../../../../../../runtime/explain.xls';
+            $this->explainPath = $this->options['explain_path'] ?? APP_ROOT . '/runtime/explain.xls';
             // удаляем файл
             if (file_exists($this->explainPath)) {
                 unlink($this->explainPath);

@@ -43,7 +43,7 @@ class View
         protected Html $html,
         protected Flash $flash
     ) {
-        $this->appViewsPath = $this->viewsPath = $config->get('base_path') . Config::APP_DIR . 'app/views';
+        $this->appViewsPath = $this->viewsPath = APP_ROOT . '/app/views';
     }
 
     /**

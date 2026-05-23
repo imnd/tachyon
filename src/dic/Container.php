@@ -47,11 +47,18 @@ abstract class Container
     public function __construct()
     {
         self::setInstance($this);
-        // load components and parameters of components to the $config array
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
+        if (!defined('APP_ROOT')) {
+            if (str_contains($basePath, '/vendor/imnd/tachyon/src')) {
+                define('APP_ROOT', dirname(dirname(dirname(dirname($basePath)))));
+            } else {
+                define('APP_ROOT', dirname($basePath));
+            }
+        }
+        // load components and parameters of components to the $config array
         $services = include "$basePath/dic/services.php";
         if (
-               file_exists($appConfPath = "$basePath/../../../../app/config/services.php")
+               file_exists($appConfPath = APP_ROOT . '/app/config/services.php')
             && $appServices = include $appConfPath
         ) {
             $services = array_merge($services, $appServices);

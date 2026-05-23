@@ -88,8 +88,8 @@ class AssetManager
         $paths = [
             __DIR__ . "/../../node_modules/$packageName/dist",
             __DIR__ . "/../../node_modules/$packageName",
-            __DIR__ . "/../../../../../node_modules/$packageName/dist",
-            __DIR__ . "/../../../../../node_modules/$packageName",
+            APP_ROOT . "/node_modules/$packageName/dist",
+            APP_ROOT . "/node_modules/$packageName",
         ];
         
         $sourcePath = null;
@@ -173,7 +173,7 @@ class AssetManager
         string $text,
         string $publicPath
     ): void {
-        $path = self::PUBLIC_FOLDER_PATH;
+        $path = APP_ROOT . '/public';
         $publicPathArr = explode('/', $publicPath);
         foreach ($publicPathArr as $subPath) {
             $path .= "/$subPath";
