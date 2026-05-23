@@ -6,29 +6,35 @@ namespace tachyon;
  */
 class Config
 {
-    public const APP_DIR = '/../../../';
-
     private array $options;
 
     public function __construct(string $mode = null)
     {
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
+        if (!defined('APP_ROOT')) {
+            $srcPath = str_replace('\\', '/', __DIR__);
+            if (str_contains($srcPath, '/vendor/imnd/tachyon/src')) {
+                define('APP_ROOT', dirname(dirname(dirname(dirname($srcPath)))));
+            } else {
+                define('APP_ROOT', dirname($srcPath));
+            }
+        }
         // Constant options
         $this->options = [
             'base_path' => $basePath,
             // the path to the routes file
-            'routes' => require($basePath . self::APP_DIR . 'app/config/routes.php'),
+            'routes' => require(APP_ROOT . '/app/config/routes.php'),
             'mode' => $GLOBALS['APP_MODE'] ?? $mode ?? 'work'
         ];
         // Environment options
-        $this->loadEnv($basePath);
+        $this->loadEnv();
     }
 
-    private function loadEnv($basePath): void
+    private function loadEnv(): void
     {
         // read .env file
         $envFileName = '.env' . ($this->options['mode'] === 'test' ? '-test' : '');
-        if (!file_exists($envFilePath = $basePath . self::APP_DIR . $envFileName)) {
+        if (!file_exists($envFilePath = APP_ROOT . '/' . $envFileName)) {
             return;
         }
         $envFile = file($envFilePath);
