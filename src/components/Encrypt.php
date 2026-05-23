@@ -16,11 +16,11 @@ class Encrypt
      */
     protected string $algorithm = 'md5';
     /**
-     * соль для шифровки пароля
+     * соль для шифровки пароля (сохранено для обратной совместимости, если используется где-то)
      *
-     * @var integer $salt
+     * @var string $salt
      */
-    protected int $salt;
+    protected string $salt = '';
 
     /**
      * @param $password
@@ -29,17 +29,33 @@ class Encrypt
      */
     public function hashPassword($password): string
     {
-        return hash($this->algorithm, $password . $this->salt);
+        return password_hash($password, PASSWORD_DEFAULT);
     }
 
     /**
-     * @param null $len
+     * @param string $password
+     * @param string $hash
      *
-     * @return false|string
+     * @return bool
      */
-    public function randString($len = null)
+    public function verifyPassword(string $password, string $hash): bool
     {
-        $string = hash($this->algorithm, microtime());
+        return password_verify($password, $hash);
+    }
+
+    /**
+     * @param int|null $len
+     *
+     * @return string
+     */
+    public function randString($len = null): string
+    {
+        $byteLen = is_null($len) ? 32 : (int)ceil($len / 2);
+        try {
+            $string = bin2hex(random_bytes($byteLen));
+        } catch (\Exception $e) {
+            $string = hash('sha256', microtime() . uniqid(mt_rand(), true));
+        }
         if (!is_null($len)) {
             $string = substr($string, 0, $len);
         }
@@ -63,6 +79,6 @@ class Encrypt
      */
     public function setSalt($val): void
     {
-        $this->salt = $val;
+        $this->salt = (string)$val;
     }
 }

@@ -50,16 +50,16 @@ class Persistence
         array $fields = [],
         string $tableName = null
     ): array {
-        if (!is_null($tableName)) {
-            $this->tableName = $tableName;
+        $actualTableName = $tableName ?? $this->tableName;
+        if (!is_null($this->tableAlias)) {
+            $actualTableName .= " AS {$this->tableAlias}";
         }
-        $this->_alias();
         if (!empty($sortBy)) {
             foreach ($sortBy as $fieldName => $order) {
                 $this->db->orderBy($fieldName, $order);
             }
         }
-        return $this->db->select($this->tableName, $where, array_merge($this->select, $fields));
+        return $this->db->select($actualTableName, $where, array_merge($this->select, $fields));
     }
 
     /**
@@ -67,18 +67,11 @@ class Persistence
      */
     public function findOne(array $where = [], array $fields = [], string $tableName = null): ?array
     {
-        if (!is_null($tableName)) {
-            $this->tableName = $tableName;
-        }
-        $this->_alias();
-        return $this->db->selectOne($this->tableName, $where, array_merge($this->select, $fields));
-    }
-
-    private function _alias(): void
-    {
+        $actualTableName = $tableName ?? $this->tableName;
         if (!is_null($this->tableAlias)) {
-            $this->tableName .= " AS {$this->tableAlias}";
+            $actualTableName .= " AS {$this->tableAlias}";
         }
+        return $this->db->selectOne($actualTableName, $where, array_merge($this->select, $fields));
     }
 
     /**
@@ -86,10 +79,8 @@ class Persistence
      */
     public function findByPk(string|int $id, string $tableName = null): mixed
     {
-        if (!is_null($tableName)) {
-            $this->tableName = $tableName;
-        }
-        return $this->db->selectOne($this->tableName, ['id' => $id]);
+        $actualTableName = $tableName ?? $this->tableName;
+        return $this->db->selectOne($actualTableName, ['id' => $id]);
     }
 
     /**
@@ -97,10 +88,8 @@ class Persistence
      */
     public function updateByPk(string|int $id, array $fieldValues, string $tableName = null): bool
     {
-        if (!is_null($tableName)) {
-            $this->tableName = $tableName;
-        }
-        return $this->db->update($this->tableName, $fieldValues, ['id' => $id]);
+        $actualTableName = $tableName ?? $this->tableName;
+        return $this->db->update($actualTableName, $fieldValues, ['id' => $id]);
     }
 
     /**
@@ -108,10 +97,8 @@ class Persistence
      */
     public function insert(array $fieldValues, string $tableName = null): mixed
     {
-        if (!is_null($tableName)) {
-            $this->tableName = $tableName;
-        }
-        return $this->db->insert($this->tableName, $fieldValues);
+        $actualTableName = $tableName ?? $this->tableName;
+        return $this->db->insert($actualTableName, $fieldValues);
     }
 
     /**
@@ -119,10 +106,8 @@ class Persistence
      */
     public function deleteByPk(mixed $id, string $tableName = null): bool
     {
-        if (!is_null($tableName)) {
-            $this->tableName = $tableName;
-        }
-        return $this->db->delete($this->tableName, ['id' => $id]);
+        $actualTableName = $tableName ?? $this->tableName;
+        return $this->db->delete($actualTableName, ['id' => $id]);
     }
 
     /**
@@ -198,8 +183,8 @@ class Persistence
             if (!is_array($field)) {
                 throw new ErrorException('Неправильный формат аргументов в методе Persistence::orderBy()');
             }
-            $order = key($field);
-            $field = current($field);
+            $order = current($field);
+            $field = key($field);
         }
         $this->db->orderBy($field, $order);
         return $this;

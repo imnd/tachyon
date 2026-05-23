@@ -68,7 +68,7 @@ class View
         array $vars = [],
         bool $return = false
     ): ?string {
-        $contents = $this->_view("{$this->viewsPath}/$viewName", $vars);
+        $contents = $this->_view("{$this->viewsPath}/$viewName", $vars, false);
         $contents = $this->_displayExtends($contents, $vars, false);
 
         if ($return) {
@@ -99,7 +99,7 @@ class View
 
     private function _displayLayout(string $viewContents, array $vars): string
     {
-        $contents = $this->_view("{$this->layoutPath}/{$this->layout}", $vars);
+        $contents = $this->_view("{$this->layoutPath}/{$this->layout}", $vars, true);
         $contents = $this->_displayExtends($contents, $vars);
         $contents = $this->_replaceTag($contents, $viewContents, '@contents');
         $this->assetManager->finalize($contents);
@@ -116,7 +116,7 @@ class View
         return substr($textToReplace, 0, $tagPos) . $text . substr($textToReplace, $tagPos + strlen($tag) + 1);
     }
 
-    private function _view(string $path, array $vars = []): false | string
+    private function _view(string $path, array $vars = [], bool $isLayout = false): false | string
     {
         if (!file_exists($filePath = "$path.php")) {
             throw new ViewException(t('No view file found') . ": \"$filePath\"");
@@ -142,7 +142,7 @@ class View
         }
         ob_start();
         extract($vars);
-        if ('_displayLayout' === debug_backtrace()[1]['function']) {
+        if ($isLayout) {
             // layout render
             require($filePath);
             $layoutVars = get_defined_vars();

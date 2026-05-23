@@ -97,19 +97,20 @@ class Request
     }
 
     /**
-     * Protect against XSS and SQL injection
+     * Return raw values. Escaping is done on output.
      */
-    private function filter(mixed $data): string | array | null
+    private function filter(mixed $data): mixed
     {
         if (is_string($data)) {
-            return htmlentities($data);
+            return $data;
         }
         if (is_array($data)) {
             foreach ($data as &$datum) {
                 $datum = $this->filter($datum);
             }
-            return array_filter($data);
+            return $data;
         }
+        return $data;
     }
 
     /**

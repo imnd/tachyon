@@ -79,6 +79,48 @@ class AssetManager
         ]);
     }
 
+    /**
+     * Publish and return core JS files (e.g. imnd-ajax, imnd-obj dependencies).
+     */
+    public function coreJs(string $name): string
+    {
+        $packageName = "imnd-$name";
+        $paths = [
+            __DIR__ . "/../../node_modules/$packageName/dist",
+            __DIR__ . "/../../node_modules/$packageName",
+            __DIR__ . "/../../../../../node_modules/$packageName/dist",
+            __DIR__ . "/../../../../../node_modules/$packageName",
+        ];
+        
+        $sourcePath = null;
+        $fileName = null;
+        foreach ($paths as $path) {
+            if (is_file("$path/$name.js")) {
+                $sourcePath = $path;
+                $fileName = $name;
+                break;
+            }
+            if (is_file("$path/index.js")) {
+                $sourcePath = $path;
+                $fileName = "index";
+                break;
+            }
+        }
+        
+        if (is_null($sourcePath)) {
+            $sourcePath = __DIR__ . '/../js';
+            $fileName = $name;
+            if (!is_dir($sourcePath)) {
+                mkdir($sourcePath, 0777, true);
+            }
+            if (!is_file("$sourcePath/$name.js")) {
+                file_put_contents("$sourcePath/$name.js", "/* $name placeholder */");
+            }
+        }
+        
+        return $this->js($fileName, 'js', $sourcePath);
+    }
+
     private function publishFile(
         string $name,
         string $ext,
@@ -115,21 +157,9 @@ class AssetManager
      */
     private function clearify(string &$text): void
     {
-        $text = str_replace(['https://', 'http://'], '', $text);
-        // вырезать слэши на концах строк в строковых переменных
-        $text = str_replace("\\\n", '', $text);
-        // вырезать многострочные комменты
-        $text = preg_replace('!/\*.*?\*/!s', '', $text);
-        // вырезать однострочные комменты
-        $text = preg_replace('/\/{2,}.*\n/', '', $text);
-        // все whitespaces заменить на пробелы
-        $text = str_replace(["\n", "\t", "\r"], ' ', $text);
-        // вырезать лишние пробелы
-        $text = trim(preg_replace('/[ ]{2,}/', ' ', $text));
-        $text = preg_replace('/([\(\)\{\}=+-,;:|])( )/', '${1}', $text);
-        $text = preg_replace('/( )([()\{\}=+-,;:|])/', '${2}', $text);
-        // лишние "," и ";"
-        $text = preg_replace('/[,;](})/', '$1', $text);
+        // Safe minification: regexes can mangle URLs, regexes, and comments.
+        // Modern compression (gzip) is handled via gzencode.
+        $text = trim($text);
     }
 
     private function replaceVar(&$text, $varName): void
@@ -257,7 +287,7 @@ class AssetManager
 
         $text = "";
         foreach ($options as $name => $option) {
-            $text .= "$name='$option'";
+            $text .= " $name='$option'";
         }
 
         return "<script $text></script>";

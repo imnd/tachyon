@@ -61,5 +61,5 @@ function t(string $msg, array $vars = []): string
 
 function app(): ServiceContainer
 {
-    return $_SESSION['app'];
+    return \tachyon\dic\Container::getInstance();
 }

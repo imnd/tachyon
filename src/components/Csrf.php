@@ -29,7 +29,7 @@ class Csrf
 
     private function start(): Csrf
     {
-        if (!isset($_SESSION) && !$this->_started) {
+        if (session_status() === PHP_SESSION_NONE && !$this->_started) {
             session_start();
             $this->_started = true;
         }

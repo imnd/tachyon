@@ -172,8 +172,9 @@ class DbContext
     public function saveEntity(Entity $entity): bool
     {
         $success = true;
+        $hash = spl_object_hash($entity);
 
-        if (in_array($entity, $this->dirtyEntities)) {
+        if (isset($this->dirtyEntities[$hash])) {
             // Сохраняет в хранилище измененную сущность
             $success = $success && $this
                     ->persistence
@@ -183,8 +184,8 @@ class DbContext
                         $entity->getTableName()
                     );
 
-            unset($this->dirtyEntities[array_search($entity, $this->dirtyEntities)]);
-        } elseif (in_array($entity, $this->newEntities)) {
+            unset($this->dirtyEntities[$hash]);
+        } elseif (isset($this->newEntities[$hash])) {
             // Вставляет в хранилище новую сущность
             if (!$pk = $this
                 ->persistence
@@ -196,7 +197,7 @@ class DbContext
                 $success = false;
             }
             $entity->setPk($pk);
-            unset($this->newEntities[array_search($entity, $this->newEntities)]);
+            unset($this->newEntities[$hash]);
         }
 
         return $success;

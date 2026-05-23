@@ -63,11 +63,14 @@ trait Auth
 
     /**
      * theft protection of authorization cookies
-     * take a set of unique data about the user (ip, port, user-agent of the browser) and hash it
+     * bind to client IP and User-Agent, and sign with a server-side secret key.
      */
     private function _getCookieValue(): string
     {
-        return md5($_SERVER['REMOTE_ADDR'] . $_SERVER['SERVER_PORT'] . $_SERVER['HTTP_USER_AGENT']);
+        $secret = config('cookie_secret') ?: 'sdnv5ln0vlz8nbl4emr';
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        return hash_hmac('sha256', $ip . $userAgent, $secret);
     }
 
     protected function _logout(): void

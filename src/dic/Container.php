@@ -15,6 +15,21 @@ use
 abstract class Container
 {
     /**
+     * @var Container
+     */
+    protected static Container $instance;
+
+    public static function setInstance(Container $container): void
+    {
+        self::$instance = $container;
+    }
+
+    public static function getInstance(): Container
+    {
+        return self::$instance;
+    }
+
+    /**
      * instantiated components array
      */
     protected array $services = [];
@@ -31,6 +46,7 @@ abstract class Container
 
     public function __construct()
     {
+        self::setInstance($this);
         // load components and parameters of components to the $config array
         $basePath = dirname(str_replace('\\', '/', realpath(__DIR__)));
         $services = include "$basePath/dic/services.php";

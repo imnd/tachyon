@@ -44,10 +44,10 @@ abstract class Widget implements HasOwnerInterface
     ) {
         $this->view->setOwner($this);
 
-        if (is_null($this->viewsPath)) {
+        if (empty($this->viewsPath)) {
             $this->viewsPath = lcfirst(get_called_class());
         }
-        if (is_null($this->id)) {
+        if (empty($this->id)) {
             $this->id = strtolower(ClassHelper::getClassName($this)) . '_' . uniqid();
         }
     }
