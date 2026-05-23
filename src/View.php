@@ -81,17 +81,18 @@ class View
 
     private function _displayExtends(string $contents, array $vars, bool $layout = true): string
     {
-        $keyWord = 'extends';
-        if (false !== $extendsPos = strpos($contents, "@$keyWord")) {
-            $start = $extendsPos + strlen("@$keyWord") + 2;
-            $end = strpos($contents, "'", $start);
-            // set the parent layout
-            $this->layout = substr($contents, $start, $end - $start);
-            // remove the tag '@extends'
-            $contents = substr($contents, $end + 2);
-            if ($layout) {
-                // render the parent layout
-                $contents = $this->_displayLayout($contents, $vars);
+        $pattern = '/@extends\([\'"]([a-zA-Z0-9_\-\.\/]+)[\'"]\)/';
+        if (preg_match($pattern, $contents, $matches, PREG_OFFSET_CAPTURE)) {
+            $extendsPos = $matches[0][1];
+            if ($extendsPos < 500) {
+                $extractedLayout = $matches[1][0];
+                $matchLength = strlen($matches[0][0]);
+
+                $this->layout = $extractedLayout;
+                $contents = substr($contents, 0, $extendsPos) . substr($contents, $extendsPos + $matchLength);
+                if ($layout) {
+                    $contents = $this->_displayLayout($contents, $vars);
+                }
             }
         }
         return $contents;
