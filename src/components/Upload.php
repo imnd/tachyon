@@ -106,15 +106,19 @@ class Upload
      */
     private function _isAllowedFiletype(string $fileName): bool
     {
+        $fileExt = strtolower($this->_getExt($fileName));
+        
+        // Черный список исполняемых/опасных файлов для защиты от RCE
+        $blacklist = ['php', 'phtml', 'php3', 'php4', 'php5', 'phps', 'htaccess', 'phar', 'exe', 'sh', 'pl', 'cgi', 'asp', 'aspx', 'jsp'];
+        if (in_array($fileExt, $blacklist, true)) {
+            return false;
+        }
+
         if ($this->allowedTypes === '*') {
             return true;
         }
-        $fileExt = $this->_getExt($fileName);
-        $allowedTypes = explode('|', $this->allowedTypes);
-        if (!in_array($fileExt, $allowedTypes)) {
-            return false;
-        }
-        return false;
+        $allowedTypes = explode('|', strtolower($this->allowedTypes));
+        return in_array($fileExt, $allowedTypes, true);
     }
 
     /**
