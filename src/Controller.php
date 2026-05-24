@@ -115,6 +115,7 @@ class Controller
 
     /**
      * Redirects a user to the address: $path
+     * @throws HttpException
      */
     #[NoReturn]
     protected function redirect(string $path): void
@@ -127,32 +128,37 @@ class Controller
     }
 
     /**
-     * Проверяет безопасность URL для перенаправления (защита от Open Redirect)
+     * Checks the security of the redirect URL (Open Redirect protection)
      */
     private function isSafeRedirectUrl(string $url): bool
     {
-        // Предотвращаем относительные пути с несколькими слэшами (например, //example.com или ///example.com)
+        // Prevent relative paths with multiple slashes (for example, //example.com or ///example.com)
         if (str_starts_with($url, '//') || preg_match('/^\/{2,}/', $url)) {
             return false;
         }
 
-        // Если URL не содержит протокола/схемы, то это безопасный относительный путь
+        // If the URL does not contain a protocol/scheme then it is a safe relative path
         if (!preg_match('/^[a-z0-9+.-]+:/i', $url)) {
             return true;
         }
 
         $parsedUrl = parse_url($url);
-        $host = $parsedUrl['host'] ?? '';
+        $scheme = strtolower($parsedUrl['scheme'] ?? '');
 
+        if ($scheme !== 'http' && $scheme !== 'https') {
+            return false;
+        }
+
+        $host = $parsedUrl['host'] ?? '';
         if ($host === '') {
-            return true;
+            return false;
         }
 
         $allowedHosts = [];
         if (!empty($_SERVER['HTTP_HOST'])) {
             $allowedHosts[] = $_SERVER['HTTP_HOST'];
         }
-        $configDomain = config('domain') ?? ''; // Использование домена из настроек
+        $configDomain = config('domain') ?? ''; // Using a domain from settings
         if ($configDomain !== '') {
             $allowedHosts[] = $configDomain;
         }
@@ -185,7 +191,7 @@ class Controller
 
     # endregion
 
-    # region Setters
+    # region setters
 
     public function setId(string $id): self
     {
