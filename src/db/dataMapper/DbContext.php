@@ -114,11 +114,12 @@ class DbContext
      */
     public function commit(): bool
     {
-        if (
+        $hasChanges = (
                !empty($this->newEntities)
             || !empty($this->dirtyEntities)
             || !empty($this->deletedEntities)
-        ) {
+        );
+        if ($hasChanges) {
             $this->persistence->beginTransaction();
         }
         $success = true;
@@ -156,7 +157,9 @@ class DbContext
         }
         unset($entity);
         $this->newEntities = $this->dirtyEntities = $this->deletedEntities = [];
-        $this->persistence->endTransaction();
+        if ($hasChanges) {
+            $this->persistence->endTransaction();
+        }
 
         return $success;
     }

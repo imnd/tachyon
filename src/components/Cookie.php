@@ -33,7 +33,7 @@ class Cookie
 
     public function set(string $key, $val, string $path = '/'): void
     {
-        setcookie($key, htmlentities($val), time() + 30 * 24 * 60 * $this->duration, $path, $this->config->get('domain') ?? '', $this->secure, true);
+        setcookie($key, $val, time() + 30 * 24 * 60 * $this->duration, $path, $this->config->get('domain') ?? '', $this->secure, true);
     }
 
     public function delete(string $key, string $path = '/'): void

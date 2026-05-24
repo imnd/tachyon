@@ -85,6 +85,9 @@ abstract class Cache /*implements CacheInterface*/
     protected function save($contents): void
     {
         $this->setCacheFilePath();
+        if (!is_dir($this->cacheFolder)) {
+            mkdir($this->cacheFolder, 0777, true);
+        }
         if ($this->serialize) {
             $contents = serialize($contents);
         }

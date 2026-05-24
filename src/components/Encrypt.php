@@ -10,19 +10,6 @@ namespace tachyon\components;
 class Encrypt
 {
     /**
-     * алгоритм для шифровки пароля
-     *
-     * @var string $algorithm
-     */
-    protected string $algorithm = 'md5';
-    /**
-     * соль для шифровки пароля (сохранено для обратной совместимости, если используется где-то)
-     *
-     * @var string $salt
-     */
-    protected string $salt = '';
-
-    /**
      * @param $password
      *
      * @return string
@@ -51,34 +38,10 @@ class Encrypt
     public function randString($len = null): string
     {
         $byteLen = is_null($len) ? 32 : (int)ceil($len / 2);
-        try {
-            $string = bin2hex(random_bytes($byteLen));
-        } catch (\Exception $e) {
-            $string = hash('sha256', microtime() . uniqid(mt_rand(), true));
-        }
+        $string = bin2hex(random_bytes($byteLen));
         if (!is_null($len)) {
             $string = substr($string, 0, $len);
         }
         return $string;
-    }
-
-    /**
-     * @param string $val
-     *
-     * @return void
-     */
-    public function setAlgorithm($val): void
-    {
-        $this->algorithm = $val;
-    }
-
-    /**
-     * @param string $val
-     *
-     * @return void
-     */
-    public function setSalt($val): void
-    {
-        $this->salt = (string)$val;
     }
 }

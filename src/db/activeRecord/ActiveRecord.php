@@ -719,6 +719,14 @@ abstract class ActiveRecord extends Model
      */
     public function sortBy(string $colName, string $order = 'ASC'): self
     {
+        $colName = preg_replace('/[^a-zA-Z0-9_.\-`]/', '', $colName);
+        if ($colName === '') {
+            return $this;
+        }
+        $order = strtoupper(trim($order));
+        if (!in_array($order, ['ASC', 'DESC'], true)) {
+            $order = 'ASC';
+        }
         $colName = $this->_orderByCast($colName);
         $this->query->orderBy($colName, $order);
         return $this;
@@ -731,7 +739,23 @@ abstract class ActiveRecord extends Model
      */
     public function setSortBy(array $sortBy): self
     {
-        $this->query->setOrderBy($sortBy);
+        $cleanSortBy = [];
+        foreach ($sortBy as $colName => $order) {
+            if (is_numeric($colName)) {
+                $colName = $order;
+                $order = 'ASC';
+            }
+            $colName = preg_replace('/[^a-zA-Z0-9_.\-`]/', '', $colName);
+            if ($colName === '') {
+                continue;
+            }
+            $order = strtoupper(trim($order));
+            if (!in_array($order, ['ASC', 'DESC'], true)) {
+                $order = 'ASC';
+            }
+            $cleanSortBy[$colName] = $order;
+        }
+        $this->query->setOrderBy($cleanSortBy);
         return $this;
     }
 

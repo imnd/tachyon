@@ -173,13 +173,17 @@ final class FrontController
             $this->sendHeaders($e->getCode());
             $this->showErrorPage($e, 404);
         } catch (Exception $e) {
-            echo "ORIGINAL EXCEPTION CAUGHT: " . get_class($e) . "\n";
-            echo "Message: " . $e->getMessage() . "\n";
-            echo "File: " . $e->getFile() . " (line " . $e->getLine() . ")\n";
-            echo "Trace:\n" . $e->getTraceAsString() . "\n";
             // Invalid request handler. Error message output
             $this->sendHeaders(HttpException::INTERNAL_SERVER_ERROR);
-            $this->showErrorPage($e, 500);
+            if (!$this->env->isProduction()) {
+                echo "ORIGINAL EXCEPTION CAUGHT: " . get_class($e) . "\n";
+                echo "Message: " . $e->getMessage() . "\n";
+                echo "File: " . $e->getFile() . " (line " . $e->getLine() . ")\n";
+                echo "Trace:\n" . $e->getTraceAsString() . "\n";
+                $this->showErrorPage($e, 500);
+            } else {
+                echo 'Error';
+            }
         }
     }
 

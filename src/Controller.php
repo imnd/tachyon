@@ -52,7 +52,7 @@ class Controller
             );
         }
         // CSRF token check
-        if (!$this->csrf->isTokenValid()) {
+        if ($this->request->isPost() && !$this->csrf->isTokenValid()) {
             throw new HttpException(t('Wrong CSRF token.'), HttpException::BAD_REQUEST);
         }
         $this->view->setController($this);

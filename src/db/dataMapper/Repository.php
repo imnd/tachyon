@@ -69,6 +69,7 @@ abstract class Repository implements RepositoryInterface
     protected function convertData(array $data): Entity
     {
         $entity = $this->entity->fromState($data);
+        $entity->setIsNew(false);
         return $this->collection[$entity->getPk()] = $entity;
     }
 
@@ -122,7 +123,9 @@ abstract class Repository implements RepositoryInterface
             ->persistence
             ->setTableName($this->tableName)
             ->findByPk($pk)) {
-            return $this->entity->fromState($data);
+            $entity = $this->entity->fromState($data);
+            $entity->setIsNew(false);
+            return $entity;
         }
         return null;
     }
