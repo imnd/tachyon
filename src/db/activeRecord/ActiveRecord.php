@@ -5,6 +5,7 @@ namespace tachyon\db\activeRecord;
 use ReflectionException;
 use tachyon\cache\Db as DbCache;
 use tachyon\components\Message;
+use tachyon\db\Query;
 use tachyon\Model;
 
 use tachyon\exceptions\{
@@ -130,6 +131,7 @@ abstract class ActiveRecord extends Model
         protected DbFactory $dbFactory,
         protected Join $join,
         protected Terms $terms,
+        protected Query $query,
         ...$params
     ) {
         // dependencies
@@ -234,12 +236,16 @@ abstract class ActiveRecord extends Model
                     $relTableName = $relModel->getTableName();
                     $pk = $this->pkName;
                     $thisTableName = $this->getTableName();
-                    $this->getDb()->addJoin(
+                    $this->query->addJoin(
                         "{$relModel->getSource()} AS $relTableName",
                         "$relTableName.$linkKey=$thisTableName.$pk"
                     );
-                    $this->getDb()->setFields($relationParams[3]);
-                    return $this->getDb()->selectOne($thisTableName, ["$thisTableName.$pk" => $this->$pk]);
+                    $this->query->setFields($relationParams[3]);
+                    return $this->getDb()->selectOne(
+                        $this->query,
+                        $thisTableName,
+                        [ "$thisTableName.$pk" => $this->$pk ]
+                    );
 
                 default:
                     break;
@@ -284,7 +290,7 @@ abstract class ActiveRecord extends Model
             $tableName .= " AS {$this->tableAlias}";
         }
         // выбираем записи
-        $items = $this->getDb()->select($tableName);
+        $items = $this->getDb()->select($this->query, $tableName);
         $this->clearSelect();
         $this->clearAlias();
         return $items;
@@ -295,7 +301,7 @@ abstract class ActiveRecord extends Model
      */
     public function findOneRaw(array $conditions = []): ?array
     {
-        $this->getDb()->setLimit(1);
+        $this->query->setLimit(1);
         if ($items = $this->findAllRaw($conditions)) {
             return $items[0];
         }
@@ -313,7 +319,7 @@ abstract class ActiveRecord extends Model
     {
         // кеширование
         $cacheKey =
-            json_encode($this->getTableName())
+              json_encode($this->getTableName())
             . json_encode($this->getSelect())
             . json_encode($this->getWhere())
             . json_encode($this->getSortBy())
@@ -321,7 +327,7 @@ abstract class ActiveRecord extends Model
             . $this->getGroupBy()
             . json_encode($this->with);
         if ($items = $this->cache->start($cacheKey)) {
-            return $items;
+            return json_decode($items);
         }
         if (!empty($conditions)) {
             $this->addWhere($conditions);
@@ -355,8 +361,8 @@ abstract class ActiveRecord extends Model
         $this->alias->aliasSortByTableName($tableAliases);
         // алиасим имена таблиц в условиях
         $this->alias->aliasWhereTableNames($tableAliases);
-        // ВЫБИРАЕМ ЗАПИСИ
-        if (!$items = $this->getDb()->select($tableName)) {
+        // Выбираем записи
+        if (!$items = $this->getDb()->select($this->query, $tableName)) {
             return [];
         }
         $this->clearSelect();
@@ -413,7 +419,7 @@ abstract class ActiveRecord extends Model
      * преобразование значений полей (в т.ч. timestamp)
      * // TODO: убрать
      */
-    private function _convVals(array $selectedFields, array $relationFields): array
+    /*private function _convVals(array $selectedFields, array $relationFields): array
     {
         if (count($selectedFields) === 0) {
             return $selectedFields;
@@ -437,12 +443,12 @@ abstract class ActiveRecord extends Model
                 array_values($selectedFields)
             )
         );
-    }
+    }*/
 
     /**
      * Поиск записей в соотв с заданными св-вами модели
      *
-     * @throws DBALException
+     * @throws ContainerException | ReflectionException | DBALException
      */
     public function search($fields = null): array
     {
@@ -463,7 +469,7 @@ abstract class ActiveRecord extends Model
     /**
      * shortcut
      *
-     * @throws DBALException
+     * @throws ContainerException | ReflectionException | DBALException
      */
     public function findByPk(int | string $pk): ?self
     {
@@ -479,7 +485,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * @throws DBALException
+     * @throws ContainerException | ReflectionException | DBALException
      */
     public function findOne(array $conditions = []): ?self
     {
@@ -505,8 +511,7 @@ abstract class ActiveRecord extends Model
      *
      * @param $validate boolean производить ли валидацию
      *
-     * @throws DBALException
-     * @throws ValidationException
+     * @throws ContainerException | ReflectionException | DBALException | ValidationException
      */
     public function save(bool $validate = true): false | int | string
     {
@@ -526,8 +531,7 @@ abstract class ActiveRecord extends Model
      * @param array $attrs массив [поле => значение]
      * @param boolean $validate производить ли валидацию
      *
-     * @throws DBALException
-     * @throws ValidationException
+     * @throws ContainerException | ReflectionException | DBALException | ValidationException
      */
     public function saveAttrs(array $attrs, bool $validate = false): false | int
     {
@@ -547,13 +551,17 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * вставляет модель в БД возвращает $pk модели
+     * Вставляет модель в БД возвращает $pk модели
      *
-     * @throws DBALException
+     * @throws ContainerException | ReflectionException | DBALException
      */
     public function insert(): false | string
     {
-        if (!$lastInsertId = $this->getDb()->insert(static::$tableName, $this->attributes)) {
+        if (!$lastInsertId = $this->getDb()->insert(
+            $this->query,
+            static::$tableName,
+            $this->attributes
+        )) {
             return false;
         }
         return $this->{$this->pkName} = $lastInsertId;
@@ -562,7 +570,7 @@ abstract class ActiveRecord extends Model
     /**
      * Сохраняет модель в БД
      *
-     * @throws DBALException
+     * @throws ContainerException | ReflectionException | DBALException
      */
     public function update(): int
     {
@@ -575,7 +583,12 @@ abstract class ActiveRecord extends Model
         } else {
             $condition[$pk] = $this->$pk;
         }
-        return $this->getDb()->update(static::$tableName, $this->attributes, $condition);
+        return $this->getDb()->update(
+            $this->query,
+            static::$tableName,
+            $this->attributes,
+            $condition
+        );
     }
 
     /**
@@ -587,6 +600,7 @@ abstract class ActiveRecord extends Model
     {
         return (null !== $pk = $this->{$this->pkName})
             && $this->getDb()->delete(
+                $this->query,
                 static::$tableName,
                 [$this->pkName => $pk]
             );
@@ -597,11 +611,11 @@ abstract class ActiveRecord extends Model
      *
      * @param array $attrs массив [поле => значение]
      *
-     * @throws DBALException
+     * @throws ContainerException | ReflectionException | DBALException
      */
     public function deleteAllByAttrs(array $attrs): bool
     {
-        return $this->getDb()->delete(static::$tableName, $attrs);
+        return $this->getDb()->delete($this->query, static::$tableName, $attrs);
     }
 
     /**
@@ -636,29 +650,20 @@ abstract class ActiveRecord extends Model
 
     # WHERE
 
-    /**
-     * @throws DBALException
-     */
     public function getWhere(): array
     {
-        return $this->getDb()->getWhere();
+        return $this->query->getWhere();
     }
 
-    /**
-     * @throws DBALException
-     */
     public function where($where): self
     {
-        $this->getDb()->setWhere($where);
+        $this->query->setWhere($where);
         return $this;
     }
 
-    /**
-     * @throws DBALException
-     */
     public function addWhere($where): self
     {
-        $this->getDb()->addWhere($where);
+        $this->query->addWhere($where);
         return $this;
     }
 
@@ -671,9 +676,6 @@ abstract class ActiveRecord extends Model
         return $this;
     }
 
-    /**
-     * @throws DBALException
-     */
     public function gt(
         array &$where,
         string $field,
@@ -681,27 +683,22 @@ abstract class ActiveRecord extends Model
         bool $precise = false
     ): self
     {
-        $this->getDb()->addWhere($this->terms->gt($where, $field, $arrKey, $precise));
+        $this->query->addWhere($this->terms->gt($where, $field, $arrKey, $precise));
         return $this;
     }
 
-    /**
-     * @throws DBALException
-     */
     public function lt(array &$where, string $field, string $arrKey, bool $precise = false): self
     {
-        $this->getDb()->addWhere($this->terms->lt($where, $field, $arrKey, $precise));
+        $this->query->addWhere($this->terms->lt($where, $field, $arrKey, $precise));
         return $this;
     }
 
     /**
      * Устанавливает условие LIKE
-     *
-     * @throws DBALException
      */
     public function like(array $where, string $field): self
     {
-        $this->getDb()->addWhere($this->terms->like($where, $field));
+        $this->query->addWhere($this->terms->like($where, $field));
         return $this;
     }
 
@@ -716,35 +713,35 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * добавление сортировки выбранных записей по полю $sortBy
+     * Добавление сортировки выбранных записей по полю $sortBy
      *
      * @throws DBALException
      */
     public function sortBy(string $colName, string $order = 'ASC'): self
     {
         $colName = $this->_orderByCast($colName);
-        $this->getDb()->orderBy($colName, $order);
+        $this->query->orderBy($colName, $order);
         return $this;
     }
 
     /**
-     * сортировка выбранных записей только по полю $sortBy
+     * Сортировка выбранных записей только по полю $sortBy
      *
      * @throws DBALException
      */
     public function setSortBy(array $sortBy): self
     {
-        $this->getDb()->setOrderBy($sortBy);
+        $this->query->setOrderBy($sortBy);
         return $this;
     }
 
     public function getSortBy(): array
     {
-        return $this->getDb()->getOrderBy();
+        return $this->query->getOrderBy();
     }
 
     /**
-     * устанавливаем массив полей для сортировки по умолчанию
+     * Устанавливаем массив полей для сортировки по умолчанию
      * @throws DBALException
      */
     protected function setDefaultSortBy(): void
@@ -760,7 +757,7 @@ abstract class ActiveRecord extends Model
                 }
                 $colName = $this->alias->aliasField($colName, static::$tableName);
                 $colName = $this->_orderByCast($colName);
-                $this->getDb()->orderBy($colName, $order);
+                $this->query->orderBy($colName, $order);
             }
         }
     }
@@ -780,51 +777,39 @@ abstract class ActiveRecord extends Model
     # LIMIT
 
     /**
-     * ограничение числа выбранных записей
-     *
-     * @throws DBALException
+     * Ограничение числа выбранных записей
      */
     public function limit(int $limit, int $offset = null): self
     {
-        $this->getDb()->setLimit($limit, $offset);
+        $this->query->setLimit($limit, $offset);
         return $this;
     }
 
-    /**
-     * @throws DBALException
-     */
     public function getLimit(): string
     {
-        return $this->getDb()->getLimit();
+        return $this->query->getLimit();
     }
 
     # GROUP BY
 
     /**
-     * группировка выбранных записей по полю $fieldName
-     *
-     * @throws DBALException
+     * Группировка выбранных записей по полю $fieldName
      */
     public function groupBy($fieldName): self
     {
-        $this->getDb()->setGroupBy($fieldName);
+        $this->query->setGroupBy($fieldName);
         return $this;
     }
 
-    /**
-     * @throws DBALException
-     */
     public function getGroupBy(): string
     {
-        return $this->getDb()->getGroupBy();
+        return $this->query->getGroupBy();
     }
 
     # SELECT
 
     /**
-     * задает поля для селекта
-     *
-     * @throws DBALException
+     * Задает поля для селекта
      */
     public function select(): self
     {
@@ -848,16 +833,15 @@ abstract class ActiveRecord extends Model
                 $fieldNames[] = $field;
             }
         }
-        $this->getDb()->setFields($fieldNames);
+        $this->query->setFields($fieldNames);
         return $this;
     }
 
     /**
-     * устанавливаем массив полей для выборки
+     * Устанавливаем массив полей для выборки
      */
     public function setSelect(): self
     {
-        // если он пуст
         if (empty($this->getSelect())) {
             $this->select($this->getTableFields());
         }
@@ -865,15 +849,15 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * поля для селекта/апдейта
+     * Поля для SELECT / UPDATE
      */
     public function getSelect(): array
     {
-        return $this->getDb()->getFields();
+        return $this->query->getFields();
     }
 
     /**
-     * очищает поля выборки
+     * Очищает поля выборки
      */
     public function clearSelect(): void
     {
@@ -943,7 +927,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * очищает массив связанных моделей
+     * Очищает массив связанных моделей
      */
     public function clearWith(): void
     {
@@ -1053,7 +1037,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * очищает поля алиас таблицы
+     * Очищает поля алиаса таблицы
      */
     public function clearAlias(): void
     {
@@ -1061,7 +1045,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * добавляем внешний(е) ключ(и) если его(их)
+     * Добавляем внешний(е) ключ(и) если его(их)
      * нет в массиве полей для выборки
      */
     public function addPkToSelect(): void
@@ -1108,9 +1092,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * список полей таблицы ч/з запятую
-     *
-     * @return string
+     * Список полей таблицы ч/з запятую
      */
     protected function getFieldsList(): string
     {
@@ -1121,21 +1103,18 @@ abstract class ActiveRecord extends Model
     /**
      * Возвращает название таблицы в БД
      */
-    public static function getTableName()
+    public static function getTableName(): string
     {
         return static::$tableName;
     }
 
-    /**
-     * @return string
-     */
     public function getTableAlias(): string
     {
         return $this->tableAlias ?: static::$tableName;
     }
 
     /**
-     * возвращает список полей таблицы
+     * Возвращает список полей таблицы
      */
     public function getTableFields(): array
     {
@@ -1143,9 +1122,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * возвращает имя первичного ключа
-     *
-     * @return string
+     * Возвращает имя первичного ключа
      */
     public function getPkName(): string
     {
@@ -1155,10 +1132,7 @@ abstract class ActiveRecord extends Model
     /**
      * Возвращает первичный ключ, приведенный в одну форму
      *
-     * @return array
-     * @throws ContainerException
      * @throws ModelException
-     * @throws ReflectionException
      */
     public function getPkArr(): array
     {
@@ -1171,7 +1145,7 @@ abstract class ActiveRecord extends Model
     }
 
     /**
-     * возвращает значение первичного ключа
+     * Возвращает значение первичного ключа
      */
     public function getPk()
     {
@@ -1203,7 +1177,8 @@ abstract class ActiveRecord extends Model
     /**
      * Шорткат
      *
-     * @return Db
+     * @throws ContainerException
+     * @throws ReflectionException
      * @throws DBALException
      */
     public function getDb(): Db
@@ -1216,20 +1191,12 @@ abstract class ActiveRecord extends Model
         return $this->join;
     }
 
-    /**
-     * @return Alias
-     */
     public function getAlias(): Alias
     {
         return $this->alias;
     }
 
-    /**
-     * @param string $modelName
-     *
-     * @return string
-     */
-    private function _getFullModelName($modelName): string
+    private function _getFullModelName(string $modelName): string
     {
         if (strpos('\\', $modelName) !== false) {
             return $modelName;

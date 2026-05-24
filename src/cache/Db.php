@@ -2,7 +2,7 @@
 namespace tachyon\cache;
 
 /**
- * caching db content
+ * Caching db content
  * 
  * @author imndsu@gmail.com
  */

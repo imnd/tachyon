@@ -7,6 +7,8 @@
     'No view file found' => 'Не найден файл отображения.',
     'fieldsRequired' => 'Поля с <span class="error">*</span> обязательны к заполнению.',
     'Some error occured.' => 'Произошла ошибка.',
+    'Parameter "db" not set.' => 'Не задан параметр конфигурации "db"',
+    'Parameter "engine" not set.' => 'Не задан параметр конфигурации "engine"',
 
     // подписи к кнопкам
     'entrance' => 'вход',

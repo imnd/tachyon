@@ -51,10 +51,7 @@ abstract class Cache /*implements CacheInterface*/
      */
     abstract public function end(string $contents = null): void;
 
-    /**
-     * @return false|mixed|string|void
-     */
-    protected function getContents(string $key)
+    protected function getContents(string $key): ?string
     {
         $this->setKey($key);
         $this->setCacheFilePath();
@@ -63,7 +60,7 @@ abstract class Cache /*implements CacheInterface*/
             $time = time();
             $age = $time - $modifiedAt;
             if ($this->duration < $age) {
-                return;
+                return null;
             }
             ob_start();
             require($this->cacheFile);
@@ -72,8 +69,14 @@ abstract class Cache /*implements CacheInterface*/
                 $contents = unserialize($contents);
             }
             ob_end_clean();
+            if ($contents === false) {
+                return null;
+            }
+
             return $contents;
         }
+
+        return null;
     }
 
     protected function setKey(string $key): void

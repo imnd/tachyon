@@ -5,7 +5,6 @@ namespace tachyon\components;
 use tachyon\Config;
 
 /**
- * class Message
  * Класс работы с текстовыми сообщениями
  *
  * @author imndsu@gmail.com
@@ -14,10 +13,6 @@ class Message
 {
     private array $_messages = [];
 
-    /**
-     * @param Config $config
-     * @param Lang   $lang
-     */
     public function __construct(Config $config, Lang $lang)
     {
         $basePath = $config->get('base_path');
@@ -26,11 +21,6 @@ class Message
         $this->loadMessages(APP_ROOT . "/app/config/lang/$lng.php");
     }
 
-    /**
-     * @param string $path
-     *
-     * @return void
-     */
     private function loadMessages(string $path): void
     {
         if (is_file($path)) {
@@ -40,11 +30,6 @@ class Message
 
     /**
      * Перевод текстового сообщения
-     *
-     * @param string $msg
-     * @param array  $vars
-     *
-     * @return string
      */
     public function t(string $msg, array $vars = []): string
     {

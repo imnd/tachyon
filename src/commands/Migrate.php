@@ -4,7 +4,6 @@ namespace tachyon\commands;
 
 use app\ServiceContainer;
 use ReflectionException;
-use tachyon\Config;
 use tachyon\db\dbal\{
     Db, DbFactory
 };
@@ -20,7 +19,7 @@ use tachyon\helpers\{
  * usage: tachyon migrate
  *
  * @author imndsu@gmail.com
- * @copyright (c) 2021 IMND
+ * @copyright (c) 2026 imnd labs
  */
 class Migrate extends Command
 {
@@ -70,7 +69,7 @@ class Migrate extends Command
     }
 
     /**
-     * create a migrations table if there is no such table, create a record of the migration
+     * Create a migrations table if there is no such table, create a record of the migration
      * @throws DBALException|ReflectionException
      */
     public function register(Migration $migration): void

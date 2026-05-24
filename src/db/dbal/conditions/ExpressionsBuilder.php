@@ -6,7 +6,7 @@ namespace tachyon\db\dbal\conditions;
  * ConditionsBuilder
  *
  * @author imndsu@gmail.com
- * @copyright (c) 2021 IMND
+ * @copyright (c) 2026 imnd labs
  */
 abstract class ExpressionsBuilder
 {

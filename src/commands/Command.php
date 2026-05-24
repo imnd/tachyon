@@ -4,7 +4,7 @@ namespace tachyon\commands;
 
 /**
  * @author imndsu@gmail.com
- * @copyright (c) 2021 IMND
+ * @copyright (c) 2026 imnd labs
  */
 abstract class Command
 {

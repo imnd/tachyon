@@ -10,6 +10,7 @@ use PDO,
     tachyon\components\Message,
     tachyon\Env
 ;
+use tachyon\db\Query;
 use tachyon\db\dbal\conditions\{
     WhereBuilder, UpdateBuilder, InsertBuilder
 };
@@ -22,116 +23,35 @@ use tachyon\db\dbal\conditions\{
 abstract class Db
 {
     /**
-     * @var WhereBuilder $whereBuilder
-     */
-    protected $whereBuilder;
-    /**
-     * @var UpdateBuilder $updateBuilder
-     */
-    protected $updateBuilder;
-    /**
-     * @var InsertBuilder $insertBuilder
-     */
-    protected $insertBuilder;
-    /**
-     * Компонент msg
-     *
-     * @var Message
-     */
-    protected Message $msg;
-    /**
-     * @var Env $env
-     */
-    protected $env;
-
-    /**
-     * соединение с БД
-     *
-     * @var PDO
+     * Соединение с БД
      */
     protected ?PDO $connection = null;
-
     /**
-     * параметры БД
-     *
-     * @var array
+     * Параметры БД
      */
     protected array $options;
     /**
      * Выводить ли анализ запросов в файл
-     *
-     * @var boolean
      */
     protected bool $explain;
     /**
-     * поля для выборки/вставки/обновления
-     *
-     * @var array
-     */
-    protected array $fields = [];
-    /**
-     * условия для выборки
-     *
-     * @var array
-     */
-    protected array $where = [];
-    /**
-     * @var string
-     */
-    protected string $join = '';
-    /**
-     * Поле группировки
-     *
-     * @var string
-     */
-    protected string $groupBy = '';
-    /**
-     * Поля сортировки
-     *
-     * @var array
-     */
-    protected array $orderBy = [];
-    /**
-     * LIMIT
-     *
-     * @var string
-     */
-    protected string $limit = '';
-
-    /**
-     * @var string
+     * Префикс explain
      */
     protected string $explainPrefix;
-
     /**
      * Путь к файлу где лежит explain.xls
-     *
-     * @var string
      */
     protected string $explainPath;
 
-    /**
-     * @param Env           $env
-     * @param Message       $msg
-     * @param WhereBuilder  $whereBuilder
-     * @param UpdateBuilder $updateBuilder
-     * @param InsertBuilder $insertBuilder
-     * @param array         $options
-     */
     public function __construct(
-        Env           $env,
-        Message       $msg,
-        WhereBuilder  $whereBuilder,
-        UpdateBuilder $updateBuilder,
-        InsertBuilder $insertBuilder,
+        protected Env           $env,
+        protected Message       $msg,
+        protected WhereBuilder  $whereBuilder,
+        protected UpdateBuilder $updateBuilder,
+        protected InsertBuilder $insertBuilder,
         array $options
     ) {
-        $this->env           = $env;
-        $this->msg           = $msg;
-        $this->whereBuilder  = $whereBuilder;
-        $this->updateBuilder = $updateBuilder;
-        $this->insertBuilder = $insertBuilder;
-        $this->options       = $options;
+        $this->options = $options;
         if ($this->explain = $this->options['explain'] ?? $this->env->isDevelop()) {
             $this->explainPath = $this->options['explain_path'] ?? APP_ROOT . '/runtime/explain.xls';
             // удаляем файл
@@ -142,10 +62,9 @@ abstract class Db
     }
 
     /**
-     * connect db
+     * Connect DB
      * Lazy loading
      *
-     * @return void
      * @throws DBALException
      */
     protected function connect(): void
@@ -168,7 +87,7 @@ abstract class Db
     }
 
     /**
-     * returns the connection string
+     * Returns the connection string
      */
     abstract protected function getDsn(): string;
 
@@ -182,6 +101,7 @@ abstract class Db
     /**
      * extracts fields $fields of the records from the table $tblName by condition $where
      *
+     * @param Query  $query
      * @param string $tblName имя таблицы
      * @param array  $where условие поиска
      * @param array  $fields имена полей
@@ -189,34 +109,35 @@ abstract class Db
      * @throws DBALException
      */
     public function select(
+        Query $query,
         string $tblName,
         array $where = [],
         array $fields = []
     ): array {
         $this->connect();
-        $where = array_merge($where, $this->where);
-        $fields = array_merge($fields, $this->fields);
+        $where = array_merge($where, $query->getWhere());
+        $fields = array_merge($fields, $query->getFields());
         $expression = $this->whereBuilder->prepareExpression($where);
-        $query = "
+        $queryStr = "
             SELECT {$this->whereBuilder->prepareFields($fields)}
             FROM $tblName
-            {$this->join}
+            {$query->getJoin()}
             {$expression['clause']}
-            {$this->groupByString()}
-            {$this->orderByString()}
-            {$this->limit}
+            {$query->groupByString()}
+            {$query->orderByString()}
+            {$query->getLimit()}
         ";
 
         if ($this->explain) {
-            $this->explain($query, $expression);
+            $this->explain($queryStr, $expression);
         }
-	    if (!$stmt = $this->connection->prepare($query)) {
+	    if (!$stmt = $this->connection->prepare($queryStr)) {
 		    throw new DBALException(t('Error during prepare query.'));
 	    }
         //  clean variables
-        $this
-            ->clearOrderBy()
+        $query
             ->clearWhere()
+            ->clearOrderBy()
             ->clearFields()
             ->clearJoin()
             ->clearGroupBy()
@@ -228,32 +149,41 @@ abstract class Db
     /**
      * Извлекает поля $fields записи из таблицы $tblName по условию $where
      *
+     * @param Query  $query
      * @param string $tblName имя таблицы
      * @param array  $where условие поиска
      * @param array  $fields имена полей
      *
-     * @return mixed
      * @throws DBALException
      */
-    public function selectOne(string $tblName, array $where = [], array $fields = [])
-    {
-        $rows = $this->setLimit(1)->select($tblName, $where, $fields);
+    public function selectOne(
+        Query $query,
+        string $tblName,
+        array $where = [],
+        array $fields = [],
+    ): mixed {
+        $query->setLimit(1);
+        $rows = $this->select($query, $tblName, $where, $fields);
+
         return $this->getOneRow($rows);
     }
 
     /**
      * Вставляет записи со значениями $fields в таблицу $tblName
      *
+     * @param Query  $query
      * @param string $tblName имя таблицы
      * @param array  $fields массив: [имена => значения] полей
      *
-     * @return string | null
      * @throws DBALException
      */
-    public function insert(string $tblName, array $fields = []): ?string
-    {
+    public function insert(
+        Query $query,
+        string $tblName,
+        array $fields = []
+    ): ?string {
         $this->connect();
-        $fields = array_merge($fields, $this->fields);
+        $fields = array_merge($fields, $query->getFields());
         $expression = $this->insertBuilder->prepareExpression($fields);
         if (!$stmt = $this->connection->prepare("
             INSERT INTO `$tblName`
@@ -262,7 +192,7 @@ abstract class Db
         ")) {
             throw new DBALException('Error during prepare insert statement.');
         }
-        $this->clearFields();
+        $query->clearFields();
         if ($this->execute($stmt, $expression['vals'])) {
             return $this->connection->lastInsertId();
         }
@@ -272,6 +202,7 @@ abstract class Db
     /**
      * Обновляет поля таблицы $tblName $fields записей по условию $where
      *
+     * @param Query  $query
      * @param string $tblName имя таблицы
      * @param array  $fields  массив: [имена => значения] полей
      * @param array  $where   условие поиска
@@ -279,13 +210,14 @@ abstract class Db
      * @throws DBALException
      */
     public function update(
+        Query  $query,
         string $tblName,
-        array $fields = [],
-        array $where = []
+        array  $fields = [],
+        array  $where = []
     ): bool {
         $this->connect();
-        $where = array_merge($where, $this->where);
-        $fields = array_merge($fields, $this->fields);
+        $where = array_merge($where, $query->getWhere());
+        $fields = array_merge($fields, $query->getFields());
         $updateExpression = $this->updateBuilder->prepareExpression($fields);
         $whereExpression = $this->whereBuilder->prepareExpression($where);
         if (!$stmt = $this->connection->prepare("
@@ -295,23 +227,27 @@ abstract class Db
         ")) {
             throw new DBALException('Error during prepare update statement.');
         }
-        $this->clearWhere();
-        $this->clearFields();
+        $query->clearWhere();
+        $query->clearFields();
         return $this->execute($stmt, array_merge($updateExpression['vals'], $whereExpression['vals']));
     }
 
     /**
      * Удаляет записи из таблицы $tblName по условию $where
      *
+     * @param Query $query
      * @param string $tblName имя таблицы
      * @param array  $where условие поиска
      *
      * @throws DBALException
      */
-    public function delete(string $tblName, array $where = []): bool
-    {
+    public function delete(
+        Query $query,
+        string $tblName,
+        array $where = []
+    ): bool {
         $this->connect();
-        $where = array_merge($where, $this->where);
+        $where = array_merge($where, $query->getWhere());
         $expression = $this->whereBuilder->prepareExpression($where);
         if (!$stmt = $this->connection->prepare("
             DELETE FROM `$tblName`
@@ -319,14 +255,12 @@ abstract class Db
         ")) {
             throw new DBALException('Error during prepare delete statement.');
         }
-        $this->clearWhere();
+        $query->clearWhere();
 
         return $this->execute($stmt, $expression['vals']);
     }
 
     /**
-     * Быстро очищает таблицу $tblName
-     *
      * @throws DBALException
      */
     public function truncate(string $tblName): bool
@@ -371,11 +305,12 @@ abstract class Db
      *
      * @throws DBALException
      */
-    public function queryOne(string $query): array
+    public function queryOne(string $query): ?array
     {
         if ($stmt = $this->query($query)) {
             return $this->prepareRows($stmt->fetch());
         }
+        return null;
     }
 
     /**
@@ -400,228 +335,9 @@ abstract class Db
     # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
 
     /**
-     * Добавляет условие
-     */
-    public function addWhere(array $where = null): Db
-    {
-        if (!empty($where)) {
-            $this->where = array_merge($this->where, $where);
-        }
-        return $this;
-    }
-
-    /**
-     * Устанавливает условие выборки
-     */
-    public function setWhere(array $where): Db
-    {
-        $this->where = $where;
-        return $this;
-    }
-
-    /**
-     * Возвращает условие
-     */
-    public function getWhere(): array
-    {
-        return $this->where;
-    }
-
-    /**
-     * Очищает условие
-     */
-    protected function clearWhere(): Db
-    {
-        $this->where = [];
-        return $this;
-    }
-
-    /**
-     * Добавляет поля для выборки
-     */
-    public function addFields(array $fieldNames): Db
-    {
-        $this->fields = array_merge($this->fields, $fieldNames);
-        return $this;
-    }
-
-    /**
-     * Устанавливает поля для выборки
-     */
-    public function setFields(array $fieldNames): Db
-    {
-        $this->fields = $fieldNames;
-        return $this;
-    }
-
-    /**
-     * Возвращает поля для выборки
-     */
-    public function getFields(): array
-    {
-        return $this->fields;
-    }
-
-    /**
-     * Очищает поля выборки
-     */
-    protected function clearFields(): Db
-    {
-        $this->fields = [];
-        return $this;
-    }
-
-    /**
-     * Устанавливает строку для JOIN
-     */
-    public function setJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): Db
-    {
-        $this->join = " $joinMode JOIN $tblName ON $onCond ";
-        return $this;
-    }
-
-    /**
-     * Добавляет строку для JOIN
-     */
-    public function addJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): Db
-    {
-        $this->join .= " $joinMode JOIN $tblName ON $onCond ";
-        return $this;
-    }
-
-    /**
-     * Очищает join
-     */
-    protected function clearJoin(): Db
-    {
-        $this->join = '';
-        return $this;
-    }
-
-    /**
-     * Добавляет в массив orderBy новый элемент
-     */
-    public function orderBy(string $fieldName, string $order = 'ASC'): Db
-    {
-        $this->orderBy[$fieldName] = $order;
-        return $this;
-    }
-
-    /**
-     * Устанавливает orderBy
-     */
-    public function setOrderBy($orderBy): Db
-    {
-        $this->orderBy = $orderBy;
-        return $this;
-    }
-
-    /**
-     * Возвращает orderBy
-     */
-    public function getOrderBy(): array
-    {
-        return $this->orderBy;
-    }
-
-    /**
-     * Очищает orderBy
-     */
-    protected function clearOrderBy(): Db
-    {
-        $this->orderBy = [];
-        return $this;
-    }
-
-    /**
      * Строка order by cast
      */
     abstract public function orderByCast(string $colName): string;
-
-    /**
-     * Возвращает форматированную строку ORDER BY
-     */
-    private function orderByString(): string
-    {
-        if (count($this->orderBy) === 0) {
-            return '';
-        }
-        $orderBy = [];
-        foreach ($this->orderBy as $fieldName => $order) {
-            $orderBy[] = "$fieldName $order";
-        }
-
-        return ' ORDER BY ' . implode(',', $orderBy);
-    }
-
-    /**
-     * Устанавливает форматированную строку LIMIT
-     */
-    public function setLimit(int $limit, int $offset = null): Db
-    {
-        $this->limit = $limit;
-
-        if (!is_null($offset)) {
-            $this->limit = " $offset, {$this->limit}";
-        }
-        $this->limit = " LIMIT {$this->limit} ";
-
-        return $this;
-    }
-
-    /**
-     * Возвращает limit
-     */
-    public function getLimit(): string
-    {
-        return $this->limit;
-    }
-
-    /**
-     * Очищает limit
-     */
-    protected function clearLimit(): Db
-    {
-        $this->limit = '';
-        return $this;
-    }
-
-    /**
-     * Устанавливает groupBy
-     */
-    public function setGroupBy(string $fieldName): Db
-    {
-        $this->groupBy = $fieldName;
-        return $this;
-    }
-
-    /**
-     * Возвращает groupBy
-     */
-    public function getGroupBy(): string
-    {
-        return $this->groupBy;
-    }
-
-    /**
-     * Очищает groupBy
-     */
-    protected function clearGroupBy(): Db
-    {
-        $this->groupBy = '';
-        return $this;
-    }
-
-    /**
-     * Возвращает форматированную строку GROUP BY
-     */
-    private function groupByString(): string
-    {
-        if ($this->groupBy !== '') {
-            return " GROUP BY {$this->groupBy} ";
-        }
-        return '';
-    }
 
     protected function getPlaceholder(array $fields): string
     {
@@ -632,19 +348,17 @@ abstract class Db
     /**
      * Возвращение одного поля из извлеченного массива строк
      */
-    protected function getOneRow(array $rows = [])
+    protected function getOneRow(array $rows = []): ?array
     {
         if (count($rows) > 0) {
             $rows = $this->prepareRows($rows);
             return $rows[0];
         }
+        return null;
     }
 
 	/**
 	 * Подготовка извлеченного массива строк, удаление лишнего
-	 *
-	 * @param array $rows
-	 * @return array
 	 */
 	protected function prepareRows(array $rows = []): array
 	{
@@ -683,12 +397,7 @@ abstract class Db
     /**
      * Выдает отчет EXPLAIN
      *
-     * @param string     $query
-     * @param array      $conditions1
-     * @param array|null $conditions2
-     *
      * @throws DBALException
-     * @return void
      */
     protected function explain(
         string $query,

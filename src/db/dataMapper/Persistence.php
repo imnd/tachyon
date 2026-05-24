@@ -7,6 +7,7 @@ use tachyon\db\dbal\{
     Db, DbFactory
 };
 use ReflectionException;
+use tachyon\db\Query;
 use tachyon\exceptions\ContainerException;
 use tachyon\traits\HasOwner;
 use tachyon\exceptions\DBALException;
@@ -36,13 +37,16 @@ class Persistence
      * @throws ReflectionException
      * @throws ContainerException
      */
-    public function __construct(DbFactory $dbFactory)
-    {
+    public function __construct(
+        protected Query $query,
+        DbFactory $dbFactory
+    ) {
         $this->db = $dbFactory->getDb();
     }
 
     /**
      * Находит все записи по условию $where, отсортированные по $sort
+     * @throws DBALException
      */
     public function findAll(
         array $where = [],
@@ -56,14 +60,20 @@ class Persistence
         }
         if (!empty($sortBy)) {
             foreach ($sortBy as $fieldName => $order) {
-                $this->db->orderBy($fieldName, $order);
+                $this->query->orderBy($fieldName, $order);
             }
         }
-        return $this->db->select($actualTableName, $where, array_merge($this->select, $fields));
+        return $this->db->select(
+            $this->query,
+            $actualTableName,
+            $where,
+            array_merge($this->select, $fields)
+        );
     }
 
     /**
      * Находит все записи по условию $where, отсортированные по $sort
+     * @throws DBALException
      */
     public function findOne(array $where = [], array $fields = [], string $tableName = null): ?array
     {
@@ -71,53 +81,66 @@ class Persistence
         if (!is_null($this->tableAlias)) {
             $actualTableName .= " AS {$this->tableAlias}";
         }
-        return $this->db->selectOne($actualTableName, $where, array_merge($this->select, $fields));
+        return $this->db->selectOne(
+            $this->query,
+            $actualTableName,
+            $where,
+            array_merge($this->select, $fields)
+        );
     }
 
     /**
      * Находит запись по первичному ключу
+     * @throws DBALException
      */
     public function findByPk(string|int $id, string $tableName = null): mixed
     {
         $actualTableName = $tableName ?? $this->tableName;
-        return $this->db->selectOne($actualTableName, ['id' => $id]);
+        return $this->db->selectOne($this->query, $actualTableName, ['id' => $id]);
     }
 
     /**
      * Обновляет запись по первичному ключу
+     * @throws DBALException
      */
     public function updateByPk(string|int $id, array $fieldValues, string $tableName = null): bool
     {
         $actualTableName = $tableName ?? $this->tableName;
-        return $this->db->update($actualTableName, $fieldValues, ['id' => $id]);
+        return $this->db->update($this->query, $actualTableName, $fieldValues, ['id' => $id]);
     }
 
     /**
      * Сохраняет запись в хранилище
+     * @throws DBALException
      */
     public function insert(array $fieldValues, string $tableName = null): mixed
     {
         $actualTableName = $tableName ?? $this->tableName;
-        return $this->db->insert($actualTableName, $fieldValues);
+        return $this->db->insert($this->query, $actualTableName, $fieldValues);
     }
 
     /**
      * Удаляет запись из хранилища
+     * @throws DBALException
      */
     public function deleteByPk(mixed $id, string $tableName = null): bool
     {
         $actualTableName = $tableName ?? $this->tableName;
-        return $this->db->delete($actualTableName, ['id' => $id]);
+        return $this->db->delete($this->query, $actualTableName, ['id' => $id]);
     }
 
     /**
      * Truncates table $this->tableName
+     * @throws DBALException
      */
     public function clear(): void
     {
         $this->db->truncate($this->tableName);
     }
 
+    /**
+     * @throws DBALException
+     */
     public function beginTransaction(): void
     {
         $this->db->beginTransaction();
@@ -129,7 +152,7 @@ class Persistence
     }
 
     /**
-     * Устанавливает какие таблицы джойнить
+     * Какие таблицы джойнить
      */
     public function with(array $with, array|string $on = []): static
     {
@@ -149,7 +172,7 @@ class Persistence
         if (!in_array($onPrimaryKey, $this->select)) {
             $this->select[] = $onPrimaryKey;
         }
-        $this->db->addJoin(
+        $this->query->addJoin(
             "$withTableName AS $withAlias",
             "$onPrimaryKey = $onForeignKey"
         );
@@ -161,7 +184,7 @@ class Persistence
      */
     public function setWhere(array $where): static
     {
-        $this->db->setWhere($where);
+        $this->query->setWhere($where);
         return $this;
     }
 
@@ -170,7 +193,7 @@ class Persistence
      */
     public function limit(string $limit): static
     {
-        $this->db->setLimit($limit);
+        $this->query->setLimit($limit);
         return $this;
     }
 
@@ -186,7 +209,7 @@ class Persistence
             $order = current($field);
             $field = key($field);
         }
-        $this->db->orderBy($field, $order);
+        $this->query->orderBy($field, $order);
         return $this;
     }
 
@@ -195,7 +218,7 @@ class Persistence
      */
     public function setOrderBy(string $fieldName): static
     {
-        $this->db->setOrderBy($fieldName);
+        $this->query->setOrderBy($fieldName);
         return $this;
     }
 
@@ -204,7 +227,7 @@ class Persistence
      */
     public function groupBy(string $fieldName): static
     {
-        $this->db->setGroupBy($fieldName);
+        $this->query->setGroupBy($fieldName);
         return $this;
     }
 
@@ -213,7 +236,7 @@ class Persistence
      */
     public function select(array | string $fields): static
     {
-        $this->db->setFields((array)$fields);
+        $this->query->setFields((array)$fields);
         return $this;
     }
 
