@@ -4,7 +4,6 @@ namespace tachyon\cache;
 use
     /*Psr\SimpleCache\CacheInterface,*/
     ReflectionClass,
-    ReflectionException,
     tachyon\Config,
     tachyon\Env;
 
@@ -13,8 +12,6 @@ use
  */
 abstract class Cache /*implements CacheInterface*/
 {
-    protected Env $env;
-
     protected int $duration = 60;
     protected string $cacheFolder = '../runtime/cache';
     protected string $cacheFile = '';
@@ -22,20 +19,21 @@ abstract class Cache /*implements CacheInterface*/
     protected bool $enabled = false;
     protected bool $serialize = false;
 
-    /**
-     * @throws ReflectionException
-     */
-    public function __construct(Env $env, Config $config)
+    public function __construct(protected Env $env, Config $config)
     {
-        $this->env = $env;
-        $type = strtolower((new ReflectionClass($this))->getShortName());
-        $cacheConf = $config->get('cache');
-        if ($this->env->isProduction() || !isset($cacheConf[$type])) {
+        if ($this->env->isProduction()) {
             return;
         }
-        $options = $cacheConf[$type];
-        foreach ($options as $key => $value) {
-            if (property_exists($type, $key)) {
+
+        $type = strtolower((new ReflectionClass($this))->getShortName());
+        $cacheConf = $config->get('cache');
+        if ($type !== $cacheConf['type']) {
+            return;
+        }
+        unset($cacheConf['type']);
+
+        foreach ($cacheConf as $key => $value) {
+            if (property_exists($this, $key)) {
                 $this->$key = $value;
             }
         }
