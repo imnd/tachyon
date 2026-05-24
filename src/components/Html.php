@@ -4,83 +4,49 @@ namespace tachyon\components;
 
 use tachyon\Config;
 use tachyon\helpers\ClassHelper;
+use tachyon\Model;
 
 /**
- * Построитель html-кода
+ * HTML Code Builder
  *
  * @author imndsu@gmail.com
  */
 class Html
 {
-    /**
-     * @var Config $config
-     */
-    protected Config $config;
-
-    public function __construct(Config $config)
+    public function __construct(protected Config $config)
     {
-        $this->config = $config;
     }
 
-    /**
-     * @param array  $options
-     * @param string $type
-     *
-     * @return string
-     */
-    public function div($options = [], $type = 'dual'): string
+    public function div(array $options = [], string $type = 'dual'): string
     {
         return $this->tag('div', $options, $type);
     }
 
     # FORM
 
-    /**
-     * @param array $options
-     *
-     * @return string
-     */
-    public function formOpen($options = []): string
+    public function formOpen(array $options = []): string
     {
         $options['attrs']['method'] = $options['method'] ?? null;
         return $this->tag('form', $options, 'open');
     }
 
-    /**
-     * @return string
-     */
     public function formClose(): string
     {
         return $this->tag('form', [], 'close');
     }
 
-    /**
-     * @param array $options
-     *
-     * @return string
-     */
-    public function form($options = []): string
+    public function form(array $options = []): string
     {
         return $this->tag('form', $options, 'dual');
     }
 
-    /**
-     * @param array $options
-     *
-     * @return string
-     */
-    public function textarea($options = []): string
+    public function textarea(array $options = []): string
     {
         $options = $this->_setOptions($options);
         return $this->tag('textarea', $options, 'dual');
     }
 
-    /**
-     * @param string $value
-     *
-     * @return string
-     */
-    public function submit($value = ''): string
+    public function submit(string $value = ''): string
     {
         return $this->input(
             [
@@ -92,12 +58,7 @@ class Html
         );
     }
 
-    /**
-     * @param string $value
-     *
-     * @return string
-     */
-    public function button($value = ''): string
+    public function button(string $value = ''): string
     {
         return $this->input(
             [
@@ -109,25 +70,14 @@ class Html
         );
     }
 
-    /**
-     * @param array $options
-     *
-     * @return string
-     */
-    public function hidden($options = []): string
+    public function hidden(array $options = []): string
     {
         $options = $this->_setOptions($options);
         $options['attrs']['type'] = 'hidden';
         return $this->input($options);
     }
 
-    /**
-     * @param       $model
-     * @param array $options
-     *
-     * @return string
-     */
-    public function hiddenEx($model, $options = []): string
+    public function hiddenEx(Model $model, array $options = []): string
     {
         if (!is_array($options)) {
             $options = [
@@ -142,13 +92,7 @@ class Html
         return $this->inputEx($model, $options);
     }
 
-    /**
-     * @param        $text
-     * @param string $for
-     *
-     * @return string
-     */
-    public function label($text, $for = ''): string
+    public function label(string $text, string $for = ''): string
     {
         return $this->tag(
             'label',
@@ -160,13 +104,7 @@ class Html
         );
     }
 
-    /**
-     * @param $model
-     * @param $for
-     *
-     * @return string
-     */
-    public function labelEx($model, $for): string
+    public function labelEx(Model $model, string $for): string
     {
         return $this->tag(
             'label',
@@ -178,13 +116,7 @@ class Html
         );
     }
 
-    /**
-     * @param $model
-     * @param $name
-     *
-     * @return string
-     */
-    public function error($model, $name): string
+    public function error(Model $model, string $name): string
     {
         return $this->tag(
             'span',
@@ -196,7 +128,7 @@ class Html
         );
     }
 
-    public function errorSummary($model): string
+    public function errorSummary(Model $model): string
     {
         return $this->tag(
             'span',
@@ -208,7 +140,7 @@ class Html
         );
     }
 
-    public function input($options = []): string
+    public function input(array $options = []): string
     {
         $options = $this->_setOptions($options);
         if (!empty($options['multiple'])) {
@@ -220,7 +152,7 @@ class Html
         return $this->tag('input', $options, 'single');
     }
 
-    public function inputEx($model, $options = []): string
+    public function inputEx(Model $model, array $options = []): string
     {
         [$options, $name] = $this->_check($options);
         if (!isset($options['value'])) {
@@ -236,7 +168,7 @@ class Html
         return $this->tag('input', $options, 'single');
     }
 
-    public function select($options = [], $num = null): string
+    public function select(array $options = [], string $num = null): string
     {
         $options = $this->_setOptions($options, ['name']);
         $name = $options['attrs']['name'];
@@ -266,13 +198,7 @@ class Html
         );
     }
 
-    /**
-     * @param       $model
-     * @param array $options
-     *
-     * @return string
-     */
-    public function selectEx($model, $options = []): string
+    public function selectEx(Model $model, array $options = []): string
     {
         [$options, $name] = $this->_check($options);
         $contents = '';
@@ -298,14 +224,7 @@ class Html
         );
     }
 
-    /**
-     * checkbox
-     *
-     * @param $options array
-     *
-     * @return string
-     */
-    public function checkbox($options = []): string
+    public function checkbox(array $options = []): string
     {
         $options = $this->_setOptions($options);
         $options['attrs']['type'] = 'checkbox';
@@ -318,13 +237,7 @@ class Html
         return $this->tag('input', $options, 'single');
     }
 
-    /**
-     * @param array    $options
-     * @param string[] $attrs
-     *
-     * @return array
-     */
-    private function _setOptions(array $options, $attrs = ['name', 'value']): array
+    private function _setOptions(array $options, array $attrs = ['name', 'value']): array
     {
         if (!is_array($options)) {
             $options = ['attrs' => ['name' => $options]];
@@ -338,15 +251,9 @@ class Html
     }
 
     /**
-     * возвращает html-тэг
-     *
-     * @param $name string
-     * @param $options array
-     * @param $type string dual | single | open | close
-     *
-     * @return string
+     * returns html tag
      */
-    public function tag($name, $options, $type): string
+    public function tag(string $name, array $options, string $type): string
     {
         $output = '<';
         if ($type === 'close') {
@@ -355,21 +262,21 @@ class Html
         $output .= "$name ";
         $attrs = $options['attrs'] ?? [];
         foreach ($attrs as $key => $value) {
-            $output .= " $key=\"$value\"";
+            $output .= " $key='" . htmlspecialchars($value) . "'";
         }
         if (isset($options['value'])) {
-            $output .= " value=\"{$options['value']}\"";
+            $output .= " value='"  . htmlspecialchars($options['value']) . "'";
         }
         if ($type === 'dual') {
             $contents = $options['contents'] ?? ($options['attrs']['value'] ?? '');
-            $output .= ">$contents</$name>";
+            $output .= ">" . htmlspecialchars($contents) . "</$name>";
         } elseif ($type === 'single') {
             $output .= '/>';
         } else {
             $output .= '>';
         }
         if (!empty($options['template'])) {
-            // инициализируем путь для отображения
+            // initialize the path for display
             $this->owner->setViewsPath($this->config->get('base_path') . '/tachyon/components/formBuilder/tpl');
             $model = $options['model'];
             return $this->owner->display($options['template'], compact('output', 'attrs', 'model'), true);
@@ -377,11 +284,6 @@ class Html
         return $output;
     }
 
-    /**
-     * @param array $options
-     *
-     * @return array
-     */
     private function _check(array $options): array
     {
         if (is_array($options) && isset($options['name'])) {

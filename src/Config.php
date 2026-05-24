@@ -62,7 +62,7 @@ class Config
     }
 
     /**
-     * extract value by key
+     * Extract value by key
      */
     public function get(string $key): mixed
     {

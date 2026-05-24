@@ -11,6 +11,7 @@ use tachyon\exceptions\{
     ContainerException, DBALException
 };
 use tachyon\db\Migration;
+use tachyon\db\Query;
 use tachyon\helpers\{
     ArrayHelper, ClassHelper
 };
@@ -29,19 +30,17 @@ class Migrate extends Command
     /**
      * @throws ReflectionException | ContainerException | DBALException
      */
-    public function __construct(DbFactory $dbFactory)
+    public function __construct(protected Query $query, DbFactory $dbFactory)
     {
         $this->db = $dbFactory->getDb();
     }
 
     /**
-     * @throws ContainerException
-     * @throws DBALException
-     * @throws ReflectionException
+     * @throws ReflectionException | ContainerException | DBALException
      */
     public function run(): void
     {
-        $migrations = $this->db->select('migrations');
+        $migrations = $this->db->select($this->query, 'migrations');
         $migrations = ArrayHelper::extract($migrations, 'name');
         if ($handle = opendir(APP_ROOT . '/migrations')) {
             while (false !== ($fileName = readdir($handle))) {
@@ -70,7 +69,7 @@ class Migrate extends Command
 
     /**
      * Create a migrations table if there is no such table, create a record of the migration
-     * @throws DBALException|ReflectionException
+     * @throws DBALException | ReflectionException
      */
     public function register(Migration $migration): void
     {
@@ -82,7 +81,7 @@ class Migrate extends Command
             PRIMARY KEY (`id`) USING BTREE
         ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;");
 
-        $this->db->insert('migrations', [
+        $this->db->insert($this->query, 'migrations', [
             'name' => ClassHelper::getClassName($migration),
         ]);
 

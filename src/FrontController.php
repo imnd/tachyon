@@ -20,11 +20,12 @@ final class FrontController
     private array $inline = [];
 
     public function __construct(
-        Config $config,
+        private readonly Env $env,
+        private readonly Config $config,
         private readonly OutputCache $cache,
         private readonly Request $request
     ) {
-        $this->routes = $config->get('routes');
+        $this->routes = $this->config->get('routes');
     }
 
     /**
@@ -200,6 +201,10 @@ final class FrontController
             return;
         }
 
-        require 'errors.php';
+        if ($this->env->isProduction()) {
+            echo 'Some error occurred';
+        } else {
+            require 'errors.php';
+        }
     }
 }

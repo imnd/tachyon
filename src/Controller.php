@@ -119,10 +119,53 @@ class Controller
      * Redirects a user to the address: $path
      */
     #[NoReturn]
-    public function redirect(string $path): void
+    protected function redirect(string $path): void
     {
+        if (!$this->isSafeRedirectUrl($path)) {
+            throw new HttpException(t('Forbidden redirect destination.'), HttpException::BAD_REQUEST);
+        }
         header("Location: $path");
         die;
+    }
+
+    /**
+     * Проверяет безопасность URL для перенаправления (защита от Open Redirect)
+     */
+    private function isSafeRedirectUrl(string $url): bool
+    {
+        // Предотвращаем относительные пути с несколькими слэшами (например, //example.com или ///example.com)
+        if (str_starts_with($url, '//') || preg_match('/^\/{2,}/', $url)) {
+            return false;
+        }
+
+        // Если URL не содержит протокола/схемы, то это безопасный относительный путь
+        if (!preg_match('/^[a-z0-9+.-]+:/i', $url)) {
+            return true;
+        }
+
+        $parsedUrl = parse_url($url);
+        $host = $parsedUrl['host'] ?? '';
+
+        if ($host === '') {
+            return true;
+        }
+
+        $allowedHosts = [];
+        if (!empty($_SERVER['HTTP_HOST'])) {
+            $allowedHosts[] = $_SERVER['HTTP_HOST'];
+        }
+        $configDomain = config('domain') ?? ''; // Использование домена из настроек
+        if ($configDomain !== '') {
+            $allowedHosts[] = $configDomain;
+        }
+
+        foreach ($allowedHosts as $allowedHost) {
+            if (strcasecmp($host, $allowedHost) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     # region getters
