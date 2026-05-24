@@ -96,13 +96,12 @@ class Request
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
-    /**
-     * Return raw values. Escaping is done on output.
-     */
     private function filter(mixed $data): mixed
     {
         if (is_string($data)) {
-            return $data;
+            // Null-byte injection protection
+            $data = str_replace(chr(0), '', $data);
+            return trim($data);
         }
         if (is_array($data)) {
             foreach ($data as &$datum) {
