@@ -8,6 +8,8 @@ namespace tachyon\cache;
  */
 class Db extends Cache
 {
+    protected bool $serialize = true;
+
     /** @inheritdoc */
     public function start(string $cacheKey): ?string
     {
@@ -19,7 +21,6 @@ class Db extends Cache
         }
         // запускаем кеширование
         $this->setKey($cacheKey);
-        ob_start();
 
         return null;
     }

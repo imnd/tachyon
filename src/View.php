@@ -132,7 +132,9 @@ class View
             ) {
                 while (false !== $echoPos = strpos($buffer, '{{')) {
                     $start = $echoPos + 2;
-                    $end = strpos($buffer, '}}', $start);
+                    if (false === $end = strpos($buffer, '}}', $start)) {
+                        break;
+                    }
                     $text = substr($buffer, $start, $end - $start);
                     $buffer = substr($buffer, 0, $echoPos) . '<?=trim($this->escape(' . $text . '))?>' . substr($buffer,
                             $end + 2);
@@ -193,7 +195,7 @@ class View
      */
     public function escape(string $text = null): string
     {
-        return htmlspecialchars($text ?: '');
+        return htmlspecialchars($text ?? '');
     }
 
     # getters and setters

@@ -24,8 +24,6 @@ class Controller
 
     /** actions for only $_POST requests */
     protected string | array $postActions = [];
-    /** actions only for authenticated users */
-    protected string | array $protectedActions;
 
     public function __construct(
         protected readonly Request $request,

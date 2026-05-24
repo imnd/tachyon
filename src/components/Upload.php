@@ -5,7 +5,7 @@ namespace tachyon\components;
 use RuntimeException;
 
 /**
- * Класс работы с файлами
+ * File handling class
  *
  * @author imndsu@gmail.com
  */
@@ -14,10 +14,10 @@ class Upload
     private $allowedTypes;
     private $uploadPath;
     private $thumbDir;
-    /* Превьюшки */
+    /* thumbs */
     private $thumbWidth;
     private $thumbHeight;
-    /** Jpeg качество */
+    /** Jpeg quality */
     private int $jpegQuality = 80;
     private array $imageTypes = [
         'jpg' => IMAGETYPE_JPEG,
@@ -26,14 +26,8 @@ class Upload
         'gif' => IMAGETYPE_GIF,
     ];
 
-    /**
-     * @var Encrypt $encrypt
-     */
-    protected Encrypt $encrypt;
-
-    public function __construct(Encrypt $encrypt, $config)
+    public function __construct(protected Encrypt $encrypt, array $config)
     {
-        $this->encrypt = $encrypt;
         $this->allowedTypes = $config['allowedTypes'] ?? '*';
         $this->uploadPath = $config['uploadPath'] ?? '/';
         $this->thumbDir = $config['thumbDir'] ?? '';
@@ -42,14 +36,9 @@ class Upload
     }
 
     /**
-     * Сохраняет файлы на сервере
-     *
-     * @param $files
-     * @param $fileInputName
-     *
-     * @return array
+     * Saves files on the server
      */
-    public function uploadFiles($files, $fileInputName): array
+    public function uploadFiles(array $files, string $fileInputName): array
     {
         $images = [];
         if (!$this->_checkUploadPath()) {
@@ -69,9 +58,7 @@ class Upload
     }
 
     /**
-     * генерация тумбочки при сохранении картинки
-     *
-     * @param string $thumbName
+     * generating a thumb when saving an image
      */
     public function thumb(string $thumbName): void
     {
@@ -106,11 +93,7 @@ class Upload
     }
 
     /**
-     * получает расширение файла
-     *
-     * @param string $fileName
-     *
-     * @return string
+     * gets the file extension
      */
     private function _getExt(string $fileName): string
     {
@@ -119,16 +102,12 @@ class Upload
     }
 
     /**
-     * проверяет тип файла
-     *
-     * @param string $fileName
-     *
-     * @return boolean
+     * Checks file type
      */
     private function _isAllowedFiletype(string $fileName): bool
     {
         if ($this->allowedTypes === '*') {
-            return false;
+            return true;
         }
         $fileExt = $this->_getExt($fileName);
         $allowedTypes = explode('|', $this->allowedTypes);
@@ -139,9 +118,7 @@ class Upload
     }
 
     /**
-     * проверяет путь файла
-     *
-     * @return boolean
+     * Checks the file path
      */
     private function _checkUploadPath(): bool
     {
@@ -156,13 +133,9 @@ class Upload
     }
 
     /**
-     * заливает файл на сервак
-     *
-     * @param $file string
-     *
-     * @return boolean|string
+     * Uploads the file to the server
      */
-    private function _uploadFile($file)
+    private function _uploadFile(array $file): bool | string
     {
         if (!is_uploaded_file($file['tmp_name'])) {
             return false;
@@ -178,7 +151,7 @@ class Upload
         $fileExt = $this->_getExt($fileName);
         $fileName = $this->encrypt->randString() . ".$fileExt";
         $filePath = $this->uploadPath . $fileName;
-        // перемещаем файл
+        // move the file
         if (!@copy($fileTemp, $filePath)) {
             if (!@move_uploaded_file($fileTemp, $filePath)) {
                 return false;
@@ -188,31 +161,18 @@ class Upload
     }
 
     /**
-     * изменяет размер файла
-     *
-     * @param $image resource
-     * @param $width integer
-     * @param $height integer
-     * @param $oldWidth integer
-     * @param $oldHeight integer
-     *
-     * @return resource
+     * change file size
      */
-    private function _resize($image, $width, $height, $oldWidth, $oldHeight)
+    private function _resize($image, int $width, int $height, int $oldWidth, int $oldHeight): void
     {
         $newImage = imagecreatetruecolor($width, $height);
         imagecopyresampled($newImage, $image, 0, 0, 0, 0, $width, $height, $oldWidth, $oldHeight);
-        return $newImage;
     }
 
     /**
      * Output image to browser or file
-     *
-     * @param $image resource
-     * @param $fileName string
-     * @param $imageType
      */
-    private function _save($image, $fileName, $imageType = IMAGETYPE_JPEG): void
+    private function _save($image, string $fileName, int $imageType = IMAGETYPE_JPEG): void
     {
         if ($imageType == IMAGETYPE_JPEG) {
             imagejpeg($image, $fileName, $this->jpegQuality);
@@ -224,14 +184,9 @@ class Upload
     }
 
     /**
-     * превращаем массив $files в удобоваримый вид
-     *
-     * @param $files array
-     * @param $fileInputName string
-     *
-     * @return array
+     * transform the $files array into a digestible form
      */
-    private function _prepareFilesArray($files, $fileInputName): array
+    private function _prepareFilesArray(array $files, string $fileInputName): array
     {
         $filesCnt = count($files[$fileInputName]['name']);
         for ($i = 0; $i < $filesCnt; $i++) {

@@ -49,7 +49,7 @@ abstract class Cache /*implements CacheInterface*/
      */
     abstract public function end(string $contents = null): void;
 
-    protected function getContents(string $key): ?string
+    protected function getContents(string $key): mixed
     {
         $this->setKey($key);
         $this->setCacheFilePath();

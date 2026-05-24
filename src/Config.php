@@ -42,16 +42,16 @@ class Config
             if ("\n" === $string || "\r\n" === $string) {
                 continue;
             }
-            $arr = explode(':', $string);
+            $arr = explode('=', $string);
             $key = strtolower( trim($arr[0]) );
             if (str_starts_with($key, '#')) {
                 continue;
             }
-            $val = trim($arr[1]);
+            $val = trim($arr[1] ?? '');
             if (false !== $point = strpos($key, '.')) {
                 $key0 = substr($key, 0, $point);
                 if (!isset($this->options[$key0])) {
-                    $this->options[$key0] = array();
+                    $this->options[$key0] = [];
                 }
                 $key1 = substr($key, $point + 1);
                 $this->options[$key0][$key1] = $val;

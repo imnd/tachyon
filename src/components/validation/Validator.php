@@ -153,16 +153,23 @@ class Validator
         }
     }
 
-    /**
-     * @param mixed $model
-     * @param string $fieldName
-     */
-    public function unique($model, string $fieldName): void
+    public function unique(mixed $model, string $fieldName): void
     {
         if (!$fieldVal = $model->getAttribute($fieldName)) {
             return;
         }
-        if ($rows = $model->findAllRaw([$fieldName => $fieldVal])) {
+
+        $conditions = [$fieldName => $fieldVal];
+        // Проверяем, является ли модель объектом ActiveRecord и сохранена ли она уже в БД
+        if (method_exists($model, 'getIsNew') && !$model->getIsNew()) {
+            $pkName = $model->getPkName(); // Получаем имя первичного ключа (например, 'id')
+            if ($pkValue = $model->getAttribute($pkName)) {
+                // Исключаем текущую запись из проверки: "id !=" => 1
+                $conditions["$pkName !="] = $pkValue;
+            }
+        }
+
+        if ($model->findAllRaw($conditions)) {
             $this->addError($fieldName, t('unique'));
         }
     }
@@ -279,6 +286,7 @@ class Validator
                     if (!is_numeric($key)) {
                         continue;
                     }
+                    $params = null;
                     if ($colon = strpos($rule, ':')) {
                         $params = substr($rule, $colon + 1);
                         $rule = substr($rule, 0, $colon);
