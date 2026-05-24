@@ -42,8 +42,13 @@ abstract class ExpressionsBuilder
             $clauseArr = [];
             foreach ($conditions as $field => $val) {
                 if (preg_match('/ IN/', $field, $matches) !== 0) {
-                    $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . " ?";
-                    $val = '(' . implode(',', $val) . ')';
+                    $val = (array)$val;
+                    $placeholders = implode(',', array_fill(0, count($val), '?'));
+                    $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . " ($placeholders)";
+                    foreach ($val as $subVal) {
+                        $vals[] = $subVal;
+                    }
+                    continue;
                 } elseif (preg_match('/ LIKE/', $field, $matches) !== 0) {
                     $clauseArr[] = $this->clarifyField($field, $matches[0]) . $matches[0] . " ?";
                     $val = "%$val%";
