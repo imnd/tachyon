@@ -75,21 +75,29 @@ class Upload
                 $fileExt = $this->_getExt($thumbName);
                 $suffix = $fileExt === 'jpg' ? 'jpeg' : $fileExt;
                 $method = "imagecreatefrom$suffix";
-                $thumb = $method($thumbFullName);
-                $thumbWidth = imagesx($thumb);
-                $thumbHeight = imagesy($thumb);
-                if ($thumbWidth > $thumbHeight) {
-                    $ratio = $this->thumbHeight / $thumbHeight;
-                    $width = $thumbWidth * $ratio;
-                    $height = $this->thumbHeight;
-                } else {
-                    $ratio = $this->thumbWidth / $thumbWidth;
-                    $height = $this->thumbHeight * $ratio;
-                    $width = $this->thumbWidth;
+
+                if (!function_exists($method)) {
+                    throw new RuntimeException("Unsupported image format: $suffix");
                 }
-                $this->_resize($thumb, $width, $height, $thumbWidth, $thumbHeight);
-                $thumbType = $this->imageTypes[$fileExt];
-                $this->_save($thumb, $thumbFullName, $thumbType);
+
+                $sourceImage = $method($thumbFullName);
+                $thumbWidth = imagesx($sourceImage);
+                $thumbHeight = imagesy($sourceImage);
+
+                // Корректный расчет пропорций (Max Box Fit)
+                $ratio = min($this->thumbWidth / $thumbWidth, $this->thumbHeight / $thumbHeight);
+                $width = (int)($thumbWidth * $ratio);
+                $height = (int)($thumbHeight * $ratio);
+
+                // Перезапись переменной результатом ресайза
+                $resizedImage = $this->_resize($sourceImage, $width, $height, $thumbWidth, $thumbHeight);
+
+                $thumbType = $this->imageTypes[$fileExt] ?? IMAGETYPE_JPEG;
+                $this->_save($resizedImage, $thumbFullName, $thumbType);
+
+                // Явное освобождение памяти (Критично для старых версий PHP / больших пакетов)
+                imagedestroy($sourceImage);
+                imagedestroy($resizedImage);
             }
         }
     }
@@ -169,10 +177,12 @@ class Upload
     /**
      * change file size
      */
-    private function _resize($image, int $width, int $height, int $oldWidth, int $oldHeight): void
+    private function _resize($image, int $width, int $height, int $oldWidth, int $oldHeight)
     {
         $newImage = imagecreatetruecolor($width, $height);
         imagecopyresampled($newImage, $image, 0, 0, 0, 0, $width, $height, $oldWidth, $oldHeight);
+
+        return $newImage;
     }
 
     /**
