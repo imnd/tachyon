@@ -8,6 +8,7 @@ use tachyon\components\{
     Html,
     Flash
 };
+use DateTimeImmutable;
 use tachyon\traits\{
     HasOwner,
     HasOptions
@@ -36,7 +37,7 @@ class View
     protected array $layoutVars = [];
 
     public function __construct(
-        Config $config,
+        protected Config $config,
         protected Env $env,
         protected AssetManager $assetManager,
         protected Message $msg,
@@ -125,11 +126,24 @@ class View
         $buffer = file_get_contents($filePath);
         if (str_contains($buffer, '{{')) {
             $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
+            $generate = false;
             if (
                    // in debug mode compiled templates are always overwritten
                    !$this->env->isProduction()
                 || !file_exists($tempViewFilePath)
             ) {
+                $generate = true;
+            } else {
+                $creationTime = filectime($tempViewFilePath);
+                $creationDateTime = date("Y-m-d H:i:s", $creationTime);
+                $creationDateTime = new DateTimeImmutable($creationDateTime);
+                $now = new DateTimeImmutable('now');
+                $viewFileAgeSeconds = $now->getTimestamp() - $creationDateTime->getTimestamp();
+                if ($viewFileAgeSeconds > $this->config->get('view_template_age', 3600)) {
+                    $generate = true;
+                }
+            }
+            if ($generate) {
                 while (false !== $echoPos = strpos($buffer, '{{')) {
                     $start = $echoPos + 2;
                     if (false === $end = strpos($buffer, '}}', $start)) {

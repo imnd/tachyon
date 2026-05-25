@@ -64,8 +64,8 @@ class Config
     /**
      * Extract value by key
      */
-    public function get(string $key): mixed
+    public function get(string $key, $default = null): mixed
     {
-        return $this->options[$key] ?? null;
+        return $this->options[$key] ?? $default;
     }
 }
