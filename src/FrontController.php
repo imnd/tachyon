@@ -127,6 +127,7 @@ final class FrontController
      */
     private function startController(): void
     {
+        $obStarted = false;
         try {
             if (!$controllerClass = $this->controller) {
                 throw new HttpException('Wrong url', HttpException::NOT_FOUND);
@@ -153,6 +154,7 @@ final class FrontController
             }
 
             ob_start();
+            $obStarted = true;
 
             $actionVars = [
                 ...app()->getDependencies($controllerClass, $actionName),
@@ -169,10 +171,17 @@ final class FrontController
             ini_set('session.cookie_httponly', 1);
 
             echo ob_get_clean();
+            $obStarted = false;
         } catch (HttpException $e) {
+            if ($obStarted) {
+                ob_end_clean();
+            }
             $this->sendHeaders($e->getCode());
             $this->showErrorPage($e, 404);
         } catch (Exception $e) {
+            if ($obStarted) {
+                ob_end_clean();
+            }
             // Invalid request handler. Error message output
             $this->sendHeaders(HttpException::INTERNAL_SERVER_ERROR);
             if (!$this->env->isProduction()) {
@@ -184,8 +193,6 @@ final class FrontController
             } else {
                 echo 'Error';
             }
-        } finally {
-            ob_end_clean();
         }
     }
 
