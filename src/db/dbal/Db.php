@@ -96,12 +96,43 @@ abstract class Db
     abstract protected function getQuoteSign(): string;
 
     /**
-     * Surrounds $tblName with quote marks
+     * Surrounds $tblName with quote marks, handling aliases and schemas
      */
-    protected function quoteTblName($tblName): string
+    protected function addQuotes($tblName): string
     {
         $quoteSign = $this->getQuoteSign();
-        return "$quoteSign$tblName$quoteSign";
+
+        // Handle alias (case-insensitive " AS ")
+        if (preg_match('/\s+AS\s+/i', $tblName)) {
+            $parts = preg_split('/\s+AS\s+/i', $tblName);
+            return $this->addQuotes($parts[0]) . ' AS ' . $this->addQuotes($parts[1]);
+        }
+
+        // Handle alias with space only (e.g. "articles a")
+        if (preg_match('/\s+/', $tblName)) {
+            $parts = preg_split('/\s+/', $tblName);
+            if (count($parts) === 2) {
+                return $this->addQuotes($parts[0]) . ' ' . $this->addQuotes($parts[1]);
+            }
+        }
+
+        // Handle schema prefix (e.g. "db.table")
+        if (str_contains($tblName, '.')) {
+            $parts = explode('.', $tblName);
+            foreach ($parts as &$part) {
+                if ($part !== '*' && $part !== '') {
+                    $part = "$quoteSign" . str_replace($quoteSign, '', trim($part)) . "$quoteSign";
+                }
+            }
+            return implode('.', $parts);
+        }
+
+        // Simple table name
+        if ($tblName !== '*' && $tblName !== '') {
+            return "$quoteSign" . str_replace($quoteSign, '', trim($tblName)) . "$quoteSign";
+        }
+
+        return $tblName;
     }
 
     /**
@@ -138,7 +169,7 @@ abstract class Db
         $expression = $this->whereBuilder->prepareExpression($where);
         $queryStr = "
             SELECT {$this->whereBuilder->prepareFields($fields)}
-            FROM {$this->quoteTblName($tblName)}
+            FROM {$this->addQuotes($tblName)}
             {$query->getJoin()}
             {$expression['clause']}
             {$query->groupByString($this->getQuoteSign())}
@@ -204,7 +235,7 @@ abstract class Db
         $fields = array_merge($fields, $query->getFields());
         $expression = $this->insertBuilder->prepareExpression($fields);
         if (!$stmt = $this->connection->prepare("
-            INSERT INTO {$this->quoteTblName($tblName)}
+            INSERT INTO {$this->addQuotes($tblName)}
             ({$expression['clause']}) 
             VALUES ({$this->getPlaceholder($expression['vals'])})
         ")) {
@@ -239,7 +270,7 @@ abstract class Db
         $updateExpression = $this->updateBuilder->prepareExpression($fields);
         $whereExpression = $this->whereBuilder->prepareExpression($where);
         if (!$stmt = $this->connection->prepare("
-            UPDATE {$this->quoteTblName($tblName)} 
+            UPDATE {$this->addQuotes($tblName)} 
             {$updateExpression['clause']} 
             {$whereExpression['clause']}
         ")) {
@@ -268,7 +299,7 @@ abstract class Db
         $where = array_merge($where, $query->getWhere());
         $expression = $this->whereBuilder->prepareExpression($where);
         if (!$stmt = $this->connection->prepare("
-            DELETE FROM {$this->quoteTblName($tblName)}
+            DELETE FROM {$this->addQuotes($tblName)}
             {$expression['clause']}
         ")) {
             throw new DBALException('Error during prepare delete statement.');
@@ -284,7 +315,7 @@ abstract class Db
     public function truncate(string $tblName): bool
     {
         $this->connect();
-        $stmt = $this->connection->prepare("TRUNCATE {$this->quoteTblName($tblName)}");
+        $stmt = $this->connection->prepare("TRUNCATE {$this->addQuotes($tblName)}");
 
         return $this->execute($stmt);
     }
