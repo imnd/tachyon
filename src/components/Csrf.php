@@ -58,7 +58,7 @@ class Csrf
     public function isTokenValid(): bool
     {
         return
-               $this->config->get('CSRF_CHECK') !== true
+               $this->config->get('CSRF_CHECK', true) !== true
                // check token
             || isset($_POST[$this->getTokenId()])
                && hash_equals($this->getTokenVal(), $_POST[$this->getTokenId()]);
