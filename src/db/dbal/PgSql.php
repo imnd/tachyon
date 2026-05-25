@@ -12,9 +12,9 @@ class PgSql extends Db
     protected string $explainPrefix = 'EXPLAIN EXECUTE';
 
     /** @inheritdoc */
-    protected function getDBMS(): string
+    protected function getQuoteSign(): string
     {
-        return 'PostgreSQL';
+        return '"';
     }
 
     /** @inheritdoc */

@@ -12,9 +12,9 @@ class MySql extends Db
     protected string $explainPrefix = 'EXPLAIN';
 
     /** @inheritdoc */
-    protected function getDBMS(): string
+    protected function getQuoteSign(): string
     {
-        return 'MySql';
+        return '`';
     }
 
     /** @inheritdoc */

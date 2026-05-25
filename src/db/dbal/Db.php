@@ -52,10 +52,10 @@ abstract class Db
         array $options
     ) {
         $this->options = $options;
-        $DBMS = $this->getDBMS();
-        $this->whereBuilder->setDBMS($DBMS);
-        $this->updateBuilder->setDBMS($DBMS);
-        $this->insertBuilder->setDBMS($DBMS);
+        $quoteSign = $this->getQuoteSign();
+        $this->whereBuilder->setQuoteSign($quoteSign);
+        $this->updateBuilder->setQuoteSign($quoteSign);
+        $this->insertBuilder->setQuoteSign($quoteSign);
         if ($this->explain = $this->options['explain'] ?? $this->env->isDevelop()) {
             $this->explainPath = $this->options['explain_path'] ?? APP_ROOT . '/runtime/explain.xls';
             // delete file
@@ -91,9 +91,18 @@ abstract class Db
     }
 
     /**
-     * Returns the DBMS type
+     * Returns the DBMS quote sign
      */
-    abstract protected function getDBMS(): string;
+    abstract protected function getQuoteSign(): string;
+
+    /**
+     * Surrounds $tblName with quote marks
+     */
+    protected function quoteTblName($tblName): string
+    {
+        $quoteSign = $this->getQuoteSign();
+        return "$quoteSign$tblName$quoteSign";
+    }
 
     /**
      * Returns the connection string
@@ -195,7 +204,7 @@ abstract class Db
         $fields = array_merge($fields, $query->getFields());
         $expression = $this->insertBuilder->prepareExpression($fields);
         if (!$stmt = $this->connection->prepare("
-            INSERT INTO `$tblName`
+            INSERT INTO {$this->quoteTblName($tblName)}
             ({$expression['clause']}) 
             VALUES ({$this->getPlaceholder($expression['vals'])})
         ")) {
@@ -259,7 +268,7 @@ abstract class Db
         $where = array_merge($where, $query->getWhere());
         $expression = $this->whereBuilder->prepareExpression($where);
         if (!$stmt = $this->connection->prepare("
-            DELETE FROM `$tblName`
+            DELETE FROM {$this->quoteTblName($tblName)}
             {$expression['clause']}
         ")) {
             throw new DBALException('Error during prepare delete statement.');
@@ -275,7 +284,8 @@ abstract class Db
     public function truncate(string $tblName): bool
     {
         $this->connect();
-        $stmt = $this->connection->prepare("TRUNCATE `$tblName`");
+        $stmt = $this->connection->prepare("TRUNCATE {$this->quoteTblName($tblName)}");
+
         return $this->execute($stmt);
     }
 
