@@ -52,6 +52,10 @@ abstract class Db
         array $options
     ) {
         $this->options = $options;
+        $DBMS = $this->getDBMS();
+        $this->whereBuilder->setDBMS($DBMS);
+        $this->updateBuilder->setDBMS($DBMS);
+        $this->insertBuilder->setDBMS($DBMS);
         if ($this->explain = $this->options['explain'] ?? $this->env->isDevelop()) {
             $this->explainPath = $this->options['explain_path'] ?? APP_ROOT . '/runtime/explain.xls';
             // delete file
@@ -85,6 +89,11 @@ abstract class Db
             throw new DBALException(t('Unable to connect to database.') . "\n{$e->getMessage()}");
         }
     }
+
+    /**
+     * Returns the DBMS type
+     */
+    abstract protected function getDBMS(): string;
 
     /**
      * Returns the connection string

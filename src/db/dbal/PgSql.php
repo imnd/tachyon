@@ -11,18 +11,20 @@ class PgSql extends Db
 {
     protected string $explainPrefix = 'EXPLAIN EXECUTE';
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
+    protected function getDBMS(): string
+    {
+        return 'PostgreSQL';
+    }
+
+    /** @inheritdoc */
     protected function getDsn(): string
     {
         $port = $this->options['port'] ?? '5432';
         return "pgsql:host={$this->options['host']};port=$port;dbname={$this->options['name']}";
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function isTableExists(string $tableName): bool
     {
         $this->connect();
@@ -34,20 +36,13 @@ class PgSql extends Db
 
     # HELPER METHODS
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function orderByCast(string $colName): string
     {
         return "$colName::int";
     }
 
-    /**
-     * @param $field
-     *
-     * @return string
-     */
-    protected function prepareField($field): string
+    protected function prepareField(string $field): string
     {
         if (preg_match('/[.( ]/', $field) === 0) {
             $field = trim($field);

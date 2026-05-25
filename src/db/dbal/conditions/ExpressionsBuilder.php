@@ -10,10 +10,17 @@ namespace tachyon\db\dbal\conditions;
  */
 abstract class ExpressionsBuilder
 {
+    private string $DBMS;
+
     /**
      * Formats conditions for selection, insertion or deletion
      */
     abstract public function prepareExpression(array $conditions, string $operator = '='): array;
+
+    public function setDBMS(string $DBMS): void
+    {
+        $this->DBMS = $DBMS;
+    }
 
     /**
      * Formats conditions for selection, insertion or deletion
@@ -93,6 +100,7 @@ abstract class ExpressionsBuilder
 
     private function addQuotes(&$text): void
     {
-        $text = "`" . str_replace("`", "", trim($text)) . "`";
+        $quoteSign = $this->DBMS === 'PostgreSQL' ? '"' : '`';
+        $text = $quoteSign . str_replace($quoteSign, "", trim($text)) . $quoteSign;
     }
 }

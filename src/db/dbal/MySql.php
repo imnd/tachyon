@@ -11,18 +11,20 @@ class MySql extends Db
 {
     protected string $explainPrefix = 'EXPLAIN';
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
+    protected function getDBMS(): string
+    {
+        return 'MySql';
+    }
+
+    /** @inheritdoc */
     protected function getDsn(): string
     {
         $port = $this->options['port'] ?? '3306';
         return "mysql:host={$this->options['host']};port=$port;dbname={$this->options['name']}";
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function isTableExists(string $tableName): bool
     {
         $this->connect();
@@ -34,9 +36,7 @@ class MySql extends Db
 
     # HELPER METHODS
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function orderByCast(string $colName): string
     {
         return "CAST($colName as unsigned)";

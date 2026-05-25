@@ -3,8 +3,6 @@
 namespace tachyon\db\dbal\conditions;
 
 /**
- * WhereBuilder
- *
  * @author imndsu@gmail.com
  * @copyright (c) 2026 imnd labs
  */
@@ -20,13 +18,11 @@ class WhereBuilder extends ExpressionsBuilder
 
     /**
      * Formats selection fields
-     *
-     * @param array $fields
-     * @return string
      */
-    public function prepareFields($fields): string
+    public function prepareFields(array $fields): string
     {
         $fields = $this->quoteFields($fields);
+
         return $fields ? implode(',', $fields) : '*';
     }
 }
