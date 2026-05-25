@@ -64,10 +64,10 @@ if (empty($items)) { ?>
                 <?php
                 foreach ($columns as $key => $value) {
                     if (is_numeric($key)) { ?>
-                        <td><?= $item[$value] ?></td>
+                        <td><?= is_array($item) ? ($item[$value] ?? '') : ($item->$value ?? '') ?></td>
                     <?php
                     } else { ?>
-                        <td><?= eval("return $value") ?></td>
+                        <td><?= is_callable($value) ? $value($item) : $value ?></td>
                     <?php
                     }
                 }
@@ -76,9 +76,17 @@ if (empty($items)) { ?>
                     $button['htmlOptions']['id'] = $widget->getBtnId($button['action'], $item);
                     if (empty($button['htmlOptions']['href'])) {
                         $button['htmlOptions']['href'] = $widget->getActionUrl($button['action'], $item);
+                    } else {
+                        $href = $button['htmlOptions']['href'];
+                        if (is_callable($href)) {
+                            $button['htmlOptions']['href'] = $href($item);
+                        } else {
+                            $button['htmlOptions']['href'] = preg_replace_callback('/\{([a-zA-Z0-9_]+)\}/', function($matches) use ($item) {
+                                $field = $matches[1];
+                                return is_array($item) ? ($item[$field] ?? '') : ($item->$field ?? '');
+                            }, $href);
+                        }
                     }
-
-                    $button['htmlOptions']['href'] = eval('return "'.$button['htmlOptions']['href'].'";');
                     ?>
                     <td><a <?php
                         foreach ($button['htmlOptions'] as $key => $value) {
