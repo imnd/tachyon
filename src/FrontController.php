@@ -184,6 +184,8 @@ final class FrontController
             } else {
                 echo 'Error';
             }
+        } finally {
+            ob_end_clean();
         }
     }
 
