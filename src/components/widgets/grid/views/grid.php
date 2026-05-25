@@ -2,10 +2,15 @@
 /**
  * @throws ErrorException
  * @var tachyon\components\widgets\Widget $widget
+ * @var tachyon\db\activeRecord\ActiveRecord $model
+ * @var array $searchFields
+ * @var array $columns
+ * @var array $sumFields
+ * @var string $csrfJson
  */
 
 // search form
-$this->display('_search', compact('model', 'searchFields', 'widget'));
+$this->display('_search', compact( 'model', 'searchFields', 'widget'));
 
 if (empty($items)) { ?>
     <p>Список пуст</p>
@@ -53,6 +58,7 @@ if (empty($items)) { ?>
 
         <tbody>
         <?php
+        $sumArr = [];
         foreach ($items as $item) { ?>
             <tr id="<?= $widget->getRowId($item) ?>" class="editable">
                 <?php
@@ -65,7 +71,7 @@ if (empty($items)) { ?>
                     <?php
                     }
                 }
-                // кнопки
+                // buttons
                 foreach ($buttons as $button) {
                     $button['htmlOptions']['id'] = $widget->getBtnId($button['action'], $item);
                     if (empty($button['htmlOptions']['href'])) {

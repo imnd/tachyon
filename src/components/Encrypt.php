@@ -3,7 +3,7 @@
 namespace tachyon\components;
 
 /**
- * Содержит функции для работы с шифрованием
+ * Contains functions for working with encryption
  *
  * @author imndsu@gmail.com
  */

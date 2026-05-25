@@ -17,16 +17,16 @@ class Persistence
     use HasOwner;
 
     /**
-     * Имя текущей (главной) таблицы запроса
+     * Name of the current (main) query table
      */
     protected ?string $tableName = null;
     /**
-     * Алиас текущей (главной) таблицы запроса
+     * Alias of the current (main) query table
      */
     protected string $tableAlias = 't';
     /**
-     * Поля выборки.
-     * TODO: выпилить. переместить в DB
+     * Selection fields.
+     * TODO: remove, move to DB
      */
     protected array $select = [];
 
@@ -45,7 +45,7 @@ class Persistence
     }
 
     /**
-     * Находит все записи по условию $where, отсортированные по $sort
+     * Finds all records by condition $where sorted by $sort
      * @throws DBALException
      */
     public function findAll(
@@ -72,7 +72,7 @@ class Persistence
     }
 
     /**
-     * Находит все записи по условию $where, отсортированные по $sort
+     * Finds all records by condition $where sorted by $sort
      * @throws DBALException
      */
     public function findOne(array $where = [], array $fields = [], string $tableName = null): ?array
@@ -90,7 +90,7 @@ class Persistence
     }
 
     /**
-     * Находит запись по первичному ключу
+     * Finds record by primary key
      * @throws DBALException
      */
     public function findByPk(string|int $id, string $tableName = null): mixed
@@ -100,7 +100,7 @@ class Persistence
     }
 
     /**
-     * Обновляет запись по первичному ключу
+     * Updates record by primary key
      * @throws DBALException
      */
     public function updateByPk(string|int $id, array $fieldValues, string $tableName = null): bool
@@ -110,7 +110,7 @@ class Persistence
     }
 
     /**
-     * Сохраняет запись в хранилище
+     * Saves record to storage
      * @throws DBALException
      */
     public function insert(array $fieldValues, string $tableName = null): mixed
@@ -120,7 +120,7 @@ class Persistence
     }
 
     /**
-     * Удаляет запись из хранилища
+     * Deletes record from storage
      * @throws DBALException
      */
     public function deleteByPk(mixed $id, string $tableName = null): bool
@@ -152,7 +152,7 @@ class Persistence
     }
 
     /**
-     * Какие таблицы джойнить
+     * Which tables to join
      */
     public function with(array $with, array|string $on = []): static
     {
@@ -180,7 +180,7 @@ class Persistence
     }
 
     /**
-     * Устанавливает условие выборки.
+     * Sets the selection condition.
      */
     public function setWhere(array $where): static
     {
@@ -189,7 +189,7 @@ class Persistence
     }
 
     /**
-     * Устанавливает LIMIT
+     * Sets LIMIT
      */
     public function limit(string $limit): static
     {
@@ -198,7 +198,7 @@ class Persistence
     }
 
     /**
-     * Устанавливает поля сортировки
+     * Sets sorting fields
      */
     public function orderBy(array|string $field, string $order = null): static
     {
@@ -214,7 +214,7 @@ class Persistence
     }
 
     /**
-     * Устанавливает поля сортировки
+     * Sets sorting fields
      */
     public function setOrderBy(string $fieldName): static
     {
@@ -223,7 +223,7 @@ class Persistence
     }
 
     /**
-     * Устанавливает поля сортировки
+     * Sets sorting fields
      */
     public function groupBy(string $fieldName): static
     {
@@ -232,7 +232,7 @@ class Persistence
     }
 
     /**
-     * Устанавливает поля выборки
+     * Sets selection fields
      */
     public function select(array | string $fields): static
     {
@@ -253,7 +253,7 @@ class Persistence
     }
 
     /**
-     * Устанавливает алиас текущей (главной) таблицы запроса
+     * Sets alias of the current (main) query table
      */
     public function asa(string $alias): static
     {

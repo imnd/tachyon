@@ -3,7 +3,7 @@
 namespace tachyon\db;
 
 /**
- * Миграция
+ * Migration
  *
  * @author imndsu@gmail.com
  * @copyright (c) 2026 imnd labs

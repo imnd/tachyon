@@ -5,7 +5,7 @@ namespace tachyon\db\dataMapper;
 use tachyon\exceptions\DBALException;
 
 /**
- * Реализация Unit of work.
+ * Unit of Work implementation.
  *
  * @author imndsu@gmail.com
  */
@@ -36,7 +36,7 @@ class DbContext
     }
 
     /**
-     * Помечает сущность как новую.
+     * Marks entity as new.
      *
      * @param Entity $entity
      *
@@ -48,7 +48,7 @@ class DbContext
     }
 
     /**
-     * Помечает сущность как измененную.
+     * Marks entity as dirty (modified).
      *
      * @param Entity $entity
      *
@@ -63,7 +63,7 @@ class DbContext
     }
 
     /**
-     * Помечает сущность на удаление.
+     * Marks entity for deletion.
      *
      * @param Entity $entity
      *
@@ -108,7 +108,7 @@ class DbContext
     }
 
     /**
-     * Сливаем в БД
+     * Flush to DB
      *
      * @throws DBALException
      */
@@ -123,7 +123,7 @@ class DbContext
             $this->persistence->beginTransaction();
         }
         $success = true;
-        // Сохраняет в хранилище измененные сущности
+        // Saves modified entities to storage
         foreach ($this->dirtyEntities as $entity) {
             $success = $success && $this
                 ->persistence
@@ -133,7 +133,7 @@ class DbContext
                     $entity->getTableName()
                 );
         }
-        // Удаляет сущности из хранилища
+        // Deletes entities from storage
         foreach ($this->deletedEntities as $entity) {
             $success = $success && $this
                 ->persistence
@@ -142,7 +142,7 @@ class DbContext
                     $entity->getTableName()
                 );
         }
-        // Вставляет в хранилище новые сущности
+        // Inserts new entities into storage
         foreach ($this->newEntities as &$entity) {
             if (!$pk = $this
                 ->persistence
@@ -165,7 +165,7 @@ class DbContext
     }
 
     /**
-     * Сливаем в БД одну сущность
+     * Flushes a single entity to DB
      *
      * @param Entity $entity
      *
@@ -178,7 +178,7 @@ class DbContext
         $hash = spl_object_hash($entity);
 
         if (isset($this->dirtyEntities[$hash])) {
-            // Сохраняет в хранилище измененную сущность
+            // Saves modified entity to storage
             $success = $success && $this
                     ->persistence
                     ->updateByPk(
@@ -189,7 +189,7 @@ class DbContext
 
             unset($this->dirtyEntities[$hash]);
         } elseif (isset($this->newEntities[$hash])) {
-            // Вставляет в хранилище новую сущность
+            // Inserts new entity into storage
             if (!$pk = $this
                 ->persistence
                 ->insert(

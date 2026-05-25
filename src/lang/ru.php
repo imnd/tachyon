@@ -1,5 +1,5 @@
 <?php return [
-    // системные
+    // system
     'Database error.' => 'Ошибка базы данных.',
     'Unable to connect to database.' => 'Невозможно соединиться с базой данных.',
     'Wrong address.' => 'Неправильный адрес.',
@@ -10,7 +10,7 @@
     'Parameter "db" not set.' => 'Не задан параметр конфигурации "db"',
     'Parameter "engine" not set.' => 'Не задан параметр конфигурации "engine"',
 
-    // подписи к кнопкам
+    // button captions
     'entrance' => 'вход',
     'login' => 'войти',
     'logout' => 'выйти',

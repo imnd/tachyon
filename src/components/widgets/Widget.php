@@ -11,7 +11,7 @@ use tachyon\traits\HasOwner;
 use tachyon\traits\HasProperties;
 
 /**
- * Базовый класс для всех виджетов
+ * Base class for all widgets
  * 
  * @author imndsu@gmail.com
  */
@@ -21,19 +21,19 @@ abstract class Widget implements HasOwnerInterface
     use HasProperties;
 
     /**
-     * id виджета
+     * widget id
      */
     protected string $id = '';
     /**
-     * Из какого контроллера вызван
+     * Which controller it is called from
      */
     protected Controller $controller;
     /**
-     * Путь файла отображения
+     * View file path
      */
     protected string $viewsPath = '';
     /**
-     * Выводить или возвращать вывод
+     * Whether to output or return output
      */
     protected bool $return = false;
 
@@ -53,17 +53,17 @@ abstract class Widget implements HasOwnerInterface
     }
 
     /**
-     * Запуск
+     * Run
      */
     abstract public function run();
 
     /**
-     * Отображает файл представления $view
-     * передавая ему параметры $vars в виде массива
+     * Renders view file $view
+     * passing parameters $vars as array
      * 
-     * @param $view string файл представления
-     * @param $vars array переменные представления
-     * @param $return boolean|null показывать или возвращать
+     * @param $view string view file
+     * @param $vars array view variables
+     * @param $return boolean|null show or return
      */
     protected function display(string $view = '', array $vars = [], bool $return = null): ?string
     {
@@ -81,7 +81,7 @@ abstract class Widget implements HasOwnerInterface
     }
 
     /**
-     * Выводит скрипт виджета
+     * Outputs widget script
      */
     public function js(string $name): string
     {
@@ -92,7 +92,7 @@ abstract class Widget implements HasOwnerInterface
     }
 
     /**
-     * Выводит стиль виджета
+     * Outputs widget style
      */
     public function css(string $name): string
     {

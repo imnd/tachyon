@@ -108,7 +108,7 @@ class Upload
     {
         $fileExt = strtolower($this->_getExt($fileName));
         
-        // Черный список исполняемых/опасных файлов для защиты от RCE
+        // Blacklist of executable/dangerous files for protection against RCE
         $blacklist = ['php', 'phtml', 'php3', 'php4', 'php5', 'phps', 'htaccess', 'phar', 'exe', 'sh', 'pl', 'cgi', 'asp', 'aspx', 'jsp'];
         if (in_array($fileExt, $blacklist, true)) {
             return false;

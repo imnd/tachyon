@@ -5,7 +5,7 @@ use tachyon\components\Message;
 use tachyon\db\Alias;
 
 /**
- * Класс реализующий связь "имеет один" между моделями
+ * Class implementing "has one" relation between models
  *
  * @author imndsu@gmail.com
  */

@@ -126,7 +126,7 @@ class View
         if (str_contains($buffer, '{{')) {
             $tempViewFilePath = "{$_SERVER['DOCUMENT_ROOT']}/../runtime/templates/" . md5($filePath) . '.php';
             if (
-                   // в debug mode скомпилированные шаблоны переписываются всегда
+                   // in debug mode compiled templates are always overwritten
                    !$this->env->isProduction()
                 || !file_exists($tempViewFilePath)
             ) {

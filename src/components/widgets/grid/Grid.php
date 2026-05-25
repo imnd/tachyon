@@ -12,38 +12,38 @@ use
 ;
 
 /**
- * Отображает в виде таблицы результат выборки
+ * Displays selection result in a table format
  *
  * @author imndsu@gmail.com
  */
 class Grid extends Widget
 {
     /**
-     * Поля таблицы
+     * Table fields
      */
     protected array $columns = [];
     /**
-     * Записи отображаемые в таблице
+     * Records displayed in table
      */
     protected array $items = [];
     /**
-     * кнопки
+     * buttons
      */
     protected array $buttons = [];
     /**
-     * поля по которым фильтруется содержимое
+     * fields by which content is filtered
      */
     protected array $searchFields = [];
     /**
-     * поля по которым выводится сумма внизу таблицы
+     * fields by which sum is output at the bottom of the table
      */
     protected array $sumFields = [];
     /**
-     * сортируется ли таблица
+     * whether table is sorted
      */
     protected bool $sortable = false;
     /**
-     * включать ли компонент защиты от csrf-атак
+     * whether to enable csrf protection component
      */
     protected string $csrfJson = '';
     protected array $confirmMsgs = [
@@ -51,11 +51,11 @@ class Grid extends Widget
         'delete' => 'удалить?',
     ];
     /**
-     * Имя первичного ключа модели таблицы
+     * Table model primary key name
      */
     protected string $pkName;
     /**
-     * Имя модели таблицы
+     * Table model name
      */
     protected string $modelName;
 
@@ -80,7 +80,7 @@ class Grid extends Widget
             $this->getAssetsSourcePath()
         );
         if (true === $this->config->get('csrf_check')) {
-            // компонент защиты от csrf-атак
+            // csrf protection component
             $this->csrfJson = '"' . $this->csrf->getTokenId() . '":"' . $this->csrf->getTokenVal() . '",';
         }
         if (is_null($this->model)) {
@@ -146,14 +146,14 @@ class Grid extends Widget
         );
     }
 
-    # геттеры
+    # getters
 
     /**
-     * Путь до ресурсов
+     * Path to resources
      *
      * @return string
      */
-    public function getAssetsSourcePath()
+    public function getAssetsSourcePath(): string
     {
         return __DIR__ . '/assets';
     }
@@ -179,7 +179,7 @@ class Grid extends Widget
     }
 
     /**
-     * Вычисляет id строки таблицы для манипулирования ей
+     * Calculates table row id for manipulation
      *
      * @param $item array
      *

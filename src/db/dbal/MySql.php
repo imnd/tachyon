@@ -28,11 +28,11 @@ class MySql extends Db
         $this->connect();
         $stmt = $this->connection->prepare("SHOW TABLES LIKE ?");
         $this->execute($stmt, [str_replace('`', '', $tableName)]);
-        // если такая таблица существует
+        // if such table exists
         return count($stmt->fetchAll()) > 0;
     }
 
-    # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
+    # HELPER METHODS
 
     /**
      * @inheritdoc

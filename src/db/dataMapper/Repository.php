@@ -5,7 +5,7 @@ namespace tachyon\db\dataMapper;
 use Iterator;
 
 /**
- * EntityManager является центральной точкой доступа к функциональности DataMapper ORM.
+ * EntityManager is the central entry point to the DataMapper ORM functionality.
  *
  * @author imndsu@gmail.com
  */
@@ -13,16 +13,16 @@ abstract class Repository implements RepositoryInterface
 {
     protected Persistence $persistence;
     /**
-     * Имя таблицы БД
+     * DB table name
      */
     protected string $tableName = '';
     protected string $tableAlias = 't';
     /**
-     * Класс сущности
+     * Entity class
      */
     protected Entity $entity;
     /**
-     * Массив сущностей
+     * Array of entities
      */
     protected array $collection = [];
 
@@ -104,7 +104,7 @@ abstract class Repository implements RepositoryInterface
     }
 
     /**
-     * Получить сущность по первичному ключу и поместить в $this->collection.
+     * Get entity by primary key and place it in $this->collection.
      */
     public function findByPk(mixed $pk): ?Entity
     {
@@ -115,7 +115,7 @@ abstract class Repository implements RepositoryInterface
     }
 
     /**
-     * Получить сущность из БД по первичному ключу.
+     * Get entity from DB by primary key.
      */
     protected function getByPk(int $pk): ?Entity
     {
@@ -131,7 +131,7 @@ abstract class Repository implements RepositoryInterface
     }
 
     /**
-     * Устанавливает условие выборки.
+     * Sets the selection condition.
      */
     public function where(array $where): self
     {
@@ -140,7 +140,7 @@ abstract class Repository implements RepositoryInterface
     }
 
     /**
-     * Устанавливает поля выборки.
+     * Sets selection fields.
      */
     public function select(mixed $fields): self
     {
@@ -149,7 +149,7 @@ abstract class Repository implements RepositoryInterface
     }
 
     /**
-     * Устанавливает условия сортировки для хранилища
+     * Sets sorting conditions for storage
      */
     public function setSort(array $attrs): self
     {
@@ -160,7 +160,7 @@ abstract class Repository implements RepositoryInterface
     }
 
     /**
-     * Добавляет условия сортировки для хранилища к уже существующим
+     * Adds sorting conditions for storage to existing ones
      */
     public function addSortBy(string $orderBy, string $order): void
     {

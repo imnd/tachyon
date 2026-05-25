@@ -8,49 +8,49 @@ namespace tachyon\components\validation;
 interface ValidationInterface
 {
     /**
-     * Возвращает список правил валидации
+     * Returns list of validation rules
      *
      * @return array
      */
     public function rules(): array;
 
     /**
-     * Валидация полей сущности
+     * Validation of entity fields
      *
-     * @param array $attributes массив полей
+     * @param array $attributes fields array
      *
      * @return boolean
      */
     public function validate(array $attributes = null): bool;
 
     /**
-     * Возвращает список правил валидации для поля $fieldName
+     * Returns list of validation rules for field $fieldName
      *
-     * @param string $fieldName валидируемое поле
+     * @param string $fieldName validated field
      *
      * @return array
      */
     public function getRules(string $fieldName): array;
 
     /**
-     * Добавление ошибки в массив ошибок
+     * Adding error to errors array
      *
-     * @param string $fieldName валидируемое поле
-     * @param string $message сообщение об ошибке
+     * @param string $fieldName validated field
+     * @param string $message error message
      *
      * @return void
      */
     public function addError(string $fieldName, string $message): void;
 
     /**
-     * Ошибки
+     * Errors
      *
      * @return array
      */
     public function getErrors(): array;
 
     /**
-     * Сообщение об ошибках
+     * Error message
      *
      * @return string
      */

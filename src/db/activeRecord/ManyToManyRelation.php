@@ -5,7 +5,7 @@ use tachyon\components\Message;
 use tachyon\db\Alias;
 
 /**
- * Класс реализующий связь "многие ко многим" между моделями
+ * Class implementing "many to many" relation between models
  *
  * @author imndsu@gmail.com
  */
@@ -28,7 +28,7 @@ class ManyToManyRelation extends Relation
     }
 
     /**
-     * для алиасинга полей расшивочной таблицы
+     * for junction table fields aliasing
      */
     const LINK_TBL_SUFF = '_lnk';
 
@@ -64,7 +64,7 @@ class ManyToManyRelation extends Relation
     }
 
     /**
-     * выбираем значения внешних полей
+     * select external fields values
      *
      * @param $itemArray
      *

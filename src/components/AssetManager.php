@@ -6,15 +6,15 @@ use tachyon\Env;
 use RuntimeException;
 
 /**
- * Работа со скриптами и стилями
+ * Working with scripts and styles
  *
  * @author imndsu@gmail.com
  */
 class AssetManager
 {
-    /** @const Папка www */
+    /** @const Folder www */
     const PUBLIC_FOLDER_PATH = __DIR__ . '/../../../../../public';
-    /** @const Путь к исходникам скриптов */
+    /** @const Path to script sources */
     const TAGS = [
         'js' => 'script',
         'css' => 'link',
@@ -23,34 +23,34 @@ class AssetManager
     protected Env $env;
 
     /**
-     * Путь к публичной папке со скриптами
+     * Path to public scripts folder
      */
     private string $assetsPublicPath = 'assets';
 
     /**
-     * Путь к папке со скриптами
+     * Path to scripts folder
      */
     private string $assetsSourcePath;
 
     /**
-     * Массив скриптов для склеивания и публикации
+     * Array of scripts for combining and publishing
      */
     private static $js = [];
 
     private static $varIndex = 0;
 
     /**
-     * Массив стилей для склеивания и публикации
+     * Array of styles for combining and publishing
      */
     private static $css = [];
 
     /**
-     * Опубликованные скрипты
+     * Published scripts
      */
     private static $files = [];
 
     /**
-     * core скрипты опубликованы
+     * core scripts are published
      */
     private static $finalized = false;
 
@@ -153,7 +153,7 @@ class AssetManager
     }
 
     /**
-     * удаляем лишние символы
+     * remove unnecessary characters
      */
     private function clearify(string &$text): void
     {
@@ -220,7 +220,7 @@ class AssetManager
     }
 
     /**
-     * публикация скриптов по отдельности
+     * publishing scripts individually
      */
     public function publishSeparated(): void
     {
@@ -243,7 +243,7 @@ class AssetManager
     }
 
     /**
-     * склеивание скриптов в спрайт
+     * combining scripts into a sprite
      */
     private function publishSprite(&$contents): void
     {

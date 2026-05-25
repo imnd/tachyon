@@ -6,7 +6,7 @@ use ReflectionException;
 
 /**
  * class Relation
- * Класс реализующий связи между моделями
+ * Class implementing relations between models
  *
  * @author imndsu@gmail.com
  */
@@ -61,7 +61,7 @@ abstract class Relation
 
     /**
      * trimSuffixes
-     * Убираем суффиксы у ключей
+     * Remove suffixes from keys
      *
      * @param string $with
      */
@@ -72,7 +72,7 @@ abstract class Relation
 
     /**
      * attachWithObject
-     * Приделываем $with к соотв. эл-ту объекта $retItem
+     * Attach $with to respective element of object $retItem
      *
      * @param mixed  $retItem
      * @param string $with
@@ -80,7 +80,7 @@ abstract class Relation
     abstract public function attachWithObject($retItem, $with);
 
     /**
-     * Формируем условие join
+     * Form join condition
      *
      * @param $owner
      */
@@ -123,7 +123,7 @@ abstract class Relation
     }
 
     /**
-     * Выбираем значения внешних полей
+     * Select external fields values
      *
      * @param $itemArray array
      *

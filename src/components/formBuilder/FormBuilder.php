@@ -15,7 +15,7 @@ use tachyon\components\{
 };
 
 /**
- * Построитель форм
+ * Form builder
  *
  * @author imndsu@gmail.com
  * @copyright (c) 2010 IMND
@@ -23,31 +23,31 @@ use tachyon\components\{
 class FormBuilder
 {
     /**
-     * включать ли компонент защиты от csrf-атак
+     * whether to enable csrf protection component
      */
     private bool $_csrfCheck;
     /**
-     * Настройки формы
+     * Form settings
      */
     private array $_options = [
-        // сабмитить или посылать ajax-запрос
+        // submit or send ajax request
         'ajax' => false,
-        // путь к шаблону
+        // path to template
         'viewsPath' => '../vendor/tachyon/components/formBuilder/views/',
-        // имя файла шаблона
+        // template file name
         'view' => 'form',
-        // id по умолчанию
+        // default id
         'defId' => 'imnd',
-        // форма последняя (если несколько на странице)
+        // whether this is the last form (if multiple on page)
         'final' => true,
-        // аттрибуты тэга form
+        // form tag attributes
         'attrs' => [
             'method'  => 'GET',
             'enctype' => 'multipart/form-data',
         ],
-        // тэг по умолчанию
+        // default tag
         'tagDef' => 'input',
-        // текстовые подписи
+        // text captions
         'text' => [
             'ru' => [
                 'submitCaption' => 'Отправить',
@@ -60,11 +60,11 @@ class FormBuilder
         ],
     ];
     /**
-     * Счетчик формы
+     * Form counter
      */
     private int $_formCnt = 0;
     /**
-     * Список полей типа дэйтпикер
+     * List of datepicker type fields
      */
     private array $_dateFieldNames = [];
 
@@ -77,16 +77,16 @@ class FormBuilder
         protected Message $msg,
     ) {
         $this->_csrfCheck = $config->get('csrf_check') ?? false;
-        // текстовые
+        // text
         $this->_options['text'] = $this->_options['text'][$config->get('lang')];
     }
 
     /**
-     * Отрисовка формы
+     * Form rendering
      */
     public function build(array $params = []): void
     {
-        // Custom опции
+        // Custom options
         $options = $params['options'] ?? [];
         $this->_options = array_merge($this->_options, $options);
         $this->_options['attrs']['class'] = $this->_options['class'] ?? null;
@@ -94,14 +94,14 @@ class FormBuilder
         $this->_options['attrs']['method'] = $this->_options['method'] ?? 'GET';
         $this->_options['text']['submitCaption'] = $this->_options['submitCaption'] ?? null;
         $this->_options['final'] = $this->_options['final'] ?? true;
-        // генерируем для каждой формы уникальный id и уникальный name если он не задан в $options
+        // generate a unique id and unique name for each form if not set in $options
         $this->_options['attrs']['id'] = $this->_options['attrs']['name'] = $this->_options['defId'] . '_frm_' . $this->_formCnt++;
-        // инициализируем путь для отображения
+        // initialize path for rendering
         $this->view->setViewsPath($this->_options['viewsPath']);
-        $formId = $this->_options['attrs']['id']; // для удобства записи
+        $formId = $this->_options['attrs']['id']; // for coding convenience
         $requiredFields = false;
         $controls = [];
-        // если поля формы определяются ч/з модель
+        // if form fields are defined via model
         if (!empty($params['model']) && !empty($params['fields'])) {
             $fieldValues = array_key_exists('fieldValues', $params) ? $params['fieldValues'] : [];
             $model = $params['model'];
@@ -146,10 +146,10 @@ class FormBuilder
                 $requiredFields = $requiredFields || $required;
             }
         }
-        // если поля формы определяются напрямую массивом
+        // if form fields are defined directly by an array
         if (!empty($params['controls'])) {
-            // TODO: приделать проверку на $requiredFields
-            // TODO: обработка для select, check и пр.
+            // TODO: add validation check for $requiredFields
+            // TODO: handling for select, check, etc.
             foreach ($params['controls'] as &$control) {
                 $control['tag'] = isset($control['tag']) ? $control['tag'] : $this->_options['tagDef'];
                 if (!isset($control['attrs']['type']) && $control['tag'] === 'input') {
@@ -164,7 +164,7 @@ class FormBuilder
                     if ($control['tag'] === 'input') {
                         $ctrlVal = $control['label'];
                         $control['attrs']['value'] = $ctrlVal;
-                        // обработчик для подписей в полях (чтобы исчезали)
+                        // handler for field labels (to disappear)
                         $control['attrs']['onfocus'] = str_replace(
                             'capt_value',
                             $ctrlVal,
@@ -182,7 +182,7 @@ class FormBuilder
             $controls = array_merge($controls, $params['controls']);
         }
         $elements = [];
-        // напоминание об обязательных полях
+        // reminder about required fields
         if ($requiredFields && !empty($this->_options['notice'])) {
             $elements[] = [
                 'tag' => 'div',
@@ -191,7 +191,7 @@ class FormBuilder
             ];
         }
         $elements = array_merge($elements, compact('controls'));
-        // кнопка submit
+        // submit button
         $elements['submit'] = [
             'attrs' => [
                 'type' => $this->_options['ajax'] ? 'button' : 'submit',
@@ -230,7 +230,7 @@ class FormBuilder
                 'attrs' => $this->_options['attrs'],
             ]
         );
-        // включаем скрипт валидации
+        // enable validation script
         if (
                !empty($params['model'])
             && !empty($params['fields'])
@@ -250,7 +250,7 @@ class FormBuilder
     }
 
     /**
-     * Выводим скрипты и стили формы
+     * Outputs form scripts and styles
      */
     private function _renderScripts(): void
     {
@@ -259,7 +259,7 @@ class FormBuilder
         $this->assetManager->coreJs('obj');
         echo
             $this->assetManager->css('style', $assetsPublicPath, $assetsSourcePath),
-            // скрипт валидации
+            // validation script
             $this->assetManager->js('validation', $assetsPublicPath, $assetsSourcePath);
     }
 

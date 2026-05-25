@@ -4,7 +4,7 @@ namespace tachyon\components;
 use tachyon\Config;
 
 /**
- * Инкапсулирует работу с cookie
+ * Encapsulates working with cookies
  *
  * @author imndsu@gmail.com
  */
@@ -13,11 +13,11 @@ class Cookie
     protected Config $config;
 
     /**
-     * Время жизни куки дней
+     * Cookie lifetime in days
      */
     private int $duration = 1;
     /**
-     * Защищенные куки могут быть переданы только через шифрованное соединение
+     * Secure cookies can only be transmitted over an encrypted connection
      */
     private bool $secure = false;
 

@@ -8,7 +8,7 @@ use tachyon\{
 };
 
 /**
- * Класс содержащий правила валидации
+ * Class containing validation rules
  *
  * @author imndsu@gmail.com
  */
@@ -160,11 +160,11 @@ class Validator
         }
 
         $conditions = [$fieldName => $fieldVal];
-        // Проверяем, является ли модель объектом ActiveRecord и сохранена ли она уже в БД
+        // Check if the model is an ActiveRecord object and is already saved in DB
         if (method_exists($model, 'getIsNew') && !$model->getIsNew()) {
-            $pkName = $model->getPkName(); // Получаем имя первичного ключа (например, 'id')
+            $pkName = $model->getPkName(); // Get primary key name (e.g., 'id')
             if ($pkValue = $model->getAttribute($pkName)) {
-                // Исключаем текущую запись из проверки: "id !=" => 1
+                // Exclude current record from check: "id !=" => 1
                 $conditions["$pkName !="] = $pkValue;
             }
         }
@@ -235,24 +235,24 @@ class Validator
     }
 
     /**
-     * Валидация полей модели/сущности
+     * Validation of model/entity fields
      *
      * @param mixed      $object
-     * @param array|null $attrs массив полей
+     * @param array|null $attrs fields array
      *
      * @return array
      * @throws ValidationException
      */
     public function validate($object, array $attrs = null): array
     {
-        // перебираем все поля
+        // iterate over all fields
         $attrsArray = $object->getAttributes();
         if (!is_null($attrs)) {
             $attrsArray = array_intersect_key($attrsArray, array_flip($attrs));
         }
         $methodNotExist = 'There is no validator: %name.';
         foreach ($attrsArray as $fieldName => $fieldValue) {
-            // если существует правило валидации для данного поля
+            // if validation rule exists for this field
             if ($fieldRules = $this->getRules($object, $fieldName)) {
                 if (!$this->_on($fieldRules, $object)) {
                     continue;
@@ -312,11 +312,11 @@ class Validator
     private function _on(array &$rule, $object): bool
     {
         if (isset($rule['on'])) {
-            // если правило не применимо к сценарию
+            // if rule is not applicable to scenario
             if ($rule['on'] !== $object->scenario) {
                 return false;
             }
-            // убираем, чтобы не мешалось дальше
+            // remove so it doesn't interfere further
             unset($rule['on']);
         }
         return true;
@@ -331,7 +331,7 @@ class Validator
     }
 
     /**
-     * Сообщение об ошибках
+     * Error message
      *
      * @param $object
      *

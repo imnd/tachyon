@@ -5,13 +5,13 @@ namespace tachyon\components;
 use Iterator;
 
 /**
- * Методы для создания и отображения флэш сообщений
+ * Methods for creating and displaying flash messages
  *
  * @author imndsu@gmail.com
  */
 class Flash
 {
-    /** @const Типы сообщений */
+    /** @const Message types */
     public const FLASH_TYPE_ANY = 'any';
     public const FLASH_TYPE_ERROR = 'error';
     public const FLASH_TYPE_SUCCESS = 'success';
@@ -22,7 +22,7 @@ class Flash
     ];
 
     /**
-     * Создание сообщения
+     * Create message
      *
      * @param string $message
      * @param string $type
@@ -34,7 +34,7 @@ class Flash
     }
 
     /**
-     * Добавление сообщения
+     * Add message
      *
      * @param string $message
      * @param string $type
@@ -49,7 +49,7 @@ class Flash
     }
 
     /**
-     * Извлечение
+     * Retrieve
      *
      * @param string $type
      *
@@ -64,7 +64,7 @@ class Flash
     }
 
     /**
-     * Извлечение всех сообщений
+     * Retrieve all messages
      *
      * @return Iterator
      */

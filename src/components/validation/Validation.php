@@ -6,23 +6,23 @@ use tachyon\exceptions\ValidationException;
 use tachyon\helpers\ClassHelper;
 
 /**
- * Трейт валидации
+ * Validation trait
  *
  * @author imndsu@gmail.com
  */
 trait Validation
 {
     /**
-     * сценарий валидации
+     * validation scenario
      */
     protected string $scenario = '';
     /**
-     * ошибки валидации
+     * validation errors
      */
     protected array $errors = [];
 
     /**
-     * Присваивание аттрибутов модели с учетом правил валидации
+     * Assign model attributes considering validation rules
      */
     public function attachAttributes(array $arr, bool $useModelName = false): void
     {
@@ -44,7 +44,7 @@ trait Validation
     }
 
     /**
-     * Возвращает список правил валидации
+     * Returns list of validation rules
      */
     public function rules(): array
     {
@@ -52,9 +52,9 @@ trait Validation
     }
 
     /**
-     * Валидация полей модели
+     * Validation of model fields
      *
-     * @param array | null $attributes массив полей
+     * @param array | null $attributes fields array
      *
      * @throws ValidationException
      */
@@ -82,7 +82,7 @@ trait Validation
     }
 
     /**
-     * Ошибки
+     * Errors
      */
     public function getErrors(): array
     {
@@ -90,7 +90,7 @@ trait Validation
     }
 
     /**
-     * Извлекает ошибку
+     * Retrieves an error
      */
     public function getError(string $attr): ?string
     {
@@ -102,7 +102,7 @@ trait Validation
     }
 
     /**
-     * добавляет ошибку к списку ошибок
+     * adds error to errors list
      */
     public function addError(string $fieldName, string $message): void
     {
@@ -115,7 +115,7 @@ trait Validation
     }
 
     /**
-     * Вывод всех сообщений об ошибках
+     * Output all error messages
      */
     public function getErrorsSummary(): string
     {
@@ -127,7 +127,7 @@ trait Validation
     }
 
     /**
-     * Возвращает поля для JS валидации
+     * Returns fields for JS validation
      */
     public function getValidationFieldsJs(array $fields = []): string
     {
@@ -170,7 +170,7 @@ trait Validation
     }
 
     /**
-     * устанавливает сценарий валидации
+     * sets validation scenario
      */
     public function setScenario(string $scenario): static
     {

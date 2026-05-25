@@ -11,12 +11,12 @@ namespace tachyon\db\dbal\conditions;
 abstract class ExpressionsBuilder
 {
     /**
-     * Форматирует условия для выборки, вставки или удаления
+     * Formats conditions for selection, insertion or deletion
      */
     abstract public function prepareExpression(array $conditions, string $operator = '='): array;
 
     /**
-     * Форматирует условия для выборки, вставки или удаления
+     * Formats conditions for selection, insertion or deletion
      */
     protected function createExpression(
         array  $conditions,
@@ -53,7 +53,7 @@ abstract class ExpressionsBuilder
     }
 
     /**
-     * Очистка поля
+     * Field cleaning
      */
     protected function clarifyField(string $field, string $text, bool $isIdentifierOnly = false): string
     {
@@ -63,7 +63,7 @@ abstract class ExpressionsBuilder
     }
 
     /**
-     * Подготовка поля
+     * Field preparation
      */
     public function quoteFields(array $fields): array
     {
@@ -74,7 +74,7 @@ abstract class ExpressionsBuilder
     }
 
     /**
-     * Снабжение поля кавычками
+     * Quote field value
      */
     protected function
     quoteField(string $field, bool $identifierOnly = false): string

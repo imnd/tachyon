@@ -20,7 +20,7 @@ class Output extends Cache
             echo $cacheContents;
             die;
         }
-        // запускаем кеширование
+        // start caching
         $this->setKey($cacheKey);
         ob_start();
 

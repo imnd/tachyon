@@ -9,50 +9,50 @@ interface RepositoryInterface
     public function getTableName(): string;
 
     /**
-     * Устанавливает условия поиска для хранилища
+     * Sets search conditions for storage
      *
-     * @param array $conditions условия поиска
+     * @param array $conditions search conditions
      */
     public function setSearchConditions(array $conditions = []): Repository;
 
     /**
-     * Устанавливает условия сортировки для хранилища.
+     * Sets sorting conditions for storage.
      */
     public function setSort(array $attrs): Repository;
 
     /**
-     * Добавляет условия сортировки для хранилища к уже существующим.
+     * Adds sorting conditions for storage to existing ones.
      */
     public function addSortBy(string $orderBy, string $order);
 
     /**
-     * Получает сущность по условию $where
+     * Gets the entity by condition $where
      */
     public function findOne(array $where = []): ?Entity;
 
     /**
-     * Получает сущность по условию $where
+     * Gets the entity by condition $where
      */
     public function findOneRaw(array $where = []): ?array;
 
     /**
-     * Получает все сущности по условию $where, отсортированных по $sort
-     * и преобразовывает в Iterator
+     * Gets all entities by condition $where sorted by $sort
+     * and converts to Iterator
      */
     public function findAll(array $where = [], array $sort = []): Iterator;
 
     /**
-     * Получает все сущности по условию $where, отсортированных по $sort в виде массива
+     * Gets all entities by condition $where sorted by $sort as array
      */
     public function findAllRaw(array $where = [], array $sort = []): array;
 
     /**
-     * Получить сущность по первичному ключу.
+     * Get entity by primary key.
      */
     public function findByPk(mixed $pk): ?Entity;
 
     /**
-     * Создает новую сущность.
+     * Creates a new entity.
      */
     public function create(bool $markNew = true): ?Entity;
 }

@@ -9,8 +9,8 @@ use tachyon\dic\Container,
     tachyon\exceptions\ContainerException;
 
 /**
- * Реализует паттерн "фабричный метод"
- * Инстанциирует соответствующий класс DBAL
+ * Implements the "factory method" pattern
+ * Instantiates the corresponding DBAL class
  *
  * @author imndsu@gmail.com
  */

@@ -23,23 +23,23 @@ use tachyon\db\dbal\conditions\{
 abstract class Db
 {
     /**
-     * Соединение с БД
+     * DB connection
      */
     protected ?PDO $connection = null;
     /**
-     * Параметры БД
+     * DB parameters
      */
     protected array $options;
     /**
-     * Выводить ли анализ запросов в файл
+     * Whether to log query analysis to a file
      */
     protected bool $explain;
     /**
-     * Префикс explain
+     * Explain prefix
      */
     protected string $explainPrefix;
     /**
-     * Путь к файлу где лежит explain.xls
+     * Path to the file where explain.xls is located
      */
     protected string $explainPath;
 
@@ -54,7 +54,7 @@ abstract class Db
         $this->options = $options;
         if ($this->explain = $this->options['explain'] ?? $this->env->isDevelop()) {
             $this->explainPath = $this->options['explain_path'] ?? APP_ROOT . '/runtime/explain.xls';
-            // удаляем файл
+            // delete file
             if (file_exists($this->explainPath)) {
                 unlink($this->explainPath);
             }
@@ -102,9 +102,9 @@ abstract class Db
      * extracts fields $fields of the records from the table $tblName by condition $where
      *
      * @param Query  $query
-     * @param string $tblName имя таблицы
-     * @param array  $where условие поиска
-     * @param array  $fields имена полей
+     * @param string $tblName table name
+     * @param array  $where search condition
+     * @param array  $fields field names
      *
      * @throws DBALException
      */
@@ -147,12 +147,12 @@ abstract class Db
     }
 
     /**
-     * Извлекает поля $fields записи из таблицы $tblName по условию $where
+     * Extracts fields $fields of the record from table $tblName by condition $where
      *
      * @param Query  $query
-     * @param string $tblName имя таблицы
-     * @param array  $where условие поиска
-     * @param array  $fields имена полей
+     * @param string $tblName table name
+     * @param array  $where search condition
+     * @param array  $fields field names
      *
      * @throws DBALException
      */
@@ -169,11 +169,11 @@ abstract class Db
     }
 
     /**
-     * Вставляет записи со значениями $fields в таблицу $tblName
+     * Inserts records with values $fields into table $tblName
      *
      * @param Query  $query
-     * @param string $tblName имя таблицы
-     * @param array  $fields массив: [имена => значения] полей
+     * @param string $tblName table name
+     * @param array  $fields array: [names => values] of fields
      *
      * @throws DBALException
      */
@@ -200,12 +200,12 @@ abstract class Db
     }
 
     /**
-     * Обновляет поля таблицы $tblName $fields записей по условию $where
+     * Updates table $tblName fields $fields of records by condition $where
      *
      * @param Query  $query
-     * @param string $tblName имя таблицы
-     * @param array  $fields  массив: [имена => значения] полей
-     * @param array  $where   условие поиска
+     * @param string $tblName table name
+     * @param array  $fields  array: [names => values] of fields
+     * @param array  $where   search condition
      *
      * @throws DBALException
      */
@@ -233,11 +233,11 @@ abstract class Db
     }
 
     /**
-     * Удаляет записи из таблицы $tblName по условию $where
+     * Deletes records from table $tblName by condition $where
      *
      * @param Query $query
-     * @param string $tblName имя таблицы
-     * @param array  $where условие поиска
+     * @param string $tblName table name
+     * @param array  $where search condition
      *
      * @throws DBALException
      */
@@ -271,7 +271,7 @@ abstract class Db
     }
 
     /**
-     * Выполняет запрос $query
+     * Executes query $query
      *
      * @throws DBALException
      */
@@ -288,7 +288,7 @@ abstract class Db
     }
 
     /**
-     * Выполняет запрос $query и возвращает результат в виде массива записей
+     * Executes query $query and returns result as array of records
      *
      * @throws DBALException
      */
@@ -301,7 +301,7 @@ abstract class Db
     }
 
     /**
-     * Выполняет запрос $query и возвращает одну запись в виде массива
+     * Executes query $query and returns a single record as an array
      *
      * @throws DBALException
      */
@@ -314,7 +314,7 @@ abstract class Db
     }
 
     /**
-     * Инициирует транзакцию
+     * Initiates a transaction
      *
      * @throws DBALException
      */
@@ -325,17 +325,17 @@ abstract class Db
     }
 
     /**
-     * Оканчивает транзакцию
+     * Commits/ends a transaction
      */
     public function endTransaction(): void
     {
         $this->connection->commit();
     }
 
-    # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
+    # HELPER METHODS
 
     /**
-     * Строка order by cast
+     * Order by cast string
      */
     abstract public function orderByCast(string $colName): string;
 
@@ -346,7 +346,7 @@ abstract class Db
     }
 
     /**
-     * Возвращение одной строки из извлеченного массива строк
+     * Returns a single row from the fetched array of rows
      */
     protected function getOneRow(array $rows = []): ?array
     {
@@ -358,7 +358,7 @@ abstract class Db
     }
 
 	/**
-	 * Подготовка извлеченного массива строк, удаление лишнего
+	 * Preparing the fetched array of rows, removing unnecessary elements
 	 */
 	protected function prepareRows(array $rows = []): array
 	{
@@ -369,7 +369,7 @@ abstract class Db
 	}
 
 	/**
-	 * Подготовка извлеченной строки, удаление лишнего
+	 * Preparing the fetched row, removing unnecessary elements
 	 */
 	protected function prepareRow(array $row = []): array
 	{
@@ -382,7 +382,7 @@ abstract class Db
 	}
 
     /**
-     * Выполнение запроса
+     * Query execution
      *
      * @throws DBALException
      */
@@ -395,7 +395,7 @@ abstract class Db
     }
 
     /**
-     * Выдает отчет EXPLAIN
+     * Generates EXPLAIN report
      *
      * @throws DBALException
      */
@@ -425,7 +425,7 @@ abstract class Db
                 }
                 $output .= "\r\n";
             }
-            // выводим в файл
+            // output to file
             $file = fopen($this->explainPath, 'w');
             fwrite($file, $output);
             fclose($file);

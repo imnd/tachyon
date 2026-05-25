@@ -19,7 +19,7 @@ class WhereBuilder extends ExpressionsBuilder
     }
 
     /**
-     * Форматирует поля для выборки
+     * Formats selection fields
      *
      * @param array $fields
      * @return string

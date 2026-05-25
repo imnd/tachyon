@@ -5,7 +5,7 @@ namespace tachyon\components;
 use tachyon\Config;
 
 /**
- * Класс работы с текстовыми сообщениями
+ * Class for working with text messages
  *
  * @author imndsu@gmail.com
  */
@@ -29,7 +29,7 @@ class Message
     }
 
     /**
-     * Перевод текстового сообщения
+     * Text message translation
      */
     public function t(string $msg, array $vars = []): string
     {

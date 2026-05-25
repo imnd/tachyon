@@ -5,23 +5,23 @@ namespace tachyon\db;
 class Query
 {
     /**
-     * Поля для выборки/вставки/обновления
+     * Fields for selection/insertion/update
      */
     protected array $fields = [];
     /**
-     * Условия для выборки
+     * Conditions for selection
      */
     protected array $where = [];
     /**
-     * Условия для соединения
+     * Conditions for join
      */
     protected string $join = '';
     /**
-     * Поле группировки
+     * Grouping field
      */
     protected string $groupBy = '';
     /**
-     * Поля сортировки
+     * Sorting fields
      */
     protected array $orderBy = [];
     /**
@@ -30,7 +30,7 @@ class Query
     protected string $limit = '';
 
     /**
-     * Добавляет условие выборки
+     * Adds selection condition
      */
     public function addWhere(array $where = null): static
     {
@@ -41,7 +41,7 @@ class Query
     }
 
     /**
-     * Устанавливает условие выборки
+     * Sets selection condition
      */
     public function setWhere(array $where): static
     {
@@ -62,7 +62,7 @@ class Query
 
 
     /**
-     * Добавляет поля для выборки
+     * Adds fields for selection
      */
     public function addFields(array $fieldNames): static
     {
@@ -71,7 +71,7 @@ class Query
     }
 
     /**
-     * Устанавливает поля для выборки
+     * Sets fields for selection
      */
     public function setFields(array $fieldNames): static
     {
@@ -91,7 +91,7 @@ class Query
     }
 
     /**
-     * Устанавливает строку для JOIN
+     * Sets string for JOIN
      */
     public function setJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): static
     {
@@ -100,7 +100,7 @@ class Query
     }
 
     /**
-     * Добавляет строку для JOIN
+     * Adds string for JOIN
      */
     public function addJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): static
     {
@@ -120,7 +120,7 @@ class Query
     }
 
     /**
-     * Добавляет в массив orderBy новый элемент
+     * Adds new element to orderBy array
      */
     public function orderBy(string $fieldName, string $order = 'ASC'): static
     {
@@ -129,7 +129,7 @@ class Query
     }
 
     /**
-     * Устанавливает orderBy
+     * Sets orderBy
      */
     public function setOrderBy($orderBy): static
     {
@@ -149,7 +149,7 @@ class Query
     }
 
     /**
-     * Возвращает форматированную строку ORDER BY
+     * Returns formatted ORDER BY string
      */
     public function orderByString(): string
     {
@@ -170,7 +170,7 @@ class Query
     }
 
     /**
-     * Устанавливает форматированную строку LIMIT
+     * Sets formatted LIMIT string
      */
     public function setLimit(int $limit, int $offset = null): static
     {
@@ -191,7 +191,7 @@ class Query
     }
 
     /**
-     * Устанавливает groupBy
+     * Sets groupBy
      */
     public function setGroupBy(string $fieldName): static
     {
@@ -211,7 +211,7 @@ class Query
     }
 
     /**
-     * Возвращает форматированную строку GROUP BY
+     * Returns formatted GROUP BY string
      */
     public function groupByString(): string
     {

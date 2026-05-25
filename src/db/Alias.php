@@ -208,11 +208,11 @@ class Alias
             if (!str_contains($key, '.')) {
                 continue;
             }
-            // алиасим
+            // alias
             $keyAlias = str_replace($from, $to, $key);
-            // засовываем в массив
+            // put into array
             $array[$keyAlias] = $value;
-            // убираем старый ключ
+            // remove old key
             if ($keyAlias !== $key) {
                 unset($array[$key]);
             }

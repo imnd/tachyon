@@ -14,16 +14,16 @@ interface EntityInterface
     public function getAttributes(): array;
 
     /**
-     * Подпись для поля сущности
+     * Label for entity field
      *
-     * @param string $attribute имя сущности
+     * @param string $attribute entity name
      *
      * @return string
      */
     public function getCaption(string $attribute): string;
 
     /**
-     * Извлечение значения аттрибута $attribute
+     * Extracting value of attribute $attribute
      *
      * @param string $attribute
      *
@@ -32,7 +32,7 @@ interface EntityInterface
     public function getAttribute(string $attribute);
 
     /**
-     * Присваивание значения $value аттрибуту $attribute
+     * Assigning value $value to attribute $attribute
      *
      * @param mixed $attribute
      * @param mixed $value
@@ -40,14 +40,14 @@ interface EntityInterface
     public function setAttribute($attribute, $value = null);
 
     /**
-     * Имя поля первичного ключа
+     * Primary key field name
      *
      * @return string
      */
     public function getPkName(): string;
 
     /**
-     * Значение первичного ключа
+     * Primary key value
      *
      * @return mixed
      */

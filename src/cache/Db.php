@@ -19,7 +19,7 @@ class Db extends Cache
         if ($cacheContents = $this->getContents($cacheKey)) {
             return $cacheContents;
         }
-        // запускаем кеширование
+        // start caching
         $this->setKey($cacheKey);
 
         return null;

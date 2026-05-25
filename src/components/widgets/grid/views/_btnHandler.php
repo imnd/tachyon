@@ -1,4 +1,10 @@
 <?php
+/**
+ * @var tachyon\components\widgets\Widget $widget
+ * @var array $buttons
+ * @var array $items
+ * @var string $csrfJson
+ */
 echo $this->assetManager->coreJs("ajax");
 
 foreach ($buttons as $key => $button) {
@@ -24,7 +30,7 @@ foreach ($buttons as $key => $button) {
                     '<?=$widget->getActionUrl($action, $item)?>',
                     {<?=$csrfJson?>},
                     function(data) {
-                        if (data.success==true) {
+                        if (data.success===true) {
                             <?php if (isset($button['options']['callback'])) {?>
                                 dom.findById('<?=$widget->getRowId($item)?>').<?=$button['options']['callback']?>();
                             <?php }

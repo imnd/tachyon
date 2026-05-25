@@ -13,17 +13,17 @@ interface UnitOfWorkInterface
     public function getDbContext(): DbContext;
 
     /**
-     * Помечает только что созданную сущность как новую.
+     * Marks newly created entity as new.
      */
     public function markNew(): self;
 
     /**
-     * Помечает сущность как измененную.
+     * Marks entity as dirty (modified).
      */
     public function markDirty(): self;
 
     /**
-     * Помечает сущность на удаление.
+     * Marks entity for deletion.
      */
     public function markDeleted(): self;
 }
