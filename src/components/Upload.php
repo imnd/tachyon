@@ -41,13 +41,13 @@ class Upload
     public function uploadFiles(array $files, string $fileInputName): array
     {
         $images = [];
-        if (!$this->_checkUploadPath()) {
+        if (!$this->checkUploadPath()) {
             return $images;
         }
-        $files = $this->_prepareFilesArray($files, $fileInputName);
+        $files = $this->prepareFilesArray($files, $fileInputName);
         foreach ($files as $file) {
             if (!empty($file['name'])) {
-                $fileName = $this->_uploadFile($file);
+                $fileName = $this->uploadFile($file);
                 if ($fileName !== false) {
                     $this->thumb($fileName);
                     $images[] = $fileName;
@@ -72,7 +72,7 @@ class Upload
         $thumbFullName = $thumbPath . $thumbName;
         if (!file_exists($thumbFullName) || filemtime($thumbFullName) < filemtime($picName)) {
             if (@copy($picName, $thumbFullName)) {
-                $fileExt = $this->_getExt($thumbName);
+                $fileExt = $this->getExt($thumbName);
                 $suffix = $fileExt === 'jpg' ? 'jpeg' : $fileExt;
                 $method = "imagecreatefrom$suffix";
 
@@ -90,10 +90,10 @@ class Upload
                 $height = (int)($thumbHeight * $ratio);
 
                 // Перезапись переменной результатом ресайза
-                $resizedImage = $this->_resize($sourceImage, $width, $height, $thumbWidth, $thumbHeight);
+                $resizedImage = $this->resize($sourceImage, $width, $height, $thumbWidth, $thumbHeight);
 
                 $thumbType = $this->imageTypes[$fileExt] ?? IMAGETYPE_JPEG;
-                $this->_save($resizedImage, $thumbFullName, $thumbType);
+                $this->save($resizedImage, $thumbFullName, $thumbType);
 
                 // Явное освобождение памяти (Критично для старых версий PHP / больших пакетов)
                 imagedestroy($sourceImage);
@@ -105,7 +105,7 @@ class Upload
     /**
      * gets the file extension
      */
-    private function _getExt(string $fileName): string
+    private function getExt(string $fileName): string
     {
         $arr = explode('.', $fileName);
         return end($arr);
@@ -114,19 +114,27 @@ class Upload
     /**
      * Checks file type
      */
-    private function _isAllowedFiletype(string $fileName): bool
+    private function isAllowedFiletype(string $fileName): bool
     {
-        $fileExt = strtolower($this->_getExt($fileName));
+        $fileExt = strtolower($this->getExt($fileName));
         
-        // Blacklist of executable/dangerous files for protection against RCE
-        $blacklist = ['php', 'phtml', 'php3', 'php4', 'php5', 'phps', 'htaccess', 'phar', 'exe', 'sh', 'pl', 'cgi', 'asp', 'aspx', 'jsp'];
+        // Comprehensive blacklist of dangerous extensions (RCE / XSS / Config bypasses)
+        $blacklist = [
+            'php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'php8', 'phps', 'phar', 'pht',
+            'htaccess', 'exe', 'sh', 'pl', 'cgi', 'asp', 'aspx', 'jsp', 'shtml', 'html', 'htm', 'svg', 'xml'
+        ];
         if (in_array($fileExt, $blacklist, true)) {
             return false;
         }
 
+        // Whitelist approach: if '*' is specified, restrict to safe media and document extensions
         if ($this->allowedTypes === '*') {
-            return true;
+            $safeExtensions = [
+                'jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar'
+            ];
+            return in_array($fileExt, $safeExtensions, true);
         }
+
         $allowedTypes = explode('|', strtolower($this->allowedTypes));
         return in_array($fileExt, $allowedTypes, true);
     }
@@ -134,7 +142,7 @@ class Upload
     /**
      * Checks the file path
      */
-    private function _checkUploadPath(): bool
+    private function checkUploadPath(): bool
     {
         if (realpath($this->uploadPath) !== false) {
             $this->uploadPath = str_replace("\\", "/", realpath($this->uploadPath));
@@ -149,7 +157,7 @@ class Upload
     /**
      * Uploads the file to the server
      */
-    private function _uploadFile(array $file): bool | string
+    private function uploadFile(array $file): bool | string
     {
         if (!is_uploaded_file($file['tmp_name'])) {
             return false;
@@ -159,10 +167,10 @@ class Upload
             return false;
         }
         $fileName = $file['name'];
-        if (!$this->_isAllowedFiletype($fileName)) {
+        if (!$this->isAllowedFiletype($fileName)) {
             return false;
         }
-        $fileExt = $this->_getExt($fileName);
+        $fileExt = $this->getExt($fileName);
         $fileName = $this->encrypt->randString() . ".$fileExt";
         $filePath = $this->uploadPath . $fileName;
         // move the file
@@ -177,7 +185,7 @@ class Upload
     /**
      * change file size
      */
-    private function _resize($image, int $width, int $height, int $oldWidth, int $oldHeight)
+    private function resize($image, int $width, int $height, int $oldWidth, int $oldHeight)
     {
         $newImage = imagecreatetruecolor($width, $height);
         imagecopyresampled($newImage, $image, 0, 0, 0, 0, $width, $height, $oldWidth, $oldHeight);
@@ -188,7 +196,7 @@ class Upload
     /**
      * Output image to browser or file
      */
-    private function _save($image, string $fileName, int $imageType = IMAGETYPE_JPEG): void
+    private function save($image, string $fileName, int $imageType = IMAGETYPE_JPEG): void
     {
         if ($imageType == IMAGETYPE_JPEG) {
             imagejpeg($image, $fileName, $this->jpegQuality);
@@ -202,7 +210,7 @@ class Upload
     /**
      * transform the $files array into a digestible form
      */
-    private function _prepareFilesArray(array $files, string $fileInputName): array
+    private function prepareFilesArray(array $files, string $fileInputName): array
     {
         $filesCnt = count($files[$fileInputName]['name']);
         for ($i = 0; $i < $filesCnt; $i++) {
