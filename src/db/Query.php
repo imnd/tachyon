@@ -60,7 +60,6 @@ class Query
         return $this;
     }
 
-
     /**
      * Adds fields for selection
      */
@@ -87,15 +86,6 @@ class Query
     public function clearFields(): static
     {
         $this->fields = [];
-        return $this;
-    }
-
-    /**
-     * Sets string for JOIN
-     */
-    public function setJoin(string $tblName, string $onCond, string $joinMode = 'LEFT'): static
-    {
-        $this->join = " $joinMode JOIN $tblName ON $onCond ";
         return $this;
     }
 
@@ -151,14 +141,17 @@ class Query
     /**
      * Returns formatted ORDER BY string
      */
-    public function orderByString(): string
+    public function orderByString(string $quoteSign): string
     {
         if (count($this->orderBy) === 0) {
             return '';
         }
         $orderBy = [];
         foreach ($this->orderBy as $fieldName => $order) {
-            $orderBy[] = "$fieldName $order";
+            if (in_array(strtolower($order), ['asc', 'desc'])) {
+                $order = 'ASC';
+            }
+            $orderBy[] = "$quoteSign$fieldName$quoteSign $order";
         }
 
         return ' ORDER BY ' . implode(',', $orderBy);
@@ -213,10 +206,10 @@ class Query
     /**
      * Returns formatted GROUP BY string
      */
-    public function groupByString(): string
+    public function groupByString(string $quoteSign): string
     {
         if ($this->groupBy !== '') {
-            return " GROUP BY {$this->groupBy} ";
+            return " GROUP BY $quoteSign{$this->groupBy}$quoteSign ";
         }
         return '';
     }

@@ -138,11 +138,11 @@ abstract class Db
         $expression = $this->whereBuilder->prepareExpression($where);
         $queryStr = "
             SELECT {$this->whereBuilder->prepareFields($fields)}
-            FROM $tblName
+            FROM {$this->quoteTblName($tblName)}
             {$query->getJoin()}
             {$expression['clause']}
-            {$query->groupByString()}
-            {$query->orderByString()}
+            {$query->groupByString($this->getQuoteSign())}
+            {$query->orderByString($this->getQuoteSign())}
             {$query->getLimit()}
         ";
 
@@ -239,7 +239,7 @@ abstract class Db
         $updateExpression = $this->updateBuilder->prepareExpression($fields);
         $whereExpression = $this->whereBuilder->prepareExpression($where);
         if (!$stmt = $this->connection->prepare("
-            UPDATE $tblName 
+            UPDATE {$this->quoteTblName($tblName)} 
             {$updateExpression['clause']} 
             {$whereExpression['clause']}
         ")) {
