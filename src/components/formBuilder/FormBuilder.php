@@ -49,24 +49,14 @@ class FormBuilder
         'tagDef' => 'input',
         // text captions
         'text' => [
-            'ru' => [
-                'submitCaption' => 'Отправить',
-                'required' => 'Поля отмеченные * обязательны для заполнения',
-            ],
-            'en' => [
-                'submitCaption' => 'Submit',
-                'required' => '* required fields',
-            ],
+            'submitCaption' => 'Submit',
+            'required' => '* required fields',
         ],
     ];
     /**
      * Form counter
      */
     private int $_formCnt = 0;
-    /**
-     * List of datepicker type fields
-     */
-    private array $_dateFieldNames = [];
 
     public function __construct(
         protected Config $config,
@@ -77,8 +67,6 @@ class FormBuilder
         protected Message $msg,
     ) {
         $this->_csrfCheck = $config->get('csrf_check') ?? false;
-        // text
-        $this->_options['text'] = $this->_options['text'][$config->get('lang')];
     }
 
     /**
@@ -139,9 +127,6 @@ class FormBuilder
                 } elseif ($fieldTag === 'select') {
                     $control['options'] = (!empty($options['listData'])) ? $options['listData'] : [];
                 }
-                if ($control['type'] === 'date') {
-                    $this->_dateFieldNames[] = $control['attrs']['name'];
-                }
                 $controls[] = $control;
                 $requiredFields = $requiredFields || $required;
             }
@@ -187,7 +172,7 @@ class FormBuilder
             $elements[] = [
                 'tag' => 'div',
                 'attrs' => ['class' => 'msg clear'],
-                'contents' => $this->_options['text']['required'],
+                'contents' => t($this->_options['text']['required']),
             ];
         }
         $elements = array_merge($elements, compact('controls'));
@@ -197,7 +182,7 @@ class FormBuilder
                 'type' => $this->_options['ajax'] ? 'button' : 'submit',
                 'class' => 'button',
                 'id' => "submit_$formId",
-                'value' => $this->_options['submitCaption'],
+                'value' => t($this->_options['submitCaption']),
             ],
         ];
         $elements['errors'] = [
