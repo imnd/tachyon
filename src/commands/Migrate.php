@@ -2,7 +2,7 @@
 
 namespace tachyon\commands;
 
-use app\ServiceContainer;
+use tachyon\dic\Container;
 use ReflectionException;
 use tachyon\db\dbal\{
     Db, DbFactory
@@ -55,7 +55,7 @@ class Migrate extends Command
                     }
                     $className = 'migrations\\' . $migrationName;
                     if (class_exists($className)) {
-                        $migration = (new ServiceContainer)->get($className);
+                        $migration = (new Container)->get($className);
                         $migration->run();
                         $this->register($migration);
                     }

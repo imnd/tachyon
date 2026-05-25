@@ -12,7 +12,7 @@ use
  *
  * @author imndsu@gmail.com
  */
-abstract class Container
+class Container
 {
     /**
      * @var Container
@@ -84,7 +84,10 @@ abstract class Container
         }
     }
 
-    abstract public function boot($params = []): Container;
+    public function boot($params = []): self
+    {
+        return $this;
+    }
 
     /**
      * creates an instance of the service
