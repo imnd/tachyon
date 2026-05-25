@@ -98,6 +98,8 @@ class Request
 
     private function filter(mixed $data): mixed
     {
+        $data = str_replace("\x00", "", $data);
+
         if (is_string($data)) {
             // Null-byte injection protection
             $data = str_replace(chr(0), '', $data);
