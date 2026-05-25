@@ -61,6 +61,6 @@ class Csrf
                $this->config->get('CSRF_CHECK') !== true
                // check token
             || isset($_POST[$this->getTokenId()])
-               && $_POST[$this->getTokenId()] === $this->getTokenVal();
+               && hash_equals($this->getTokenVal(), $_POST[$this->getTokenId()]);
     }
 }

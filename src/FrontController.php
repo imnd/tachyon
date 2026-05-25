@@ -26,6 +26,8 @@ final class FrontController
         private readonly Request $request
     ) {
         $this->routes = $this->config->get('routes');
+        // XSS protection, HTTP Only
+        ini_set('session.cookie_httponly', 1);
     }
 
     /**
@@ -167,11 +169,8 @@ final class FrontController
             $this->sendHeaders(200);
             // clickjacking protection
             header('X-Frame-Options:sameorigin');
-            // XSS protection, HTTP Only
-            ini_set('session.cookie_httponly', 1);
 
             echo ob_get_clean();
-            $obStarted = false;
         } catch (HttpException $e) {
             if ($obStarted) {
                 ob_end_clean();
