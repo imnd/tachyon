@@ -58,7 +58,7 @@ class Upload
     }
 
     /**
-     * generating a thumb when saving an image
+     * Generate a thumb when saving an image
      */
     public function thumb(string $thumbName): void
     {
@@ -72,7 +72,10 @@ class Upload
         $thumbFullName = $thumbPath . $thumbName;
         if (!file_exists($thumbFullName) || filemtime($thumbFullName) < filemtime($picName)) {
             if (@copy($picName, $thumbFullName)) {
-                $thumb = imagecreatefromjpeg($thumbFullName);
+                $fileExt = $this->_getExt($thumbName);
+                $suffix = $fileExt === 'jpg' ? 'jpeg' : $fileExt;
+                $method = "imagecreatefrom$suffix";
+                $thumb = $method($thumbFullName);
                 $thumbWidth = imagesx($thumb);
                 $thumbHeight = imagesy($thumb);
                 if ($thumbWidth > $thumbHeight) {
@@ -85,7 +88,6 @@ class Upload
                     $width = $this->thumbWidth;
                 }
                 $this->_resize($thumb, $width, $height, $thumbWidth, $thumbHeight);
-                $fileExt = $this->_getExt($thumbName);
                 $thumbType = $this->imageTypes[$fileExt];
                 $this->_save($thumb, $thumbFullName, $thumbType);
             }
